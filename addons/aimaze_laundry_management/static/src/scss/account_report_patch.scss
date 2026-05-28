@@ -1,0 +1,1345 @@
+.o_account_interactive_report {
+    background: #f5f6f8;
+    color: #011b3a;
+    font-family: var(--body-font-family, "Segoe UI", Arial, sans-serif);
+
+    .o_account_report_toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 66px;
+        padding: 8px 14px;
+        background: #ffffff;
+        border-bottom: 1px solid #d8dde5;
+        box-shadow: none;
+    }
+
+    .o_account_report_titlebar,
+    .o_account_report_filters {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .o_account_report_titlebar {
+        flex: 0 0 auto;
+        gap: 6px;
+    }
+
+    .o_account_report_titlebar h1 {
+        margin: 0 0 0 4px;
+        color: #011b3a;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 40px;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    .o_account_report_titlebar h1 .fa {
+        margin-left: 6px;
+        color: #011b3a;
+        font-size: 16px;
+    }
+
+    .o_account_report_filters {
+        flex: 1 1 auto;
+        justify-content: flex-end;
+        gap: 6px;
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    .o_account_quick_periods {
+        display: none !important;
+    }
+
+    .o_account_export_btn,
+    .o_account_filter_btn,
+    .o_account_filter_select,
+    .o_account_filter_number {
+        min-height: 40px;
+        height: 40px;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 4px;
+        background: #e9edf3;
+        box-shadow: none;
+        color: #011b3a;
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 20px;
+        white-space: nowrap;
+    }
+
+    .o_account_export_btn {
+        min-width: 57px;
+        justify-content: center;
+    }
+
+    .o_account_export_btn.btn-primary {
+        background: #815171;
+        border-color: #815171;
+        color: #ffffff;
+    }
+
+    .o_account_export_btn.btn-light {
+        min-width: 66px;
+        background: #e6ebf1;
+        border-color: #e6ebf1;
+        color: #011b3a;
+    }
+
+    .o_account_filter_btn {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .o_account_filter_btn:hover,
+    .o_account_filter_btn:focus,
+    .o_account_filter_select:hover,
+    .o_account_filter_select:focus {
+        background: #dfe5ee;
+        color: #011b3a;
+        box-shadow: none;
+    }
+
+    .o_account_filter_btn.active {
+        background: #eaf8f5;
+        border: 1px solid #a9dfca;
+        color: #04756d;
+    }
+
+    .o_account_filter_btn .fa,
+    .o_account_export_btn .fa {
+        color: currentColor;
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .o_account_filter_dropdown {
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .o_account_date_range_dropdown > .o_account_filter_btn {
+        min-width: 150px;
+        border: 1px solid #7660a8;
+        background: #f5f2fb;
+        color: #011b3a;
+    }
+
+    .o_account_date_range_dropdown > .o_account_filter_btn span {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .o_account_report_search {
+        display: flex;
+        flex: 0 0 252px;
+        align-items: center;
+        height: 40px;
+        min-width: 220px;
+        border: 1px solid #d8dde5;
+        border-radius: 4px;
+        background: #ffffff;
+        color: #011b3a;
+    }
+
+    .o_account_report_search .fa {
+        flex: 0 0 38px;
+        color: #011b3a;
+        font-size: 17px;
+        text-align: center;
+    }
+
+    .o_account_report_search .form-control {
+        min-width: 0;
+        height: 38px;
+        min-height: 38px;
+        padding: 7px 10px 7px 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        color: #011b3a;
+        font-size: 15px;
+        line-height: 20px;
+    }
+
+    .o_account_report_search .form-control::placeholder {
+        color: #8b97a8;
+        opacity: 1;
+    }
+
+    .o_account_report_search .form-control:focus {
+        box-shadow: none;
+        outline: 0;
+    }
+
+    .o_account_filter_select {
+        flex: 0 0 auto;
+        width: auto !important;
+        min-width: 132px;
+        padding-right: 28px;
+    }
+
+    .o_account_filter_number {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .o_account_filter_number input {
+        width: 64px;
+        height: 28px;
+        min-height: 28px;
+        padding: 4px 6px;
+        border: 0;
+        border-radius: 4px;
+        background: #ffffff;
+        font-size: 14px;
+    }
+
+    .o_account_custom_date_popover,
+    .o_account_period_menu,
+    .o_account_journal_menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        z-index: 45;
+        border: 1px solid #dbe3ee;
+        background: #ffffff;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+    }
+
+    .o_account_custom_date_popover {
+        width: 300px;
+        padding: 14px 14px 0;
+        border-radius: 10px;
+    }
+
+    .o_account_custom_date_popover label {
+        display: block;
+        margin: 0 0 6px;
+        color: #7b8190;
+        font-size: 11px;
+        font-weight: 760;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+
+    .o_account_custom_date_popover .form-control {
+        width: 100%;
+        min-height: 38px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd8ec;
+        border-radius: 7px;
+        background: #f8f7fc;
+        color: #25344a;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .o_account_custom_date_actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 4px -14px 0;
+        padding: 10px 14px;
+        border-top: 1px solid #eee9f8;
+        border-radius: 0 0 10px 10px;
+        background: #f6f0fb;
+    }
+
+    .o_account_custom_date_cancel,
+    .o_account_custom_date_apply {
+        min-height: 34px;
+        padding: 7px 14px;
+        border: 0;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .o_account_custom_date_cancel {
+        background: #ffffff;
+        color: #475569;
+    }
+
+    .o_account_custom_date_apply {
+        background: #7660a8;
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(118, 96, 168, 0.18);
+    }
+
+    .o_account_period_menu {
+        width: 374px;
+        min-width: 374px;
+        padding: 8px 0;
+        border-radius: 4px;
+    }
+
+    .o_account_journal_menu {
+        min-width: 300px;
+        padding: 8px;
+        border-radius: 6px;
+    }
+
+    .o_account_journal_menu {
+        right: 0;
+        left: auto;
+        max-height: 360px;
+        overflow: auto;
+    }
+
+    .o_account_period_row {
+        display: grid;
+        grid-template-columns: 132px 32px 1fr 32px;
+        align-items: center;
+        min-height: 42px;
+        padding: 0 8px;
+        color: #202938;
+    }
+
+    .o_account_period_row.active {
+        color: #202938;
+        font-weight: 700;
+    }
+
+    .o_account_period_select,
+    .o_account_period_arrow,
+    .o_account_period_value,
+    .o_account_period_custom {
+        min-height: 36px;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: inherit;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    .o_account_period_select,
+    .o_account_period_custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        text-align: left;
+    }
+
+    .o_account_period_arrow,
+    .o_account_period_value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 4px;
+        text-align: center;
+    }
+
+    .o_account_period_arrow {
+        color: #7660a8;
+    }
+
+    .o_account_period_value {
+        min-width: 150px;
+    }
+
+    .o_account_period_check {
+        width: 13px;
+        color: #7660a8;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .o_account_period_select:hover,
+    .o_account_period_arrow:hover,
+    .o_account_period_value:hover,
+    .o_account_period_custom:hover {
+        background: #f4f5f8;
+    }
+
+    .o_account_period_custom {
+        width: 100%;
+        min-height: 54px;
+        padding: 14px 26px;
+        border-top: 1px solid #dde3eb;
+        border-radius: 0;
+        color: #202938;
+    }
+
+    .o_account_period_custom .fa {
+        width: 18px;
+        color: #202938;
+        text-align: center;
+    }
+
+    .o_account_custom_date_back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 10px;
+        padding: 4px 0;
+        border: 0;
+        background: transparent;
+        color: #7660a8;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .o_account_report_reviewed {
+        display: none !important;
+    }
+
+    .o_account_report_drill_icon {
+        margin-left: 8px;
+        color: #6b7280;
+        cursor: pointer;
+        opacity: 0.78;
+        transition: color 0.16s ease, opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    .o_account_report_line_button:hover .o_account_report_drill_icon {
+        color: #2bbbd3;
+        opacity: 1;
+        transform: translateY(-1px);
+    }
+}
+
+@media (max-width: 1360px) {
+    .o_account_interactive_report {
+        .o_account_report_toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .o_account_report_filters {
+            justify-content: flex-start;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .o_account_interactive_report {
+        .o_account_report_toolbar {
+            padding: 8px 12px;
+        }
+
+        .o_account_report_titlebar {
+            flex-wrap: wrap;
+        }
+
+        .o_account_report_titlebar h1 {
+            width: 100%;
+            margin-left: 0;
+            font-size: 18px;
+            line-height: 28px;
+        }
+
+        .o_account_report_search {
+            flex: 1 1 100%;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .o_account_filter_btn,
+        .o_account_filter_select,
+        .o_account_filter_number {
+            font-size: 14px;
+        }
+
+        .o_account_period_menu,
+        .o_account_journal_menu,
+        .o_account_custom_date_popover {
+            left: 0;
+            right: auto;
+            width: calc(100vw - 32px);
+            min-width: 0;
+            max-width: 374px;
+        }
+
+        .o_account_period_row {
+            grid-template-columns: 112px 30px 1fr 30px;
+            padding: 0 6px;
+        }
+
+        .o_account_period_select,
+        .o_account_period_arrow,
+        .o_account_period_value,
+        .o_account_period_custom {
+            font-size: 15px;
+        }
+
+        .o_account_period_value {
+            min-width: 0;
+        }
+    }
+}
+
+/* Premium accounting report skin shared by Profit & Loss, Trial Balance,
+   General Ledger, Balance Sheet, Aged reports, and related report actions. */
+.o_account_interactive_report {
+    min-height: calc(100vh - 46px);
+    overflow: auto;
+    background: #f5f6f8;
+    color: #011b3a;
+    font-family: var(--body-font-family, "Segoe UI", Arial, sans-serif);
+
+    .o_account_report_toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 74px;
+        padding: 8px 10px;
+        background: #ffffff;
+        border-bottom: 1px solid #d5dbe4;
+        box-shadow: none;
+    }
+
+    .o_account_report_titlebar,
+    .o_account_report_filters {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .o_account_report_titlebar {
+        flex: 0 0 auto;
+        gap: 7px;
+    }
+
+    .o_account_report_filters {
+        flex: 1 1 auto;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-left: 24px;
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    .o_account_report_titlebar h1 {
+        margin: 0 0 0 4px;
+        color: #011b3a;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 50px;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    .o_account_report_titlebar h1 .fa {
+        margin-left: 6px;
+        color: #011b3a;
+        font-size: 17px;
+    }
+
+    .o_account_export_btn,
+    .o_account_filter_btn,
+    .o_account_filter_select,
+    .o_account_filter_number {
+        min-height: 50px;
+        height: 50px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 4px;
+        background: #e8edf4;
+        box-shadow: none;
+        color: #011b3a;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 50px;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    .o_account_export_btn {
+        min-width: 72px;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .o_account_export_btn.btn-primary {
+        background: #815171;
+        border-color: #815171;
+        color: #ffffff;
+    }
+
+    .o_account_export_btn.btn-light {
+        min-width: 83px;
+        background: #e8edf4;
+        border-color: #e8edf4;
+        color: #011b3a;
+    }
+
+    .o_account_filter_btn {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+    }
+
+    .o_account_filter_btn:hover,
+    .o_account_filter_btn:focus,
+    .o_account_filter_select:hover,
+    .o_account_filter_select:focus {
+        background: #dfe5ee;
+        color: #011b3a;
+        box-shadow: none;
+        outline: 0;
+    }
+
+    .o_account_filter_btn.active {
+        background: #eaf8f5;
+        border: 1px solid #9fd9c8;
+        color: #04756d;
+    }
+
+    .o_account_filter_btn .fa,
+    .o_account_export_btn .fa {
+        color: currentColor;
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    .o_account_date_range_dropdown > .o_account_filter_btn {
+        min-width: 188px;
+        padding: 0 20px;
+        border: 1px solid #7660a8;
+        border-radius: 26px;
+        background: #f7f4fc;
+        color: #011b3a;
+    }
+
+    .o_account_date_range_dropdown > .o_account_filter_btn span {
+        max-width: 184px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .o_account_report_search {
+        flex: 0 0 252px;
+        height: 40px;
+        min-width: 220px;
+        border: 1px solid #d8dde5;
+        border-radius: 4px;
+        background: #ffffff;
+    }
+
+    .o_account_report_search .fa {
+        flex: 0 0 38px;
+        font-size: 18px;
+    }
+
+    .o_account_report_search .form-control {
+        height: 38px;
+        min-height: 38px;
+        color: #011b3a;
+        font-size: 16px;
+    }
+
+    .o_account_filter_select {
+        width: auto !important;
+        min-width: 150px;
+        padding-right: 34px;
+        line-height: 1.2;
+    }
+
+    .o_account_filter_number {
+        align-items: center;
+        gap: 8px;
+        line-height: 1.2;
+    }
+
+    .o_account_period_menu {
+        width: 374px;
+        min-width: 374px;
+        padding: 8px 0;
+        border-radius: 4px;
+        border-color: #d8dde6;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+    }
+
+    .o_account_period_row {
+        grid-template-columns: 132px 32px 1fr 32px;
+        min-height: 42px;
+        padding: 0 8px;
+    }
+
+    .o_account_period_select,
+    .o_account_period_arrow,
+    .o_account_period_value,
+    .o_account_period_custom {
+        min-height: 36px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    .o_account_period_row.active {
+        font-weight: 700;
+    }
+
+    .o_account_period_value {
+        min-width: 150px;
+    }
+
+    .o_account_period_custom {
+        min-height: 54px;
+        padding: 14px 26px;
+    }
+
+    .o_account_journal_menu {
+        right: 0;
+        left: auto;
+        min-width: 300px;
+        max-height: 360px;
+        overflow: auto;
+        border-radius: 6px;
+    }
+
+    .o_account_custom_date_popover {
+        width: 300px;
+        padding: 14px 14px 0;
+        border-radius: 10px;
+        border-color: #dbe3ee;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
+    }
+
+    .o_account_custom_date_popover label {
+        margin-bottom: 6px;
+        color: #7b8190;
+        font-size: 11px;
+        font-weight: 760;
+        text-transform: uppercase;
+    }
+
+    .o_account_custom_date_popover .form-control {
+        min-height: 38px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd8ec;
+        border-radius: 7px;
+        background: #f8f7fc;
+        color: #25344a;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .o_account_custom_date_actions {
+        gap: 8px;
+        margin: 4px -14px 0;
+        padding: 10px 14px;
+        border-top: 1px solid #eee9f8;
+        border-radius: 0 0 10px 10px;
+        background: #f6f0fb;
+    }
+
+    .o_account_custom_date_cancel,
+    .o_account_custom_date_apply {
+        min-height: 34px;
+        padding: 7px 14px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .o_account_report_body {
+        padding: 30px 16px 60px;
+    }
+
+    .o_account_report_sheet {
+        width: 1000px;
+        max-width: calc(100vw - 48px);
+        min-height: 610px;
+        margin: 0 auto;
+        padding: 30px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #d1d8e3;
+        border-radius: 4px;
+        box-shadow: none;
+    }
+
+    .o_account_statement_sheet {
+        width: 1000px;
+    }
+
+    .o_account_trial_balance_sheet {
+        width: 1000px;
+        min-height: 446px;
+    }
+
+    .o_account_aged_sheet {
+        width: 1100px;
+        min-height: 168px;
+    }
+
+    .o_account_report_loading,
+    .o_account_report_empty {
+        padding: 10px 14px;
+        color: #011b3a;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .o_account_statement_header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 160px;
+        align-items: center;
+        max-width: 938px;
+        margin: 0 auto 34px;
+    }
+
+    .o_account_statement_period {
+        grid-column: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        border: 1px solid #d1d8e3;
+        background: #ffffff;
+        color: #011b3a;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .o_account_statement_measure {
+        grid-column: 2;
+        padding: 12px 0 6px;
+        color: #011b3a;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .o_account_report_table,
+    .o_account_trial_balance_table,
+    .o_account_aged_table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .o_account_report_table.has_statement_header,
+    .o_account_trial_balance_table {
+        max-width: 938px;
+        margin: 0 auto;
+    }
+
+    .o_account_report_table th:first-child,
+    .o_account_report_table td:first-child {
+        width: auto;
+    }
+
+    .o_account_report_table th.o_account_report_number,
+    .o_account_report_table td.o_account_report_number {
+        width: 140px;
+    }
+
+    .o_account_report_table.has_statement_header th.o_account_report_number,
+    .o_account_report_table.has_statement_header td.o_account_report_number {
+        width: 160px;
+    }
+
+    .o_account_report_table th,
+    .o_account_trial_balance_table th,
+    .o_account_aged_table th {
+        height: 34px;
+        padding: 7px 10px;
+        border-bottom: 1px solid #d7dee8;
+        color: #011b3a;
+        background: #ffffff;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 20px;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .o_account_report_table td,
+    .o_account_trial_balance_table td,
+    .o_account_aged_table td {
+        height: 36px;
+        padding: 5px 10px;
+        border-bottom: 1px solid #e1e5eb;
+        color: #011b3a;
+        background: #ffffff;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 20px;
+        vertical-align: middle;
+    }
+
+    .o_account_report_table th.o_account_report_number,
+    .o_account_report_table td.o_account_report_number,
+    .o_account_trial_balance_table th.o_account_report_number,
+    .o_account_trial_balance_table td.o_account_report_number,
+    .o_account_aged_table th.o_account_report_number,
+    .o_account_aged_table td.o_account_report_number {
+        text-align: right;
+    }
+
+    .o_account_report_line:hover td,
+    .o_account_trial_balance_table .o_account_report_line:hover td,
+    .o_account_aged_table .o_account_report_line:hover td {
+        background: #fafbfd;
+    }
+
+    .o_account_report_line.is_total td,
+    .o_account_report_line.is_grand_total td,
+    .o_account_trial_balance_table .o_account_report_line.is_total td,
+    .o_account_aged_table .o_account_report_line.is_total td {
+        height: 34px;
+        background: #d7dadd;
+        color: #011b3a;
+        font-weight: 750;
+    }
+
+    .o_account_report_line.is_total + .o_account_report_line td,
+    .o_account_report_line.is_grand_total + .o_account_report_line td {
+        border-top: 12px solid #ffffff;
+    }
+
+    .o_account_report_line.line_type_section td {
+        color: #011b3a;
+        font-weight: 400;
+    }
+
+    .o_account_report_line.line_type_section.is_foldable td {
+        font-weight: 700;
+    }
+
+    .o_account_report_line.level_2 td {
+        color: #011b3a;
+        font-weight: 400;
+    }
+
+    .o_account_report_line.is_clickable {
+        cursor: pointer;
+    }
+
+    .o_account_report_line_button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+    }
+
+    .o_account_report_caret_button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        margin-right: 4px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #6b7280;
+    }
+
+    .o_account_report_drill_icon {
+        margin-left: 8px;
+        color: #c2c8cf;
+        font-size: 14px;
+        cursor: pointer;
+        opacity: 1;
+        transition: color 0.16s ease, transform 0.16s ease;
+    }
+
+    .o_account_report_line_button:hover .o_account_report_drill_icon {
+        color: #714b67;
+        transform: translateY(-1px);
+    }
+
+    .o_account_report_number {
+        color: #011b3a;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .o_account_report_number.is_negative {
+        color: #ef3124;
+        font-weight: 600;
+    }
+
+    .o_account_report_number.is_zero {
+        color: #c7cdd5;
+    }
+
+    .o_account_trial_group_row th {
+        height: 36px;
+        border-bottom: 0;
+        color: #011b3a;
+        background: #ffffff;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .o_account_trial_group_row th:not(:first-child) {
+        border: 1px solid #d1d8e3;
+    }
+
+    .o_account_trial_measure_row th {
+        height: 34px;
+        border-bottom: 0;
+        color: #011b3a;
+        background: #ffffff;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .o_account_trial_measure_row th:first-child {
+        text-align: left;
+    }
+
+    .o_account_trial_balance_table .o_account_trial_current_col {
+        background: #f8fafc;
+    }
+
+    .o_account_trial_name_cell {
+        padding-left: 44px !important;
+    }
+
+    .o_account_aged_asof_cell {
+        border: 1px solid #d1d8e3 !important;
+        color: #011b3a;
+        font-weight: 700;
+        text-align: center !important;
+    }
+
+    .o_account_aged_header_row th {
+        background: #f8fafc;
+        color: #011b3a;
+        font-weight: 700;
+    }
+
+    .o_account_aged_name_cell {
+        padding-left: 40px !important;
+    }
+}
+
+@media (max-width: 1500px) {
+    .o_account_interactive_report {
+        .o_account_report_toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .o_account_report_filters {
+            justify-content: flex-start;
+            width: 100%;
+            margin-left: 0;
+            flex-wrap: wrap;
+        }
+
+        .o_account_report_search {
+            flex-basis: 252px;
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .o_account_interactive_report {
+        .o_account_report_toolbar {
+            padding: 8px 12px;
+        }
+
+        .o_account_report_titlebar {
+            flex-wrap: wrap;
+        }
+
+        .o_account_report_titlebar h1 {
+            width: 100%;
+            margin-left: 0;
+            font-size: 20px;
+            line-height: 30px;
+        }
+
+        .o_account_report_filters {
+            gap: 6px;
+        }
+
+        .o_account_export_btn,
+        .o_account_filter_btn,
+        .o_account_filter_select,
+        .o_account_filter_number {
+            min-height: 40px;
+            height: 40px;
+            padding: 0 12px;
+            font-size: 15px;
+            line-height: 40px;
+        }
+
+        .o_account_report_search {
+            flex: 1 1 100%;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .o_account_period_menu,
+        .o_account_journal_menu,
+        .o_account_custom_date_popover {
+            right: auto;
+            left: 0;
+            width: calc(100vw - 32px);
+            min-width: 0;
+            max-width: 374px;
+        }
+
+        .o_account_report_body {
+            padding: 18px 12px 36px;
+        }
+
+        .o_account_report_sheet {
+            width: 100%;
+            max-width: 100%;
+            min-height: 420px;
+            padding: 18px;
+            overflow-x: auto;
+        }
+
+        .o_account_statement_header,
+        .o_account_report_table.has_statement_header,
+        .o_account_trial_balance_table {
+            min-width: 700px;
+        }
+    }
+}
+
+/* Enforced final pass: keep accounting reports compact after all legacy
+   accounting-kit and earlier AimAze report blocks have been loaded. */
+.o_account_interactive_report {
+    .o_account_report_toolbar {
+        min-height: 66px;
+        padding: 7px 10px;
+    }
+
+    .o_account_report_titlebar h1 {
+        font-size: 22px;
+        line-height: 46px;
+    }
+
+    .o_account_export_btn,
+    .o_account_filter_btn,
+    .o_account_filter_select,
+    .o_account_filter_number {
+        min-height: 42px;
+        height: 42px;
+        padding: 0 14px;
+        font-size: 16px;
+        line-height: 42px;
+    }
+
+    .o_account_export_btn {
+        min-width: 64px;
+    }
+
+    .o_account_export_btn.btn-light {
+        min-width: 76px;
+    }
+
+    .o_account_date_range_dropdown > .o_account_filter_btn {
+        min-width: 194px;
+        border-radius: 24px;
+    }
+
+    .o_account_report_body {
+        padding: 24px 14px 48px;
+    }
+
+    .o_account_report_sheet {
+        width: 1040px;
+        max-width: calc(100vw - 56px);
+        min-height: 430px;
+        padding: 28px 38px;
+    }
+
+    .o_account_report_sheet:not(.o_account_statement_sheet):not(.o_account_trial_balance_sheet):not(.o_account_aged_sheet) {
+        width: 1250px;
+    }
+
+    .o_account_statement_sheet,
+    .o_account_trial_balance_sheet {
+        width: 1000px;
+    }
+
+    .o_account_aged_sheet {
+        width: 1120px;
+    }
+
+    .o_account_statement_header {
+        max-width: 938px;
+        margin-bottom: 30px;
+    }
+
+    .o_account_statement_period {
+        min-height: 34px;
+        font-size: 14px;
+    }
+
+    .o_account_statement_measure {
+        padding: 10px 0 5px;
+        font-size: 14px;
+    }
+
+    .o_account_report_table.has_statement_header,
+    .o_account_trial_balance_table {
+        max-width: 938px;
+    }
+
+    .o_account_report_table th,
+    .o_account_trial_balance_table th,
+    .o_account_aged_table th {
+        height: 30px;
+        padding: 5px 10px;
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .o_account_report_table td,
+    .o_account_trial_balance_table td,
+    .o_account_aged_table td {
+        height: 30px;
+        padding: 4px 10px;
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .o_account_report_line.is_total td,
+    .o_account_report_line.is_grand_total td,
+    .o_account_trial_balance_table .o_account_report_line.is_total td,
+    .o_account_aged_table .o_account_report_line.is_total td {
+        height: 32px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .o_account_report_line.is_total + .o_account_report_line td,
+    .o_account_report_line.is_grand_total + .o_account_report_line td {
+        border-top-width: 10px;
+    }
+
+    .o_account_line_action_wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        max-width: 100%;
+        vertical-align: middle;
+    }
+
+    .o_account_line_menu_btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        min-width: 18px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: #7a828f;
+        font-size: 14px;
+        line-height: 1;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .o_account_line_menu_btn:hover,
+    .o_account_line_menu_btn:focus {
+        background: #eef2f7;
+        color: #714b67;
+        outline: 0;
+    }
+
+    .o_account_line_action_menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: -6px;
+        z-index: 80;
+        min-width: 176px;
+        padding: 4px;
+        border: 1px solid #d9e0ea;
+        border-radius: 4px;
+        background: #ffffff;
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.13);
+    }
+
+    .o_account_line_action_menu button {
+        display: block;
+        width: 100%;
+        min-height: 32px;
+        padding: 6px 12px;
+        border: 0;
+        border-radius: 3px;
+        background: transparent;
+        color: #1f2937;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 18px;
+        text-align: left;
+    }
+
+    .o_account_line_action_menu button:hover,
+    .o_account_line_action_menu button:focus {
+        background: #f2f5fa;
+        color: #714b67;
+        outline: 0;
+    }
+
+    .o_account_report_reviewed {
+        display: none !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .o_account_interactive_report {
+        .o_account_report_sheet,
+        .o_account_report_sheet:not(.o_account_statement_sheet):not(.o_account_trial_balance_sheet):not(.o_account_aged_sheet) {
+            width: 100%;
+            max-width: 100%;
+            min-height: 400px;
+            padding: 18px;
+        }
+
+        .o_account_report_table th,
+        .o_account_trial_balance_table th,
+        .o_account_aged_table th,
+        .o_account_report_table td,
+        .o_account_trial_balance_table td,
+        .o_account_aged_table td {
+            font-size: 13px;
+        }
+    }
+}

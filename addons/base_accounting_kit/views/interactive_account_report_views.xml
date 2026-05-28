@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_interactive_profit_and_loss" model="ir.actions.client">
+        <field name="name">Profit and Loss</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'profit_and_loss'}</field>
+    </record>
+
+    <record id="action_interactive_balance_sheet" model="ir.actions.client">
+        <field name="name">Balance Sheet</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'balance_sheet'}</field>
+    </record>
+
+    <record id="action_interactive_cash_flow" model="ir.actions.client">
+        <field name="name">Cash Flow Statement</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'cash_flow'}</field>
+    </record>
+
+    <record id="action_interactive_trial_balance" model="ir.actions.client">
+        <field name="name">Trial Balance</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'trial_balance'}</field>
+    </record>
+
+    <record id="action_interactive_general_ledger" model="ir.actions.client">
+        <field name="name">General Ledger</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'general_ledger'}</field>
+    </record>
+
+    <record id="action_interactive_partner_ledger" model="ir.actions.client">
+        <field name="name">Partner Ledger</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'partner_ledger'}</field>
+    </record>
+
+    <record id="action_interactive_tax_report" model="ir.actions.client">
+        <field name="name">Tax Report</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'tax_report'}</field>
+    </record>
+
+    <record id="action_interactive_aged_partner_balance" model="ir.actions.client">
+        <field name="name">Aged Partner Balance</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'aged_partner_balance'}</field>
+    </record>
+
+    <record id="action_interactive_aged_receivable" model="ir.actions.client">
+        <field name="name">Aged Receivable</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'aged_receivable'}</field>
+    </record>
+
+    <record id="action_interactive_aged_payable" model="ir.actions.client">
+        <field name="name">Aged Payable</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'aged_payable'}</field>
+    </record>
+
+    <record id="action_interactive_journal_audit" model="ir.actions.client">
+        <field name="name">Journals Audit</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'journal_audit'}</field>
+    </record>
+
+    <record id="action_interactive_bank_book" model="ir.actions.client">
+        <field name="name">Bank Book</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'bank_book'}</field>
+    </record>
+
+    <record id="action_interactive_cash_book" model="ir.actions.client">
+        <field name="name">Cash Book</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'cash_book'}</field>
+    </record>
+
+    <record id="action_interactive_day_book" model="ir.actions.client">
+        <field name="name">Day Book</field>
+        <field name="tag">base_accounting_kit.interactive_account_report</field>
+        <field name="context">{'report_key': 'day_book'}</field>
+    </record>
+
+    <record id="account_financial_reports_profit_loss" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_profit_and_loss')"/>
+    </record>
+    <record id="_account_financial_reports_balance_sheet" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_balance_sheet')"/>
+    </record>
+    <record id="menu_account_cash_flow_report" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_cash_flow')"/>
+    </record>
+    <record id="menu_Balance_report" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_trial_balance')"/>
+    </record>
+    <record id="menu_general_ledger" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_general_ledger')"/>
+    </record>
+    <record id="menu_partner_ledger" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_partner_ledger')"/>
+    </record>
+    <record id="menu_tax_report" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_tax_report')"/>
+    </record>
+    <record id="menu_aged_trial_balance" model="ir.ui.menu">
+        <field name="name">Aged Receivable</field>
+        <field name="parent_id" ref="base_accounting_kit.account_reports_partner"/>
+        <field name="sequence">2</field>
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_aged_receivable')"/>
+    </record>
+    <record id="menu_aged_payable" model="ir.ui.menu">
+        <field name="name">Aged Payable</field>
+        <field name="parent_id" ref="base_accounting_kit.account_reports_partner"/>
+        <field name="sequence">3</field>
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_aged_payable')"/>
+    </record>
+    <record id="menu_print_journal" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_journal_audit')"/>
+    </record>
+    <record id="account_bank_book_menu" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_bank_book')"/>
+    </record>
+    <record id="account_cash_book_menu" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_cash_book')"/>
+    </record>
+    <record id="account_day_book_menu" model="ir.ui.menu">
+        <field name="action" eval="'ir.actions.client,%d' % ref('base_accounting_kit.action_interactive_day_book')"/>
+    </record>
+</odoo>

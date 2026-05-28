@@ -1,0 +1,506 @@
+.o_form_view .goldverse-total-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 12px 24px;
+}
+
+.o_form_view .goldverse-total-box > .o_group {
+  width: 100%;
+}
+
+.o_form_view .goldverse-total-box > .o_inner_group {
+  width: 100%;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child {
+  grid-column: 2;
+  justify-self: end;
+  min-width: 360px;
+}
+
+.o_form_view .goldverse-total-box > .o_inner_group:last-child {
+  grid-column: 2;
+  justify-self: end;
+  min-width: 360px;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_inner_group {
+  width: 100%;
+  grid-template-columns: minmax(160px, 1fr) minmax(150px, auto);
+  column-gap: 24px;
+  row-gap: 12px;
+}
+
+.o_form_view .goldverse-total-box > .o_inner_group:last-child {
+  grid-template-columns: minmax(160px, 1fr) minmax(150px, auto) !important;
+  column-gap: 24px;
+  row-gap: 12px;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_cell,
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_widget,
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_monetary,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_cell,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_widget,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_monetary {
+  min-width: 0;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_monetary,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_monetary {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap !important;
+  text-align: right;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_monetary input,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_monetary input {
+  flex: 0 0 64px !important;
+  min-width: 54px;
+  max-width: 90px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  text-align: right;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_monetary:not(.o_readonly_modifier) > .text-nowrap,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_monetary:not(.o_readonly_modifier) > .text-nowrap {
+  width: 100%;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_monetary:not(.o_readonly_modifier) > .text-nowrap > .o_input.position-absolute,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_monetary:not(.o_readonly_modifier) > .text-nowrap > .o_input.position-absolute {
+  display: none !important;
+}
+
+.o_form_view .goldverse-total-box > .o_group:last-child .o_field_monetary:not(.o_readonly_modifier) > .text-nowrap > span.opacity-0:last-child,
+.o_form_view .goldverse-total-box > .o_inner_group:last-child .o_field_monetary:not(.o_readonly_modifier) > .text-nowrap > span.opacity-0:last-child {
+  flex: 0 0 auto;
+  opacity: 1 !important;
+}
+
+@media (max-width: 768px) {
+  .o_form_view .goldverse-total-box {
+    grid-template-columns: 1fr;
+  }
+
+  .o_form_view .goldverse-total-box > .o_group:last-child {
+    grid-column: 1;
+    min-width: 0;
+    justify-self: stretch;
+  }
+
+  .o_form_view .goldverse-total-box > .o_inner_group:last-child {
+    grid-column: 1;
+    min-width: 0;
+    justify-self: stretch;
+  }
+
+  .o_form_view .goldverse-total-box > .o_group:last-child .o_inner_group {
+    grid-template-columns: minmax(130px, 1fr) minmax(130px, auto);
+  }
+
+  .o_form_view .goldverse-total-box > .o_inner_group:last-child {
+    grid-template-columns: minmax(130px, 1fr) minmax(130px, auto) !important;
+  }
+}
+
+.goldverse-clickable-dashboard-grid .goldverse-kpi-button {
+  display: block;
+  width: 100%;
+  border: 1px solid #d8e2ef;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.goldverse-clickable-dashboard-grid .goldverse-kpi-button:hover {
+  border-color: #7c6aaa;
+  box-shadow: 0 10px 22px rgba(32, 20, 54, 0.13);
+  transform: translateY(-1px);
+}
+
+.goldverse-clickable-dashboard-grid .goldverse-kpi-button:focus-visible {
+  outline: 2px solid #714b67;
+  outline-offset: 2px;
+}
+
+.o_account_dashboard_kanban_view.o_account_kanban {
+  --goldverse-account-ink: #10243a;
+  --goldverse-account-muted: #5c6f84;
+  --goldverse-account-line: #d8e3ee;
+  --goldverse-account-teal: #25b7c9;
+  --goldverse-account-plum: #714b67;
+  --goldverse-account-gold: #a36a13;
+  --goldverse-account-green: #2f9f6b;
+
+  .o_content {
+    padding: 22px 24px 30px;
+    background:
+      linear-gradient(135deg, rgba(37, 183, 201, 0.09), rgba(255, 255, 255, 0) 34%),
+      linear-gradient(315deg, rgba(163, 106, 19, 0.08), rgba(255, 255, 255, 0) 32%),
+      #f5f8fb;
+  }
+
+  .o_kanban_renderer.o_kanban_ungrouped {
+    gap: 18px 20px !important;
+    align-items: stretch;
+  }
+
+  .o_kanban_record {
+    position: relative;
+    min-height: 254px !important;
+    padding: 22px 24px !important;
+    overflow: hidden;
+    border: 1px solid var(--goldverse-account-line) !important;
+    border-radius: 8px !important;
+    border-left: 0 !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(249, 252, 253, 0.99)) !important;
+    box-shadow: 0 14px 32px rgba(16, 36, 58, 0.08);
+    color: var(--goldverse-account-ink);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  }
+
+  .o_kanban_record:not(.o_kanban_ghost):hover {
+    transform: translateY(-2px);
+    border-color: rgba(37, 183, 201, 0.48) !important;
+    box-shadow: 0 18px 40px rgba(16, 36, 58, 0.12);
+  }
+
+  .o_kanban_record::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6px;
+    background: var(--goldverse-account-teal);
+  }
+
+  .o_kanban_record::after {
+    content: "";
+    position: absolute;
+    top: -46px;
+    right: -34px;
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    background: rgba(37, 183, 201, 0.11);
+    pointer-events: none;
+  }
+
+  .o_kanban_record:nth-child(2)::before {
+    background: var(--goldverse-account-gold);
+  }
+
+  .o_kanban_record:nth-child(3)::before {
+    background: var(--goldverse-account-green);
+  }
+
+  .o_kanban_record:nth-child(4n)::before,
+  .o_kanban_record:nth-child(5n)::before {
+    background: var(--goldverse-account-plum);
+  }
+
+  .o_kanban_record.o_kanban_ghost {
+    min-height: 96px !important;
+    border-style: dashed !important;
+    background: rgba(255, 255, 255, 0.48) !important;
+    box-shadow: none;
+  }
+
+  .o_kanban_record.o_kanban_ghost::before,
+  .o_kanban_record.o_kanban_ghost::after {
+    display: none;
+  }
+
+  .o_kanban_record .fs-4 {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--goldverse-account-ink);
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0;
+  }
+
+  .o_kanban_record .fs-4::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 22px;
+    border-radius: 3px;
+    background: currentColor;
+    opacity: 0.2;
+  }
+
+  .o_kanban_record .text-muted {
+    color: var(--goldverse-account-muted) !important;
+    line-height: 1.45;
+  }
+
+  .o_kanban_record .btn {
+    min-height: 40px;
+    border-radius: 7px !important;
+    border-width: 1px;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(16, 36, 58, 0.08);
+  }
+
+  .o_kanban_record .btn-primary,
+  .o_kanban_record .btn-secondary {
+    border-color: var(--goldverse-account-teal) !important;
+    background: var(--goldverse-account-teal) !important;
+    color: #fff !important;
+  }
+
+  .o_kanban_record .btn-primary:hover,
+  .o_kanban_record .btn-secondary:hover {
+    border-color: #179bad !important;
+    background: #179bad !important;
+  }
+
+  .o_dashboard_graph {
+    min-height: 168px;
+    margin-top: 18px;
+    overflow: hidden;
+    border: 1px solid #dbe6ef;
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(240, 247, 250, 0.84)),
+      repeating-linear-gradient(90deg, transparent 0, transparent 18%, rgba(16, 36, 58, 0.05) 18%, rgba(16, 36, 58, 0.05) calc(18% + 1px));
+  }
+
+  .container-fluid,
+  .o_kanban_card_content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .o_kanban_record strong,
+  .o_kanban_record b,
+  .o_kanban_record .fw-bold {
+    color: #0b3154;
+  }
+
+  .o_dropdown_kanban {
+    z-index: 2;
+  }
+
+  @media (max-width: 992px) {
+    .o_content {
+      padding: 16px 12px 24px;
+    }
+
+    .o_kanban_renderer.o_kanban_ungrouped {
+      gap: 12px !important;
+    }
+
+    .o_kanban_record {
+      width: 100% !important;
+      min-height: 220px !important;
+      padding: 18px !important;
+    }
+  }
+}
+
+.o_account_report_table td,
+.o_account_trial_table td {
+  position: relative;
+}
+
+.goldverse-report-line-menu {
+  position: absolute;
+  z-index: 25;
+  top: 28px;
+  left: 220px;
+  min-width: 170px;
+  padding: 4px;
+  border: 1px solid #d8dde6;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+.goldverse-report-line-menu .dropdown-item {
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #1f2937;
+  font-weight: 600;
+  text-align: left;
+}
+
+.goldverse-report-line-menu .dropdown-item:hover {
+  background: #f1f5f9;
+  color: #714b67;
+}
+
+.o_account_report_sheet.goldverse-general-ledger-sheet {
+  width: calc(100vw - 72px) !important;
+  max-width: none !important;
+  overflow-x: auto;
+}
+
+.goldverse-general-ledger-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+}
+
+.goldverse-general-ledger-table .goldverse-ledger-col-name {
+  width: 36%;
+}
+
+.goldverse-general-ledger-table .goldverse-ledger-col-date {
+  width: 10%;
+}
+
+.goldverse-general-ledger-table .goldverse-ledger-col-partner {
+  width: 11%;
+}
+
+.goldverse-general-ledger-table .goldverse-ledger-col-currency {
+  width: 8%;
+}
+
+.goldverse-general-ledger-table .goldverse-ledger-col-amount {
+  width: 11.66%;
+}
+
+.goldverse-general-ledger-table th,
+.goldverse-general-ledger-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid #e1e5ea;
+  vertical-align: middle;
+}
+
+.goldverse-ledger-period-row th {
+  border: 1px solid #d8dde6;
+  background: #fff;
+  text-align: center;
+  font-weight: 700;
+}
+
+.goldverse-ledger-period-row th:first-child {
+  border: 0;
+}
+
+.goldverse-ledger-name-cell {
+  color: #0f2744;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goldverse-ledger-caret {
+  margin-right: 8px;
+  color: #64748b;
+}
+
+.goldverse-ledger-move-name {
+  position: relative;
+  overflow: visible;
+  padding-left: 64px !important;
+}
+
+.goldverse-ledger-move-name > span {
+  display: inline-block;
+  max-width: calc(100% - 28px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.goldverse-ledger-move-name .o_account_report_drill_icon {
+  color: #b6beca;
+}
+
+.goldverse-ledger-move-details {
+  position: relative;
+  display: inline-block;
+}
+
+.goldverse-ledger-move-menu-button {
+  display: inline-flex;
+  align-items: center;
+  list-style: none;
+  margin-left: 4px;
+  padding: 0 3px;
+  border: 0;
+  background: transparent;
+  color: #b6beca;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.goldverse-ledger-move-menu-button::-webkit-details-marker,
+.goldverse-ledger-move-menu-button::marker {
+  display: none;
+  content: "";
+}
+
+.goldverse-ledger-move-menu-button:hover {
+  color: #714b67;
+}
+
+.goldverse-ledger-move-menu {
+  display: none;
+  top: 20px;
+  left: 14px;
+}
+
+.goldverse-ledger-move-details[open] .goldverse-ledger-move-menu,
+.goldverse-ledger-move-name.goldverse-move-menu-open .goldverse-ledger-move-menu,
+.goldverse-ledger-move-name:hover .goldverse-ledger-move-menu {
+  display: block;
+}
+
+.goldverse-journal-items-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border: 1px solid #b8c7d9;
+  border-radius: 4px;
+  background: #fff;
+  color: #47627f;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.goldverse-journal-items-pill:hover {
+  border-color: #714b67;
+  color: #714b67;
+}
+
+.goldverse-general-ledger-table .o_account_report_number {
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.goldverse-general-ledger-table th,
+.goldverse-general-ledger-table td:not(.goldverse-ledger-name-cell) {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .o_account_report_sheet.goldverse-general-ledger-sheet {
+    width: calc(100vw - 32px) !important;
+  }
+
+  .goldverse-general-ledger-table {
+    min-width: 980px;
+  }
+}

@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_order_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.list</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <list string="Laundry Orders" multi_edit="1">
+                <field name="name" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="mobile" optional="show"/>
+                <field name="email" optional="hide"/>
+                <field name="customer_type" optional="show" widget="badge"/>
+                <field name="source" optional="show" widget="badge"/>
+                <field name="service_type" optional="show"/>
+                <field name="contract_id" optional="hide"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+                <field name="branch_id" optional="show"/>
+                <field name="country_id" optional="hide"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="state" optional="show" widget="badge" decoration-muted="state == 'draft'" decoration-info="state in ('confirmed','received','sorting','washing','drying','ironing','qc','packing')" decoration-warning="state in ('ready','out_for_delivery')" decoration-success="state in ('delivered','invoiced','paid')" decoration-danger="state == 'cancelled'"/>
+                <field name="priority" optional="show" widget="badge" decoration-success="priority == 'normal'" decoration-warning="priority == 'urgent'" decoration-danger="priority == 'express'"/>
+                <field name="order_date" optional="show"/>
+                <field name="expected_delivery_datetime" optional="show"/>
+                <field name="pickup_required" optional="hide"/>
+                <field name="delivery_required" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="responsible_id" optional="hide"/>
+                <field name="driver_id" optional="hide"/>
+                <field name="barcode" optional="hide"/>
+                <field name="total_qty" optional="show"/>
+                <field name="amount_untaxed" optional="hide"/>
+                <field name="amount_tax" optional="hide"/>
+                <field name="discount_amount" optional="hide"/>
+                <field name="delivery_charge" optional="hide"/>
+                <field name="amount_total" optional="show"/>
+                <field name="advance_paid" optional="hide"/>
+                <field name="paid_amount" optional="hide"/>
+                <field name="balance_amount" optional="show"/>
+                <field name="payment_status" optional="show" widget="badge" decoration-muted="payment_status == 'unpaid'" decoration-warning="payment_status == 'partial'" decoration-success="payment_status == 'paid'" decoration-danger="payment_status == 'refunded'"/>
+                <field name="invoice_status" optional="hide" widget="badge"/>
+                <field name="invoice_id" optional="hide"/>
+                <field name="notes" optional="hide"/>
+                <field name="internal_remarks" optional="hide"/>
+                <field name="damage_remarks" optional="hide"/>
+                <field name="stain_remarks" optional="hide"/>
+                <field name="customer_special_instructions" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_kanban" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.kanban</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="amount_total"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record">
+                            <strong><field name="name"/></strong>
+                            <div><field name="partner_id"/></div>
+                            <div><field name="amount_total" widget="monetary"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <form string="Laundry Order">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm Order" class="oe_highlight alm-btn-success" invisible="state != 'draft'"/>
+                    <button name="action_create_pickup" type="object" string="Create Pickup" class="alm-btn-info" invisible="not pickup_required"/>
+                    <button name="action_mark_received" type="object" string="Mark Received" class="alm-btn-info"/>
+                    <button name="action_start_washing" type="object" string="Start Washing" class="alm-btn-stage"/>
+                    <button name="action_start_ironing" type="object" string="Start Ironing" class="alm-btn-stage"/>
+                    <button name="action_start_qc" type="object" string="Start QC" class="alm-btn-warning"/>
+                    <button name="action_mark_ready" type="object" string="Mark Ready" class="alm-btn-success"/>
+                    <button name="action_assign_driver" type="object" string="Assign Driver" class="alm-btn-info"/>
+                    <button name="action_mark_delivered" type="object" string="Mark Delivered" class="alm-btn-success"/>
+                    <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting"/>
+                    <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment"/>
+                    <button name="action_register_final_payment" type="object" string="Register Final Payment" class="alm-btn-payment"/>
+                    <button name="action_print_receipt" type="object" string="Print Receipt"/>
+                    <button name="action_print_garment_tags" type="object" string="Print Garment Tags"/>
+                    <button name="action_cancel" type="object" string="Cancel Order" class="alm-btn-danger"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,received,sorting,washing,drying,ironing,qc,packing,ready,out_for_delivery,delivered,invoiced,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_create_invoice" class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="invoice_status" widget="statinfo" string="Invoice"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="mobile"/>
+                            <field name="email"/>
+                            <field name="customer_type"/>
+                            <field name="contract_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="branch_id"/>
+                            <field name="country_id" readonly="1"/>
+                            <field name="currency_id" readonly="1"/>
+                            <field name="order_date"/>
+                            <field name="expected_delivery_datetime"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="pickup_required"/>
+                            <field name="delivery_required"/>
+                            <field name="source"/>
+                            <field name="service_type"/>
+                            <field name="priority"/>
+                        </group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="responsible_id"/>
+                            <field name="driver_id"/>
+                            <field name="barcode" readonly="1"/>
+                            <field name="payment_status" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Items &amp; Pricing">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="service_id" optional="show"/>
+                                    <field name="garment_category" optional="show"/>
+                                    <field name="garment_item" optional="show"/>
+                                    <field name="name" optional="show"/>
+                                    <field name="color" optional="show"/>
+                                    <field name="brand" optional="show"/>
+                                    <field name="quantity" optional="show"/>
+                                    <field name="unit_price" optional="show"/>
+                                    <field name="discount" optional="show"/>
+                                    <field name="tax_ids" optional="show" widget="many2many_tags"/>
+                                    <field name="price_subtotal" optional="show"/>
+                                    <field name="price_tax" optional="show"/>
+                                    <field name="qc_status" optional="show" widget="badge"/>
+                                    <field name="rewash_required" optional="hide"/>
+                                    <field name="lost_item" optional="hide"/>
+                                </list>
+                            </field>
+                            <group class="alm-total-box">
+                                <group>
+                                    <field name="discount_amount"/>
+                                    <field name="delivery_charge"/>
+                                </group>
+                                <group>
+                                    <field name="total_qty" readonly="1"/>
+                                    <field name="amount_untaxed" readonly="1"/>
+                                    <field name="amount_tax" readonly="1"/>
+                                    <field name="amount_total" readonly="1"/>
+                                    <field name="advance_paid" readonly="1"/>
+                                    <field name="balance_amount" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Workflow Remarks">
+                            <group>
+                                <field name="notes"/>
+                                <field name="internal_remarks"/>
+                                <field name="damage_remarks"/>
+                                <field name="stain_remarks"/>
+                                <field name="customer_special_instructions"/>
+                            </group>
+                        </page>
+                        <page string="Pickup &amp; Delivery">
+                            <button name="action_create_pickup_delivery" type="object" string="Create Pickup / Delivery Job" class="btn-primary"/>
+                            <field name="delivery_ids"/>
+                        </page>
+                        <page string="Quality Control">
+                            <field name="qc_ids"/>
+                        </page>
+                        <page string="Complaints">
+                            <field name="complaint_ids"/>
+                        </page>
+                        <page string="Staff Tasks">
+                            <field name="task_ids"/>
+                        </page>
+                        <page string="Accounting">
+                            <group>
+                                <field name="invoice_id" readonly="1"/>
+                                <field name="invoice_status" readonly="1"/>
+                                <field name="payment_status" readonly="1"/>
+                                <field name="paid_amount" readonly="1"/>
+                                <field name="balance_amount" readonly="1"/>
+                            </group>
+                            <field name="payment_ids" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_search" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.search</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <search string="Laundry Orders">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="mobile"/>
+                <field name="barcode"/>
+                <field name="customer_type"/>
+                <field name="source"/>
+                <field name="service_type"/>
+                <field name="priority"/>
+                <field name="branch_id"/>
+                <field name="country_id"/>
+                <field name="user_id"/>
+                <field name="responsible_id"/>
+                <field name="driver_id"/>
+                <field name="invoice_id"/>
+                <filter string="Today" name="today" domain="[('order_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter string="Pending" name="pending" domain="[('state', 'not in', ('delivered','paid','cancelled'))]"/>
+                <filter string="Ready" name="ready" domain="[('state','=','ready')]"/>
+                <filter string="Outstanding" name="outstanding" domain="[('payment_status','!=','paid')]"/>
+                <filter string="Pickup Required" name="pickup_required" domain="[('pickup_required','=',True)]"/>
+                <filter string="Delivery Required" name="delivery_required" domain="[('delivery_required','=',True)]"/>
+                <filter string="Walk-in Source" name="source_walk_in" domain="[('source','=','walk_in')]"/>
+                <filter string="Corporate Customers" name="customer_type_corporate" domain="[('customer_type','in',('corporate','hotel','salon','gym','restaurant'))]"/>
+                <group>
+                    <filter string="Branch" name="group_branch" context="{'group_by':'branch_id'}"/>
+                    <filter string="Stage" name="group_stage" context="{'group_by':'state'}"/>
+                    <filter string="Payment" name="group_payment" context="{'group_by':'payment_status'}"/>
+                    <filter string="Customer" name="group_customer" context="{'group_by':'partner_id'}"/>
+                    <filter string="Customer Type" name="group_customer_type" context="{'group_by':'customer_type'}"/>
+                    <filter string="Source" name="group_source" context="{'group_by':'source'}"/>
+                    <filter string="Service Type" name="group_service_type" context="{'group_by':'service_type'}"/>
+                    <filter string="Priority" name="group_priority" context="{'group_by':'priority'}"/>
+                    <filter string="Salesperson" name="group_salesperson" context="{'group_by':'user_id'}"/>
+                    <filter string="Driver" name="group_driver" context="{'group_by':'driver_id'}"/>
+                    <filter string="Order Date" name="group_order_date" context="{'group_by':'order_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_pivot" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.pivot</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <pivot string="Laundry Analysis">
+                <field name="branch_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="amount_total" type="measure"/>
+                <field name="total_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_graph" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.graph</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <graph string="Laundry Sales" type="bar">
+                <field name="branch_id"/>
+                <field name="amount_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_laundry_order" model="ir.actions.act_window">
+        <field name="name">Laundry Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,pivot,graph,activity</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_sorting" model="ir.actions.act_window">
+        <field name="name">Sorting Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','sorting')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_washing" model="ir.actions.act_window">
+        <field name="name">Washing Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','washing')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_drying" model="ir.actions.act_window">
+        <field name="name">Drying Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','drying')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_ironing" model="ir.actions.act_window">
+        <field name="name">Ironing Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','ironing')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_qc" model="ir.actions.act_window">
+        <field name="name">QC Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','qc')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_packing" model="ir.actions.act_window">
+        <field name="name">Packing Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','packing')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_orders_ready" model="ir.actions.act_window">
+        <field name="name">Ready Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="domain">[('state','=','ready')]</field>
+        <field name="search_view_id" ref="view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_quick_order" model="ir.actions.act_window">
+        <field name="name">Quick Order</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">form,list</field>
+        <field name="context">{'default_source': 'walk_in'}</field>
+    </record>
+
+    <record id="action_laundry_order_line" model="ir.actions.act_window">
+        <field name="name">Order Lines / Garment Tags</field>
+        <field name="res_model">aimaze.laundry.order.line</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+</odoo>

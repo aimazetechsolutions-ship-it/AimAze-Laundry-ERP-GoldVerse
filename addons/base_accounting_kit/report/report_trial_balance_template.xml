@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_trial_balance">
+        <t t-call="web.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <style>
+                        .hms-tb-title { font-size: 20px; font-weight: 700; color: #111827; margin: 0 0 18px; }
+                        .hms-tb-meta { font-size: 12px; color: #475569; margin-bottom: 22px; }
+                        .hms-tb-wrap { border: 1px solid #d4d8de; border-radius: 4px; padding: 22px 26px; }
+                        .hms-tb-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; color: #111827; }
+                        .hms-tb-table th, .hms-tb-table td { height: 28px; padding: 4px 8px; border-bottom: 1px solid #e1e5eb; vertical-align: middle; }
+                        .hms-tb-table th:first-child, .hms-tb-table td:first-child { width: 48%; }
+                        .hms-tb-group th { border-bottom: 0; text-align: center; font-weight: 700; }
+                        .hms-tb-group th:not(:first-child) { border: 1px solid #d5dbe3; }
+                        .hms-tb-measure th { text-align: right; font-weight: 700; }
+                        .hms-tb-account { padding-left: 34px !important; }
+                        .hms-tb-current { background: #f8fafc; }
+                        .hms-tb-number { text-align: right; white-space: nowrap; }
+                        .hms-tb-negative { color: #e12d2d; }
+                        .hms-tb-zero { color: #cfd6df; }
+                        .hms-tb-total td { font-weight: 700; }
+                    </style>
+                    <h2 class="hms-tb-title">Trial Balance</h2>
+                    <div class="hms-tb-meta">
+                        <strong><span t-esc="env.company.name"/></strong>
+                        <span> | </span>
+                        <span t-esc="period_label"/>
+                        <span> | </span>
+                        <span t-if="data['target_move'] == 'posted'">Posted Entries</span>
+                        <span t-else="">All Entries</span>
+                        <span> | In </span>
+                        <span t-esc="currency.name"/>
+                    </div>
+                    <div class="hms-tb-wrap">
+                        <table class="hms-tb-table">
+                            <thead>
+                                <tr class="hms-tb-group">
+                                    <th></th>
+                                    <th>Initial Balance</th>
+                                    <th colspan="2"><span t-esc="period_label"/></th>
+                                    <th>End Balance</th>
+                                </tr>
+                                <tr class="hms-tb-measure">
+                                    <th></th>
+                                    <th>Balance</th>
+                                    <th class="hms-tb-current">Debit</th>
+                                    <th class="hms-tb-current">Credit</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="Lines" t-as="line" t-att-class="'hms-tb-total' if line.get('is_total') else ''">
+                                    <td class="hms-tb-account">
+                                        <span t-esc="line['values'].get('name')"/>
+                                    </td>
+                                    <td t-att-class="'hms-tb-number ' + ('hms-tb-negative' if (line['values'].get('initial_balance') or 0.0) &lt; 0 else ('hms-tb-zero' if abs(line['values'].get('initial_balance') or 0.0) &lt; 0.005 else ''))">
+                                        <span t-esc="'{:,.2f}'.format(line['values'].get('initial_balance') or 0.0)"/>
+                                    </td>
+                                    <td t-att-class="'hms-tb-number hms-tb-current ' + ('hms-tb-negative' if (line['values'].get('debit') or 0.0) &lt; 0 else ('hms-tb-zero' if abs(line['values'].get('debit') or 0.0) &lt; 0.005 else ''))">
+                                        <span t-esc="'{:,.2f}'.format(line['values'].get('debit') or 0.0)"/>
+                                    </td>
+                                    <td t-att-class="'hms-tb-number hms-tb-current ' + ('hms-tb-negative' if (line['values'].get('credit') or 0.0) &lt; 0 else ('hms-tb-zero' if abs(line['values'].get('credit') or 0.0) &lt; 0.005 else ''))">
+                                        <span t-esc="'{:,.2f}'.format(line['values'].get('credit') or 0.0)"/>
+                                    </td>
+                                    <td t-att-class="'hms-tb-number ' + ('hms-tb-negative' if (line['values'].get('end_balance') or 0.0) &lt; 0 else ('hms-tb-zero' if abs(line['values'].get('end_balance') or 0.0) &lt; 0.005 else ''))">
+                                        <span t-esc="'{:,.2f}'.format(line['values'].get('end_balance') or 0.0)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

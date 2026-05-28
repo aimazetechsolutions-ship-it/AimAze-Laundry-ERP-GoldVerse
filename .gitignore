@@ -1,0 +1,36 @@
+# Python / Odoo runtime
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Local Odoo runtime data
+*.log
+/logs/
+/data/
+/filestore/
+/sessions/
+*.pid
+
+# Database / backup artifacts
+*.dump
+*.sql
+*.backup
+*.bak
+/backups/
+
+# Secrets and local configuration
+*.conf
+!*.conf.example
+.env
+.env.*
+*.key
+*.pem
+*.crt
+
+# IDE / OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

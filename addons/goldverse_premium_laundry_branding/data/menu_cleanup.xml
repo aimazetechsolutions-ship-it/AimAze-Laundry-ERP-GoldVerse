@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="base.menu_management" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="base.menu_apps" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="base.menu_module_tree" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="base.menu_third_party" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="base.menu_view_base_module_update" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_account_config" model="ir.ui.menu">
+        <field name="active" eval="True"/>
+        <field name="sequence">80</field>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_initial_setup_wizard" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_saas_tenants" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_backup_config" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_settings" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_barcode_scans" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_quick_order" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_quick_counter_order" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_order_lines" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_garment_tags" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_operations_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="subcategory_dry_cleaning" model="goldverse.laundry.subcategory">
+        <field name="name">Dry Cleaning</field>
+        <field name="code">dry_cleaning</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="subcategory_press" model="goldverse.laundry.subcategory">
+        <field name="name">Press</field>
+        <field name="code">press</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="subcategory_wash" model="goldverse.laundry.subcategory">
+        <field name="name">Wash</field>
+        <field name="code">wash</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="subcategory_wash_press" model="goldverse.laundry.subcategory">
+        <field name="name">Wash &amp; Press</field>
+        <field name="code">wash_press</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="colour_white" model="goldverse.laundry.colour">
+        <field name="name">White</field>
+        <field name="code">white</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="colour_black" model="goldverse.laundry.colour">
+        <field name="name">Black</field>
+        <field name="code">black</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="colour_grey" model="goldverse.laundry.colour">
+        <field name="name">Grey</field>
+        <field name="code">grey</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="colour_silver" model="goldverse.laundry.colour">
+        <field name="name">Silver</field>
+        <field name="code">silver</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="colour_red" model="goldverse.laundry.colour">
+        <field name="name">Red</field>
+        <field name="code">red</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="colour_maroon" model="goldverse.laundry.colour">
+        <field name="name">Maroon</field>
+        <field name="code">maroon</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="colour_pink" model="goldverse.laundry.colour">
+        <field name="name">Pink</field>
+        <field name="code">pink</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="colour_orange" model="goldverse.laundry.colour">
+        <field name="name">Orange</field>
+        <field name="code">orange</field>
+        <field name="sequence">80</field>
+    </record>
+    <record id="colour_yellow" model="goldverse.laundry.colour">
+        <field name="name">Yellow</field>
+        <field name="code">yellow</field>
+        <field name="sequence">90</field>
+    </record>
+    <record id="colour_gold" model="goldverse.laundry.colour">
+        <field name="name">Gold</field>
+        <field name="code">gold</field>
+        <field name="sequence">100</field>
+    </record>
+    <record id="colour_green" model="goldverse.laundry.colour">
+        <field name="name">Green</field>
+        <field name="code">green</field>
+        <field name="sequence">110</field>
+    </record>
+    <record id="colour_olive" model="goldverse.laundry.colour">
+        <field name="name">Olive</field>
+        <field name="code">olive</field>
+        <field name="sequence">120</field>
+    </record>
+    <record id="colour_blue" model="goldverse.laundry.colour">
+        <field name="name">Blue</field>
+        <field name="code">blue</field>
+        <field name="sequence">130</field>
+    </record>
+    <record id="colour_navy" model="goldverse.laundry.colour">
+        <field name="name">Navy</field>
+        <field name="code">navy</field>
+        <field name="sequence">140</field>
+    </record>
+    <record id="colour_purple" model="goldverse.laundry.colour">
+        <field name="name">Purple</field>
+        <field name="code">purple</field>
+        <field name="sequence">150</field>
+    </record>
+    <record id="colour_brown" model="goldverse.laundry.colour">
+        <field name="name">Brown</field>
+        <field name="code">brown</field>
+        <field name="sequence">160</field>
+    </record>
+    <record id="colour_beige" model="goldverse.laundry.colour">
+        <field name="name">Beige</field>
+        <field name="code">beige</field>
+        <field name="sequence">170</field>
+    </record>
+    <record id="colour_cream" model="goldverse.laundry.colour">
+        <field name="name">Cream</field>
+        <field name="code">cream</field>
+        <field name="sequence">180</field>
+    </record>
+    <record id="colour_multi" model="goldverse.laundry.colour">
+        <field name="name">Multi Colour</field>
+        <field name="code">multi</field>
+        <field name="sequence">190</field>
+    </record>
+    <record id="colour_other" model="goldverse.laundry.colour">
+        <field name="name">Other</field>
+        <field name="code">other</field>
+        <field name="sequence">999</field>
+    </record>
+
+    <record id="qc_stain" model="goldverse.laundry.qc.option">
+        <field name="name">Stain</field>
+        <field name="code">stain</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="qc_damage" model="goldverse.laundry.qc.option">
+        <field name="name">Damage</field>
+        <field name="code">damage</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="qc_colour_faint" model="goldverse.laundry.qc.option">
+        <field name="name">Colour Faint</field>
+        <field name="code">colour_faint</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="topup_starch" model="goldverse.laundry.topup">
+        <field name="name">Starch</field>
+        <field name="code">starch</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="topup_hangers" model="goldverse.laundry.topup">
+        <field name="name">Hangers</field>
+        <field name="code">hangers</field>
+        <field name="sequence">20</field>
+    </record>
+</odoo>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="notification_template_pickup_assigned_phase4" model="aimaze.notification.template">
+        <field name="name">Pickup Assigned</field>
+        <field name="event_type">pickup_assigned</field>
+        <field name="channel">whatsapp</field>
+        <field name="message_body">Dear {{customer}}, pickup for laundry order {{order}} has been assigned.</field>
+    </record>
+    <record id="notification_template_complaint_update_phase4" model="aimaze.notification.template">
+        <field name="name">Complaint Update</field>
+        <field name="event_type">complaint_received</field>
+        <field name="channel">whatsapp</field>
+        <field name="message_body">Dear {{customer}}, we have received your complaint and our team is reviewing it.</field>
+    </record>
+
+    <record id="ir_cron_laundry_notification_queue_placeholder" model="ir.cron">
+        <field name="name">AimAze Laundry ERP Notification Queue Placeholder</field>
+        <field name="model_id" ref="model_aimaze_notification_queue"/>
+        <field name="state">code</field>
+        <field name="code">model.process_queue(limit=50)</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

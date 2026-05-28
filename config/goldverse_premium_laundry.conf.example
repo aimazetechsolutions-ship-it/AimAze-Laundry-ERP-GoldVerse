@@ -1,0 +1,35 @@
+[options]
+bin_path = /opt/odoo/thirdparty
+addons_path = /opt/odoo/odoo/addons,/opt/odoo/custom_addons,/opt/odoo/AimAze-Laundry-ERP-GoldVerse/addons
+admin_passwd = CHANGE_ME_MASTER_PASSWORD
+csv_internal_sep = ,
+data_dir = /var/lib/odoo/goldverse_premium_laundry
+db_host = localhost
+db_maxconn = 64
+db_name = goldverse_premium_laundry
+db_password = CHANGE_ME_DB_PASSWORD
+db_port = 5432
+db_sslmode = prefer
+db_template = template0
+db_user = CHANGE_ME_DB_USER
+dbfilter = ^goldverse_premium_laundry$
+email_from =
+from_filter =
+gevent_port = 8094
+http_enable = True
+http_interface = 127.0.0.1
+http_port = 8093
+limit_memory_soft = 2147483648
+limit_time_real = 120
+list_db = False
+log_handler = :INFO
+log_level = info
+logfile = /var/log/odoo/goldverse_premium_laundry.log
+max_cron_threads = 2
+proxy_mode = True
+server_wide_modules = base,rpc,web
+smtp_port = 25
+smtp_server = localhost
+transient_age_limit = 1.0
+with_demo = False
+

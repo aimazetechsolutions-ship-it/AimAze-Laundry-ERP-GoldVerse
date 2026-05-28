@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_laundry_ai_analysis" model="ir.sequence">
+        <field name="name">Laundry AI Analysis</field>
+        <field name="code">aimaze.laundry.ai.analysis</field>
+        <field name="prefix">LAI/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="notification_provider_whatsapp_placeholder" model="aimaze.notification.provider">
+        <field name="name">WhatsApp Cloud API Placeholder</field>
+        <field name="provider_type">whatsapp</field>
+        <field name="api_url">https://graph.facebook.com/{version}/{phone_number_id}/messages</field>
+        <field name="sender_id">Configure Phone Number ID</field>
+        <field name="rate_limit_per_minute">60</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="notification_provider_sms_placeholder" model="aimaze.notification.provider">
+        <field name="name">SMS Gateway Placeholder</field>
+        <field name="provider_type">sms</field>
+        <field name="api_url">https://sms-provider.example/send</field>
+        <field name="sender_id">AIMAZE</field>
+        <field name="rate_limit_per_minute">120</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="notification_template_subscription_expiry" model="aimaze.notification.template">
+        <field name="name">Subscription Expiry Reminder</field>
+        <field name="event_type">subscription_expiry</field>
+        <field name="message_body">Dear {{customer}}, your laundry subscription {{subscription}} will expire on {{date_end}}.</field>
+    </record>
+    <record id="notification_template_payment_reminder_phase3" model="aimaze.notification.template">
+        <field name="name">Payment Reminder</field>
+        <field name="event_type">payment_reminder</field>
+        <field name="message_body">Dear {{customer}}, your laundry order {{order}} has pending balance {{balance}} {{currency}}.</field>
+    </record>
+</odoo>

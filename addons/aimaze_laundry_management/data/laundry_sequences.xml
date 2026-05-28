@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_laundry_order" model="ir.sequence">
+        <field name="name">Laundry Order</field>
+        <field name="code">aimaze.laundry.order</field>
+        <field name="prefix">LORD/%(range_year)s/</field>
+        <field name="padding">5</field>
+        <field name="use_date_range">True</field>
+    </record>
+    <record id="seq_laundry_contract" model="ir.sequence">
+        <field name="name">Laundry Contract</field>
+        <field name="code">aimaze.laundry.contract</field>
+        <field name="prefix">LCON/%(range_year)s/</field>
+        <field name="padding">4</field>
+        <field name="use_date_range">True</field>
+    </record>
+    <record id="seq_laundry_delivery" model="ir.sequence">
+        <field name="name">Laundry Pickup Delivery</field>
+        <field name="code">aimaze.laundry.delivery</field>
+        <field name="prefix">LDRV/%(range_year)s/</field>
+        <field name="padding">5</field>
+        <field name="use_date_range">True</field>
+    </record>
+    <record id="seq_laundry_garment_tag" model="ir.sequence">
+        <field name="name">Laundry Garment Tag</field>
+        <field name="code">aimaze.laundry.garment.tag</field>
+        <field name="prefix">TAG/</field>
+        <field name="padding">6</field>
+    </record>
+    <record id="seq_laundry_complaint" model="ir.sequence">
+        <field name="name">Laundry Complaint</field>
+        <field name="code">aimaze.laundry.complaint</field>
+        <field name="prefix">LCMP/%(range_year)s/</field>
+        <field name="padding">5</field>
+        <field name="use_date_range">True</field>
+    </record>
+    <record id="seq_laundry_inventory_usage" model="ir.sequence">
+        <field name="name">Laundry Inventory Usage</field>
+        <field name="code">aimaze.laundry.inventory.usage</field>
+        <field name="prefix">LUSE/%(range_year)s/</field>
+        <field name="padding">5</field>
+        <field name="use_date_range">True</field>
+    </record>
+</odoo>

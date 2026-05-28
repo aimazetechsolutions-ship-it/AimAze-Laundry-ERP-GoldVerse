@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_laundry_phase3" model="ir.ui.view">
+        <field name="name">res.partner.form.laundry.phase3</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="laundry_trn"/>
+                <field name="laundry_arabic_name"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_list_phase3" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.list.phase3</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="view_laundry_order_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="is_delayed" optional="show" widget="boolean"/>
+                <field name="operation_progress" optional="hide" widget="progressbar"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_form_phase3" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form.phase3</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="view_laundry_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_open_customer_wallet" class="oe_stat_button" icon="fa-credit-card">
+                    <field name="wallet_used_amount" widget="statinfo" string="Wallet Used"/>
+                </button>
+                <button type="object" name="action_barcode_scan" class="oe_stat_button" icon="fa-barcode">
+                    <field name="barcode" widget="statinfo" string="Scan"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='payment_status']" position="after">
+                <field name="is_delayed" readonly="1"/>
+                <field name="operation_progress" readonly="1" widget="progressbar"/>
+            </xpath>
+            <xpath expr="//field[@name='internal_remarks']" position="before">
+                <field name="portal_status" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_form_phase3" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.form.phase3</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="inherit_id" ref="view_laundry_garment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_mark_delivered']" position="after">
+                <button name="action_print_label" type="object" string="Print Label" class="alm-btn-info"/>
+            </xpath>
+            <xpath expr="//field[@name='barcode']" position="after">
+                <field name="rfid_enabled"/>
+                <field name="rfid_tag_uid"/>
+                <field name="package_barcode"/>
+                <field name="scan_count" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_delivery_form_phase3" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.form.phase3</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="inherit_id" ref="view_laundry_delivery_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_picked_up']" position="after">
+                <button name="action_confirm_pickup_mobile" type="object" string="Mobile Pickup Confirm" class="alm-btn-info"/>
+                <button name="action_confirm_delivery_mobile" type="object" string="Mobile Delivery Confirm" class="alm-btn-success"/>
+            </xpath>
+            <xpath expr="//field[@name='address']" position="after">
+                <field name="customer_phone" readonly="1"/>
+                <field name="google_maps_url" widget="url" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='delivery_charge']" position="after">
+                <field name="cash_collected"/>
+                <field name="driver_collection_state"/>
+                <field name="delivery_otp"/>
+            </xpath>
+            <xpath expr="//field[@name='remarks']" position="before">
+                <field name="failed_pickup_reason"/>
+                <field name="failed_delivery_reason"/>
+                <field name="driver_note"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_branch_form_phase3" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.form.phase3</field>
+        <field name="model">aimaze.laundry.branch</field>
+        <field name="inherit_id" ref="view_laundry_branch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="arabic_name"/>
+                <field name="commercial_registration"/>
+                <field name="tax_registration_number"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_executive_dashboard_form_phase3" model="ir.ui.view">
+        <field name="name">aimaze.laundry.executive.dashboard.form.phase3</field>
+        <field name="model">aimaze.laundry.executive.dashboard</field>
+        <field name="inherit_id" ref="view_laundry_executive_dashboard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='branch_id']" position="after">
+                <field name="date_from" invisible="1"/>
+                <field name="date_to" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_open_orders']" position="before">
+                <div class="alm-dashboard-grid">
+                    <div class="alm-kpi-card alm-kpi-primary"><span>Today Sales</span><strong><field name="today_sales"/></strong></div>
+                    <div class="alm-kpi-card alm-kpi-success"><span>Monthly Sales</span><strong><field name="month_sales"/></strong></div>
+                    <div class="alm-kpi-card alm-kpi-warning"><span>Pending Orders</span><strong><field name="pending_orders"/></strong></div>
+                    <div class="alm-kpi-card alm-kpi-info"><span>Ready Orders</span><strong><field name="ready_orders"/></strong></div>
+                    <div class="alm-kpi-card alm-kpi-success"><span>Delivered</span><strong><field name="delivered_orders"/></strong></div>
+                    <div class="alm-kpi-card alm-kpi-danger"><span>Delayed</span><strong><field name="delayed_orders"/></strong></div>
+                    <div class="alm-kpi-card"><span>Open Complaints</span><strong><field name="open_complaints"/></strong></div>
+                    <div class="alm-kpi-card"><span>Rewash Ratio</span><strong><field name="rewash_ratio"/></strong></div>
+                    <div class="alm-kpi-card"><span>Wallet Liability</span><strong><field name="wallet_liability"/></strong></div>
+                    <div class="alm-kpi-card"><span>Advance Liability</span><strong><field name="advance_liability"/></strong></div>
+                    <div class="alm-kpi-card"><span>Receivables</span><strong><field name="outstanding_receivables"/></strong></div>
+                    <div class="alm-kpi-card"><span>Branch Profit</span><strong><field name="branch_profitability"/></strong></div>
+                    <div class="alm-kpi-card"><span>Staff Score</span><strong><field name="staff_productivity"/></strong></div>
+                    <div class="alm-kpi-card"><span>Driver Performance</span><strong><field name="driver_performance"/></strong></div>
+                    <div class="alm-kpi-card"><span>Machine Utilization</span><strong><field name="machine_utilization"/></strong></div>
+                    <div class="alm-kpi-card alm-kpi-danger"><span>Low Stock</span><strong><field name="inventory_low_stock"/></strong></div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_ai_analysis_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.ai.analysis.list</field>
+        <field name="model">aimaze.laundry.ai.analysis</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="reference_type" widget="badge"/>
+                <field name="order_id"/>
+                <field name="garment_id"/>
+                <field name="partner_id"/>
+                <field name="confidence_score"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_laundry_ai_analysis_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.ai.analysis.form</field>
+        <field name="model">aimaze.laundry.ai.analysis</field>
+        <field name="arch" type="xml">
+            <form string="AI Analysis">
+                <header>
+                    <button name="action_queue" type="object" string="Queue" class="btn-primary"/>
+                    <button name="action_mark_reviewed" type="object" string="Mark Reviewed" class="alm-btn-success"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="reference_type"/>
+                            <field name="order_id"/>
+                            <field name="garment_id"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="branch_id"/>
+                            <field name="confidence_score"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Image">
+                            <field name="image" widget="image"/>
+                        </page>
+                        <page string="AI Result">
+                            <field name="ai_result"/>
+                            <field name="recommendation"/>
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_laundry_ai_analysis" model="ir.actions.act_window">
+        <field name="name">AI Analysis</field>
+        <field name="res_model">aimaze.laundry.ai.analysis</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+
+    <record id="action_laundry_my_driver_jobs" model="ir.actions.act_window">
+        <field name="name">My Driver Jobs</field>
+        <field name="res_model">aimaze.laundry.delivery</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('driver_id.user_id', '=', uid), ('state', 'not in', ('delivered','cancelled'))]</field>
+    </record>
+
+    <record id="action_laundry_branch_dashboard" model="ir.actions.act_window">
+        <field name="name">Branch Dashboard</field>
+        <field name="res_model">aimaze.laundry.branch.profitability</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+    </record>
+
+    <record id="action_laundry_advance_liability_report" model="ir.actions.act_window">
+        <field name="name">Advance Liability Report</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('laundry_is_advance','=',True)]</field>
+    </record>
+    <record id="action_laundry_wallet_liability_report" model="ir.actions.act_window">
+        <field name="name">Wallet Liability Report</field>
+        <field name="res_model">aimaze.customer.wallet.transaction</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+    <record id="action_laundry_branch_collection_report" model="ir.actions.act_window">
+        <field name="name">Branch Collection Report</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('aimaze_laundry_order_id','!=',False)]</field>
+    </record>
+    <record id="action_laundry_payment_method_report" model="ir.actions.act_window">
+        <field name="name">Payment Method Report</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="domain">[('aimaze_laundry_order_id','!=',False)]</field>
+    </record>
+    <record id="action_laundry_customer_ledger_report" model="ir.actions.act_window">
+        <field name="name">Customer Ledger Report</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('account_id.account_type','=','asset_receivable'), ('parent_state','=','posted')]</field>
+    </record>
+</odoo>

@@ -1,0 +1,18 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_goldverse_garment_history_system,aimaze.laundry.garment.history system,aimaze_laundry_management.model_aimaze_laundry_garment_history,base.group_system,1,1,1,1
+access_goldverse_garment_history_admin,aimaze.laundry.garment.history laundry admin,aimaze_laundry_management.model_aimaze_laundry_garment_history,aimaze_laundry_management.group_laundry_admin,1,1,1,1
+access_goldverse_service_category_user,aimaze.laundry.service.category user,aimaze_laundry_management.model_aimaze_laundry_service_category,base.group_user,1,0,0,0
+access_goldverse_service_category_system,aimaze.laundry.service.category system,aimaze_laundry_management.model_aimaze_laundry_service_category,base.group_system,1,1,1,1
+access_goldverse_service_system,aimaze.laundry.service system,aimaze_laundry_management.model_aimaze_laundry_service,base.group_system,1,1,1,1
+access_goldverse_subcategory_user,goldverse.laundry.subcategory user,model_goldverse_laundry_subcategory,base.group_user,1,0,0,0
+access_goldverse_subcategory_system,goldverse.laundry.subcategory system,model_goldverse_laundry_subcategory,base.group_system,1,1,1,1
+access_goldverse_subcategory_admin,goldverse.laundry.subcategory laundry admin,model_goldverse_laundry_subcategory,aimaze_laundry_management.group_laundry_admin,1,1,1,1
+access_goldverse_colour_user,goldverse.laundry.colour user,model_goldverse_laundry_colour,base.group_user,1,0,0,0
+access_goldverse_colour_system,goldverse.laundry.colour system,model_goldverse_laundry_colour,base.group_system,1,1,1,1
+access_goldverse_colour_admin,goldverse.laundry.colour laundry admin,model_goldverse_laundry_colour,aimaze_laundry_management.group_laundry_admin,1,1,1,1
+access_goldverse_qc_option_user,goldverse.laundry.qc.option user,model_goldverse_laundry_qc_option,base.group_user,1,0,0,0
+access_goldverse_qc_option_system,goldverse.laundry.qc.option system,model_goldverse_laundry_qc_option,base.group_system,1,1,1,1
+access_goldverse_qc_option_admin,goldverse.laundry.qc.option laundry admin,model_goldverse_laundry_qc_option,aimaze_laundry_management.group_laundry_admin,1,1,1,1
+access_goldverse_topup_user,goldverse.laundry.topup user,model_goldverse_laundry_topup,base.group_user,1,0,0,0
+access_goldverse_topup_system,goldverse.laundry.topup system,model_goldverse_laundry_topup,base.group_system,1,1,1,1
+access_goldverse_topup_admin,goldverse.laundry.topup laundry admin,model_goldverse_laundry_topup,aimaze_laundry_management.group_laundry_admin,1,1,1,1

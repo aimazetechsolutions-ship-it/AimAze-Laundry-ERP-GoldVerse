@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_branch_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.list</field>
+        <field name="model">aimaze.laundry.branch</field>
+        <field name="arch" type="xml">
+            <list string="Branches">
+                <field name="code" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="company_id" optional="show"/>
+                <field name="country_id" optional="show"/>
+                <field name="currency_id" optional="show"/>
+                <field name="manager_id" optional="show"/>
+                <field name="warehouse_id" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_branch_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.form</field>
+        <field name="model">aimaze.laundry.branch</field>
+        <field name="arch" type="xml">
+            <form string="Laundry Branch">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="company_id"/>
+                            <field name="country_id"/>
+                            <field name="currency_id"/>
+                            <field name="manager_id"/>
+                        </group>
+                        <group>
+                            <field name="address"/>
+                            <field name="phone"/>
+                            <field name="warehouse_id"/>
+                            <field name="stock_location_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Accounting">
+                        <field name="default_journal_id"/>
+                        <field name="sale_journal_id"/>
+                        <field name="cash_journal_id"/>
+                        <field name="bank_journal_id"/>
+                    </group>
+                    <group string="Branch Access">
+                        <field name="user_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_branch" model="ir.actions.act_window">
+        <field name="name">Branches</field>
+        <field name="res_model">aimaze.laundry.branch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_laundry_service_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.list</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="arch" type="xml">
+            <list string="Services">
+                <field name="code" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="category_id" optional="show"/>
+                <field name="pricing_method" optional="show"/>
+                <field name="list_price" optional="show"/>
+                <field name="tax_applicable" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_service_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.form</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="arch" type="xml">
+            <form string="Laundry Service">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="category_id"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="pricing_method"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="currency_id"/>
+                            <field name="list_price"/>
+                            <field name="express_surcharge_percent"/>
+                            <field name="urgent_surcharge_percent"/>
+                            <field name="delivery_charge"/>
+                        </group>
+                    </group>
+                    <group string="Accounting and Tax">
+                        <field name="income_account_id"/>
+                        <field name="tax_applicable"/>
+                        <field name="tax_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_service" model="ir.actions.act_window">
+        <field name="name">Services</field>
+        <field name="res_model">aimaze.laundry.service</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_laundry_service_category" model="ir.actions.act_window">
+        <field name="name">Service Categories</field>
+        <field name="res_model">aimaze.laundry.service.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_rate_card" model="ir.actions.act_window">
+        <field name="name">Rate Cards</field>
+        <field name="res_model">aimaze.laundry.rate.card</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_delivery_zone" model="ir.actions.act_window">
+        <field name="name">Delivery Zones</field>
+        <field name="res_model">aimaze.laundry.delivery.zone</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_payment_method" model="ir.actions.act_window">
+        <field name="name">Payment Methods</field>
+        <field name="res_model">aimaze.laundry.payment.method</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

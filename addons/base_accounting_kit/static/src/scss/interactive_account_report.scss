@@ -1,0 +1,932 @@
+body:has(.o_account_interactive_report) .o_main_navbar {
+    min-height: 46px;
+    background: #7b65a5;
+    border-bottom: 0;
+    color: #ffffff;
+}
+
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .dropdown-toggle,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_entry,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_brand,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_systray > * > a,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_systray button {
+    color: #ffffff !important;
+}
+
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections a,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections button,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .dropdown-toggle,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_entry,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .active,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .show {
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .active,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .show {
+    background: rgba(255, 255, 255, .14) !important;
+}
+
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections a:hover,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections button:hover,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .dropdown-toggle:hover,
+body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_entry:hover {
+    background: rgba(255, 255, 255, .14) !important;
+    color: #ffffff !important;
+}
+
+.o_account_interactive_report {
+    min-height: calc(100vh - 46px);
+    background: #f5f6f8;
+    color: #111827;
+    overflow: auto;
+
+    .o_account_report_toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0;
+        padding: 6px 16px;
+        background: #ffffff;
+        border-bottom: 1px solid #d9dde5;
+    }
+
+    .o_account_report_titlebar,
+    .o_account_report_filters {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .o_account_report_titlebar {
+        flex: 0 0 auto;
+    }
+
+    .o_account_report_filters {
+        margin-left: 140px;
+    }
+
+    .o_account_report_titlebar h1 {
+        margin: 0 0 0 4px;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 32px;
+        letter-spacing: 0;
+    }
+
+    .o_account_report_titlebar h1 .fa {
+        margin-left: 6px;
+        font-size: 13px;
+        color: #111827;
+    }
+
+    .o_account_export_btn,
+    .o_account_filter_btn,
+    .o_account_filter_select {
+        min-height: 32px;
+        border: 0;
+        border-radius: 4px;
+        padding: 0 10px;
+        color: #111827;
+        background: #e9edf3;
+        font-size: 14.5px;
+        font-weight: 700;
+        line-height: 32px;
+        white-space: nowrap;
+    }
+
+    .o_account_export_btn {
+        min-width: 51px;
+    }
+
+    .o_account_export_btn.btn-primary {
+        color: #ffffff;
+        background: #815171;
+        border-color: #815171;
+    }
+
+    .o_account_export_btn.btn-light {
+        min-width: 54px;
+        background: #e6ebf1;
+        border-color: #e6ebf1;
+    }
+
+    .o_account_filter_btn .fa {
+        margin-right: 3px;
+    }
+
+    .o_account_filter_btn.active {
+        background: #dff3ec;
+        border: 1px solid #a9dfca;
+        color: #0f766e;
+    }
+
+    .o_account_filter_dropdown {
+        position: relative;
+    }
+
+    .o_account_quick_periods {
+        display: inline-flex;
+        min-height: 34px;
+        padding: 3px;
+        border: 1px solid rgba(123, 104, 166, 0.2);
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 0 8px 20px rgba(30, 41, 59, 0.045);
+    }
+
+    .o_account_quick_period_btn {
+        min-width: 0;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1;
+    }
+
+    .o_account_quick_period_btn:hover,
+    .o_account_quick_period_btn:focus {
+        color: #2f2252;
+        background: rgba(122, 97, 166, 0.08);
+        outline: 0;
+    }
+
+    .o_account_quick_period_btn.active {
+        color: #ffffff;
+        background: #7660a8;
+        box-shadow: 0 8px 16px rgba(118, 96, 168, 0.2);
+    }
+
+    .o_account_date_range_dropdown .o_account_filter_btn {
+        min-width: 230px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid rgba(123, 104, 166, 0.2);
+        box-shadow: 0 8px 20px rgba(30, 41, 59, 0.045);
+    }
+
+    .o_account_date_range_dropdown .o_account_filter_btn .fa-calendar {
+        color: #7660a8;
+    }
+
+    .o_account_date_range_dropdown .o_account_filter_btn .fa-caret-down {
+        margin-right: 0;
+        margin-left: 7px;
+        color: #64748b;
+    }
+
+    .o_account_custom_date_popover {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        z-index: 45;
+        width: 350px;
+        max-width: calc(100vw - 48px);
+        padding: 16px 18px 0;
+        border: 1px solid rgba(123, 104, 166, 0.18);
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 22px 46px rgba(30, 41, 59, 0.16);
+    }
+
+    .o_account_custom_date_popover label {
+        display: block;
+        margin: 0 0 7px;
+        color: #7b8190;
+        font-size: 11px;
+        font-weight: 760;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+
+    .o_account_custom_date_popover .form-control {
+        width: 100%;
+        min-height: 42px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(123, 104, 166, 0.18);
+        border-radius: 9px;
+        background: #f8f7fc;
+        color: #25344a;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .o_account_custom_date_actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 4px -18px 0;
+        padding: 14px 18px;
+        border-top: 1px solid rgba(123, 104, 166, 0.12);
+        border-radius: 0 0 14px 14px;
+        background: #f6f0fb;
+    }
+
+    .o_account_custom_date_cancel,
+    .o_account_custom_date_apply {
+        min-height: 38px;
+        padding: 8px 18px;
+        border: 0;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .o_account_custom_date_cancel {
+        background: transparent;
+        color: #475569;
+    }
+
+    .o_account_custom_date_apply {
+        background: #7660a8;
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(118, 96, 168, 0.22);
+    }
+
+    .o_account_period_menu,
+    .o_account_journal_menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 40;
+        min-width: 280px;
+        padding: 6px;
+        background: #ffffff;
+        border: 1px solid #dbe3ee;
+        border-radius: 4px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+    }
+
+    .o_account_period_row {
+        min-height: 31px;
+        display: grid;
+        grid-template-columns: 1fr 27px minmax(96px, 1fr) 27px;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .o_account_period_row.active {
+        color: #5b4bb7;
+        font-weight: 700;
+    }
+
+    .o_account_period_select,
+    .o_account_period_arrow,
+    .o_account_period_value,
+    .o_account_journal_all {
+        min-height: 27px;
+        border: 0;
+        border-radius: 4px;
+        padding: 5px 7px;
+        background: transparent;
+        color: inherit;
+        text-align: left;
+    }
+
+    .o_account_period_select:hover,
+    .o_account_period_arrow:hover,
+    .o_account_period_value:hover,
+    .o_account_journal_all:hover,
+    .o_account_journal_option:hover {
+        background: #f2f4f8;
+    }
+
+    .o_account_period_select {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .o_account_period_check {
+        width: 13px;
+        text-align: center;
+    }
+
+    .o_account_period_value {
+        text-align: center;
+    }
+
+    .o_account_custom_dates {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .o_account_journal_menu {
+        right: 0;
+        left: auto;
+        max-height: 304px;
+        overflow: auto;
+    }
+
+    .o_account_journal_option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        padding: 6px 7px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .o_account_filter_number {
+        min-height: 31px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 8px;
+        border: 1px solid #dbe3ee;
+        border-radius: 4px;
+        background: #eef3f8;
+        font-weight: 700;
+    }
+
+    .o_account_filter_number input {
+        width: 52px;
+        border: 0;
+        border-radius: 4px;
+        padding: 3px 5px;
+        background: #ffffff;
+    }
+
+    .o_account_report_search {
+        width: 253px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 11px;
+        border: 1px solid #d5dbe3;
+        border-radius: 4px;
+        background: #ffffff;
+        color: #111827;
+    }
+
+    .o_account_report_search .fa {
+        color: #111827;
+        font-size: 14px;
+    }
+
+    .o_account_report_search input {
+        min-width: 0;
+        height: 30px;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        color: #111827;
+        background: transparent;
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .o_account_report_search input:focus {
+        box-shadow: none;
+        outline: 0;
+    }
+
+    .o_account_report_body {
+        padding: 24px 16px 42px;
+    }
+
+    .o_account_report_sheet {
+        width: 800px;
+        max-width: calc(100vw - 45px);
+        min-height: 488px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #ffffff;
+        border: 1px solid #d4d8de;
+        border-radius: 4px;
+    }
+
+    .o_account_aged_sheet {
+        width: 1060px;
+        min-height: 168px;
+        padding: 30px;
+    }
+
+    .o_account_trial_balance_sheet {
+        width: 1000px;
+        min-height: 446px;
+        padding: 30px;
+    }
+
+    .o_account_general_ledger_sheet {
+        width: 1000px;
+        max-width: calc(100vw - 96px);
+        min-height: 520px;
+        padding: 30px;
+    }
+
+    .o_account_report_loading,
+    .o_account_report_empty {
+        padding: 27px;
+        color: #667085;
+        text-align: center;
+    }
+
+    .o_account_report_table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .o_account_aged_table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .o_account_trial_balance_table {
+        width: 100%;
+        margin-top: 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .o_account_trial_balance_table th,
+    .o_account_trial_balance_table td {
+        height: 35px;
+        padding: 5px 14px;
+        border-bottom: 1px solid #e1e5eb;
+        color: #111827;
+        font-size: 13px;
+        line-height: 18px;
+        vertical-align: middle;
+    }
+
+    .o_account_trial_balance_table th:first-child,
+    .o_account_trial_balance_table td:first-child {
+        width: 49%;
+    }
+
+    .o_account_trial_balance_table th:not(:first-child),
+    .o_account_trial_balance_table td:not(:first-child) {
+        width: 12.75%;
+    }
+
+    .o_account_trial_group_row th {
+        height: 35px;
+        border-bottom: 0;
+        color: #111827;
+        background: #ffffff;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .o_account_trial_group_row th:not(:first-child) {
+        border: 1px solid #d5dbe3;
+    }
+
+    .o_account_trial_name_header {
+        border: 0 !important;
+    }
+
+    .o_account_trial_measure_row th {
+        height: 33px;
+        border-bottom: 0;
+        color: #111827;
+        background: #ffffff;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .o_account_trial_measure_row th:first-child {
+        text-align: left;
+    }
+
+    .o_account_trial_balance_table .o_account_trial_current_col {
+        background: #f8fafc;
+    }
+
+    .o_account_trial_name_cell {
+        padding-left: 56px !important;
+    }
+
+    .o_account_trial_balance_table .o_account_report_line:hover td {
+        background: #fafbfd;
+    }
+
+    .o_account_trial_balance_table .o_account_report_line:hover td.o_account_trial_current_col {
+        background: #f2f5f9;
+    }
+
+    .o_account_trial_balance_table .o_account_report_line.is_total td {
+        background: #ffffff;
+        color: #111827;
+        font-weight: 750;
+    }
+
+    .o_account_trial_balance_table .o_account_report_line.is_total td.o_account_report_number {
+        color: #cfd6df;
+    }
+
+    .o_account_trial_balance_table .o_account_report_line.line_type_carry_forward td {
+        color: #111827;
+    }
+
+    .o_account_trial_balance_table .o_account_report_line.line_type_carry_forward .o_account_report_number.is_negative {
+        color: #e12d2d;
+    }
+
+    .o_account_aged_table th,
+    .o_account_aged_table td {
+        height: 35px;
+        padding: 5px 10px;
+        border-bottom: 1px solid #e0e5ec;
+        color: #111827;
+        font-size: 13px;
+        line-height: 18px;
+        vertical-align: middle;
+    }
+
+    .o_account_aged_table th:first-child,
+    .o_account_aged_table td:first-child {
+        width: 25%;
+    }
+
+    .o_account_aged_table th:nth-child(2),
+    .o_account_aged_table td:nth-child(2) {
+        width: 14%;
+    }
+
+    .o_account_aged_table th.o_account_report_number,
+    .o_account_aged_table td.o_account_report_number {
+        width: auto;
+        text-align: right;
+    }
+
+    .o_account_aged_asof_row th {
+        height: 34px;
+        border-bottom: 0;
+        background: #ffffff;
+    }
+
+    .o_account_aged_asof_cell {
+        border: 1px solid #d5dbe3 !important;
+        color: #111827;
+        font-weight: 700;
+        text-align: center !important;
+    }
+
+    .o_account_aged_header_row th {
+        background: #f8fafc;
+        color: #111827;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    .o_account_aged_header_row th.o_account_report_number {
+        text-align: center;
+    }
+
+    .o_account_aged_sort {
+        margin-right: 8px;
+        color: #cbd3dd;
+        font-size: 12px;
+    }
+
+    .o_account_aged_name_cell {
+        padding-left: 40px !important;
+        color: #111827;
+        font-weight: 400;
+    }
+
+    .o_account_aged_table .o_account_report_line:hover td {
+        background: #fafbfd;
+    }
+
+    .o_account_aged_table .o_account_report_line.line_type_aged_summary td {
+        font-weight: 400;
+    }
+
+    .o_account_aged_table .o_account_report_number {
+        color: #111827;
+        font-weight: 400;
+    }
+
+    .o_account_aged_table .o_account_report_number.is_zero {
+        color: #cfd6df;
+        font-weight: 400;
+    }
+
+    .o_account_report_table th:first-child,
+    .o_account_report_table td:first-child {
+        width: auto;
+    }
+
+    .o_account_report_table th.o_account_report_number,
+    .o_account_report_table td.o_account_report_number {
+        width: 128px;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table {
+        table-layout: fixed;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table th,
+    .o_account_general_ledger_sheet .o_account_report_table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(1),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(1) {
+        width: 31%;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(1) {
+        overflow: visible;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(2),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(2) {
+        width: 12%;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(3),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(3) {
+        width: 15%;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(4),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(4) {
+        width: 10%;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(5),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(5),
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(6),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(6),
+    .o_account_general_ledger_sheet .o_account_report_table th:nth-child(7),
+    .o_account_general_ledger_sheet .o_account_report_table td:nth-child(7) {
+        width: 10.67%;
+    }
+
+    .o_account_general_ledger_sheet .o_account_line_action_wrap,
+    .o_account_general_ledger_sheet .o_account_report_line_text {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .o_account_general_ledger_sheet .o_account_report_line_text {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    .o_account_statement_header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 128px;
+        align-items: center;
+        margin: 0 0 2px;
+    }
+
+    .o_account_statement_period {
+        grid-column: 2;
+        min-height: 29px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d4d8de;
+        background: #ffffff;
+        color: #111827;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .o_account_statement_measure {
+        grid-column: 2;
+        padding: 7px 0 0;
+        color: #111827;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .o_account_report_table th {
+        height: 29px;
+        padding: 5px 8px;
+        border-bottom: 1px solid #d7dee8;
+        color: #111827;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    .o_account_report_table td {
+        height: 29px;
+        padding: 4px 8px;
+        border-bottom: 1px solid #e1e5eb;
+        color: #17243b;
+        font-size: 13px;
+        line-height: 18px;
+        vertical-align: middle;
+    }
+
+    .o_account_report_line:hover td {
+        background: #fafbfd;
+    }
+
+    .o_account_report_line.is_total td,
+    .o_account_report_line.is_grand_total td {
+        background: #d7dadd;
+        color: #1f304a;
+        font-weight: 750;
+    }
+
+    .o_account_report_line.is_total + .o_account_report_line td,
+    .o_account_report_line.is_grand_total + .o_account_report_line td {
+        border-top: 8px solid #ffffff;
+    }
+
+    .o_account_report_line.line_type_section td {
+        color: #111827;
+        font-weight: 400;
+    }
+
+    .o_account_report_line.line_type_section.is_foldable td {
+        font-weight: 700;
+    }
+
+    .o_account_report_line.level_2 td {
+        color: #1f304a;
+        font-weight: 400;
+    }
+
+    .o_account_report_line.is_clickable {
+        cursor: pointer;
+    }
+
+    .o_account_report_line_button {
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        overflow: hidden;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .o_account_report_caret_button {
+        width: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 3px;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: #737c8a;
+    }
+
+    .o_account_report_line_button:hover span:first-child {
+        color: #111827;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .o_account_report_reviewed {
+        min-height: 21px;
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 8px;
+        border: 1px solid #10b957;
+        border-radius: 14px;
+        color: #00a642;
+        background: #f7fffa;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 17px;
+    }
+
+    .o_account_line_action_wrap {
+        position: relative;
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .o_account_line_menu_btn {
+        width: 18px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 4px;
+        padding: 0;
+        background: transparent;
+        color: #c4cbd3;
+    }
+
+    .o_account_line_menu_btn:hover,
+    .o_account_line_menu_btn:focus {
+        background: #eef2f7;
+        color: #64748b;
+        outline: 0;
+    }
+
+    .o_account_line_action_menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 100%;
+        z-index: 55;
+        min-width: 200px;
+        padding: 8px 0;
+        border: 1px solid #d5dbe3;
+        border-radius: 4px;
+        background: #ffffff;
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+    }
+
+    .o_account_line_action_menu button {
+        width: 100%;
+        min-height: 38px;
+        border: 0;
+        padding: 8px 24px;
+        background: transparent;
+        color: #1f2937;
+        font-size: 14px;
+        font-weight: 400;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .o_account_line_action_menu button:hover,
+    .o_account_line_action_menu button:focus {
+        background: #f3f4f6;
+        outline: 0;
+    }
+
+    .o_account_report_drill_icon {
+        color: #c4cbd3;
+        font-size: 11px;
+    }
+
+    .o_account_report_number {
+        color: #17243b;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .o_account_report_number.is_negative {
+        color: #e12d2d;
+        font-weight: 750;
+    }
+
+    .o_account_report_number.is_zero {
+        color: #ccd2dc;
+    }
+}
+
+@media (max-width: 1100px) {
+    .o_account_interactive_report {
+        .o_account_report_toolbar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .o_account_report_filters {
+            margin-left: 0;
+        }
+
+        .o_account_period_menu,
+        .o_account_journal_menu {
+            left: 0;
+            right: auto;
+            min-width: 0;
+            width: calc(100vw - 40px);
+            max-width: 288px;
+        }
+
+        .o_account_report_sheet {
+            overflow-x: auto;
+            padding: 20px;
+        }
+    }
+}

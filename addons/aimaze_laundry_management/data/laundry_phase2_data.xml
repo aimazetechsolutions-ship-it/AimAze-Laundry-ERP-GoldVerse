@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_laundry_garment" model="ir.sequence">
+        <field name="name">Laundry Garment</field>
+        <field name="code">aimaze.laundry.garment</field>
+        <field name="prefix">GARM/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <record id="seq_wallet_transaction" model="ir.sequence">
+        <field name="name">Laundry Wallet Transaction</field>
+        <field name="code">aimaze.customer.wallet.transaction</field>
+        <field name="prefix">LWT/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    <record id="seq_laundry_subscription" model="ir.sequence">
+        <field name="name">Laundry Subscription</field>
+        <field name="code">aimaze.laundry.subscription</field>
+        <field name="prefix">SUB/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="notification_template_order_confirmed" model="aimaze.notification.template">
+        <field name="name">Order Confirmed</field>
+        <field name="event_type">order_confirmed</field>
+        <field name="message_body">Dear {{customer}}, your laundry order {{order}} is confirmed. Total {{amount}} {{currency}}.</field>
+    </record>
+    <record id="notification_template_order_received" model="aimaze.notification.template">
+        <field name="name">Order Received</field>
+        <field name="event_type">order_received</field>
+        <field name="message_body">Dear {{customer}}, your laundry order {{order}} has been received for processing.</field>
+    </record>
+    <record id="notification_template_order_ready" model="aimaze.notification.template">
+        <field name="name">Order Ready</field>
+        <field name="event_type">order_ready</field>
+        <field name="message_body">Dear {{customer}}, your laundry order {{order}} is ready. Balance {{balance}} {{currency}}.</field>
+    </record>
+    <record id="notification_template_out_for_delivery" model="aimaze.notification.template">
+        <field name="name">Out for Delivery</field>
+        <field name="event_type">out_for_delivery</field>
+        <field name="message_body">Dear {{customer}}, your laundry order {{order}} is out for delivery.</field>
+    </record>
+    <record id="notification_template_delivered" model="aimaze.notification.template">
+        <field name="name">Delivered</field>
+        <field name="event_type">delivered</field>
+        <field name="message_body">Dear {{customer}}, your laundry order {{order}} has been delivered. Thank you.</field>
+    </record>
+    <record id="notification_template_wallet_topup" model="aimaze.notification.template">
+        <field name="name">Wallet Top-up</field>
+        <field name="event_type">wallet_topup</field>
+        <field name="message_body">Dear {{customer}}, your wallet has been topped up by {{amount}} {{currency}}.</field>
+    </record>
+</odoo>

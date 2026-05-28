@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="aimaze_laundry_management.AimazeKpiCard" owl="1">
+        <div t-attf-class="aimaze-kpi-card aimaze-card-{{ props.tone || 'primary' }}">
+            <span class="aimaze-kpi-label">
+                <t t-if="props.icon"><i t-attf-class="fa {{ props.icon }} me-1"/></t>
+                <t t-out="props.label || ''"/>
+            </span>
+            <strong class="aimaze-kpi-value"><t t-out="props.value || 0"/></strong>
+        </div>
+    </t>
+</templates>

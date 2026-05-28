@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="base_accounting_kit.InteractiveAccountReport">
+        <Layout display="display">
+            <div class="o_account_interactive_report">
+                <header class="o_account_report_toolbar">
+                    <div class="o_account_report_titlebar">
+                        <button type="button" class="btn btn-primary o_account_export_btn" t-on-click="() => this.printPdf()">PDF</button>
+                        <button type="button" class="btn btn-light o_account_export_btn" t-on-click="() => this.exportXlsx()">XLSX</button>
+                        <h1>
+                            <t t-esc="report.title"/>
+                            <i class="fa fa-cog"/>
+                        </h1>
+                    </div>
+                    <div class="o_account_report_filters">
+                        <div t-if="showReportSearch" class="o_account_report_search">
+                            <i class="fa fa-search"/>
+                            <input
+                                type="search"
+                                class="form-control"
+                                placeholder="Search..."
+                                t-att-value="reportSearchTerm"
+                                t-on-input="(ev) => this.setReportSearchTerm(ev.target.value)"
+                                t-on-change="(ev) => this.applyReportSearch(ev.target.value)"
+                                t-on-keydown="(ev) => ev.key === 'Enter' ? this.applyReportSearch(ev.target.value) : null"
+                            />
+                        </div>
+
+                        <div class="o_account_quick_periods">
+                            <button
+                                t-foreach="quickPeriodOptions"
+                                t-as="quickPeriod"
+                                t-key="quickPeriod.key"
+                                type="button"
+                                t-att-class="quickPeriodClass(quickPeriod.key)"
+                                t-on-click="() => this.selectQuickPeriod(quickPeriod.key)"
+                            >
+                                <t t-esc="quickPeriod.label"/>
+                            </button>
+                        </div>
+
+                        <div class="o_account_filter_dropdown o_account_date_range_dropdown">
+                            <button type="button" class="btn btn-light o_account_filter_btn" t-on-click="() => this.toggleDateMenu()">
+                                <i class="fa fa-calendar"/>
+                                <span><t t-esc="dateRangeButtonLabel"/></span>
+                                <i class="fa fa-caret-down"/>
+                            </button>
+                            <div t-if="state.dateMenuOpen" class="o_account_custom_date_popover">
+                                <label>From</label>
+                                <input type="date" class="form-control" t-att-value="state.pendingDateFrom" t-on-change="(ev) => this.setPendingCustomStart(ev.target.value)"/>
+                                <label>To</label>
+                                <input type="date" class="form-control" t-att-value="state.pendingDateTo" t-on-change="(ev) => this.setPendingCustomEnd(ev.target.value)"/>
+                                <div class="o_account_custom_date_actions">
+                                    <button type="button" class="o_account_custom_date_cancel" t-on-click="() => this.cancelCustomRange()">Cancel</button>
+                                    <button type="button" class="o_account_custom_date_apply" t-on-click="() => this.applyCustomRange()">Apply Range</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
+                            <i class="fa fa-user"/>
+                            <span><t t-esc="agedAccountLabel"/></span>
+                        </button>
+                        <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
+                            <i class="fa fa-folder-open"/>
+                            <span>Partners</span>
+                        </button>
+                        <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
+                            <i class="fa fa-file"/>
+                            <span>Based on Due Date</span>
+                        </button>
+                        <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
+                            <i class="fa fa-calendar-o"/>
+                            <span><t t-esc="agedPeriodLengthLabel"/></span>
+                        </button>
+
+                        <button t-if="showComparisonFilter" type="button" t-attf-class="btn btn-light o_account_filter_btn {{ options.enable_filter ? 'active' : '' }}" t-on-click="() => this.toggleComparison()">
+                            <i class="fa fa-percent"/>
+                            <span>Comparison</span>
+                        </button>
+
+                        <div t-if="!isAgedPartnerReport" class="o_account_filter_dropdown">
+                            <button type="button" class="btn btn-light o_account_filter_btn" t-on-click="() => this.toggleJournalMenu()">
+                                <i class="fa fa-book"/>
+                                <span><t t-esc="report.journal_label"/></span>
+                            </button>
+                            <div t-if="state.journalMenuOpen" class="o_account_journal_menu">
+                                <button type="button" class="o_account_journal_all" t-on-click="() => this.clearJournals()">All Journals</button>
+                                <label t-foreach="report.journals" t-as="journal" t-key="journal.id" class="o_account_journal_option">
+                                    <input type="checkbox" t-att-checked="(options.journal_ids || []).includes(journal.id)" t-on-change="() => this.toggleJournal(journal.id)"/>
+                                    <span><t t-esc="journal.name"/></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="button" t-attf-class="btn btn-light o_account_filter_btn {{ options.target_move === 'posted' ? 'active' : '' }}" t-on-click="() => this.setTargetMove(options.target_move === 'posted' ? 'all' : 'posted')">
+                            <i class="fa fa-sliders"/>
+                            <span><t t-esc="report.target_label"/></span>
+                        </button>
+                        <button t-if="showDebitCredit" type="button" class="btn btn-light o_account_filter_btn">
+                            <i class="fa fa-bar-chart"/>
+                            <span>Budget</span>
+                        </button>
+
+                        <select t-if="showDisplayAccount" class="form-select o_account_filter_select" t-att-value="options.display_account" t-on-change="(ev) => this.setDisplayAccount(ev.target.value)">
+                            <option value="movement">With movements</option>
+                            <option value="not_zero">Non-zero balance</option>
+                            <option value="all">All accounts</option>
+                        </select>
+
+                        <select t-if="showPartnerType" class="form-select o_account_filter_select" t-att-value="options.result_selection" t-on-change="(ev) => this.setPartnerType(ev.target.value)">
+                            <option value="customer_supplier">Receivable and payable</option>
+                            <option value="customer">Receivable</option>
+                            <option value="supplier">Payable</option>
+                        </select>
+
+                        <select t-if="showSortBy" class="form-select o_account_filter_select" t-on-change="(ev) => this.setSortBy(ev.target.value)">
+                            <option t-if="['general_ledger', 'bank_book', 'cash_book'].includes(reportKey)" value="sort_date" t-att-selected="options.sortby === 'sort_date'">Date</option>
+                            <option t-if="['general_ledger', 'bank_book', 'cash_book'].includes(reportKey)" value="sort_journal_partner" t-att-selected="options.sortby === 'sort_journal_partner'">Journal and partner</option>
+                            <option t-if="reportKey === 'journal_audit'" value="move_name" t-att-selected="options.sort_selection === 'move_name'">Journal entry number</option>
+                            <option t-if="reportKey === 'journal_audit'" value="date" t-att-selected="options.sort_selection === 'date'">Date</option>
+                        </select>
+
+                        <label t-if="showPeriodLength" class="o_account_filter_number">
+                            <span>Days</span>
+                            <input type="number" min="1" t-att-value="options.period_length" t-on-change="(ev) => this.setPeriodLength(ev.target.value)"/>
+                        </label>
+
+                        <button t-if="showInitialBalance" type="button" t-attf-class="btn btn-light o_account_filter_btn {{ options.initial_balance ? 'active' : '' }}" t-on-click="() => this.toggleInitialBalance()">
+                            <i class="fa fa-align-left"/>
+                            <span>Initial Balance</span>
+                        </button>
+                        <button t-if="showReconciled" type="button" t-attf-class="btn btn-light o_account_filter_btn {{ options.reconciled ? 'active' : '' }}" t-on-click="() => this.toggleReconciled()">
+                            <i class="fa fa-check-circle"/>
+                            <span>Reconciled</span>
+                        </button>
+                        <button t-if="showAmountCurrency" type="button" t-attf-class="btn btn-light o_account_filter_btn {{ options.amount_currency ? 'active' : '' }}" t-on-click="() => this.toggleAmountCurrency()">
+                            <i class="fa fa-money"/>
+                            <span>Currency</span>
+                        </button>
+                        <button type="button" class="btn btn-light o_account_filter_btn">
+                            <span>In <t t-esc="report.currency_label"/></span>
+                        </button>
+                    </div>
+                </header>
+
+                <main class="o_account_report_body">
+                    <section t-if="isAgedPartnerReport" class="o_account_report_sheet o_account_aged_sheet">
+                        <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
+                        <t t-else="">
+                            <table class="o_account_aged_table">
+                                <thead>
+                                    <tr class="o_account_aged_asof_row">
+                                        <th colspan="2"></th>
+                                        <th t-att-colspan="agedHeaderColspan" class="o_account_aged_asof_cell">
+                                            As of <t t-esc="formatDateLabel(options.date_to || options.anchor_date)"/>
+                                        </th>
+                                    </tr>
+                                    <tr class="o_account_aged_header_row">
+                                        <th></th>
+                                        <th t-foreach="report.columns.slice(1)" t-as="column" t-key="column.key" t-att-class="column.type === 'number' ? 'o_account_report_number' : ''">
+                                            <i class="fa fa-sort o_account_aged_sort"/>
+                                            <t t-esc="column.label"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="visibleLines" t-as="line" t-key="line.id" t-att-class="lineClass(line)">
+                                        <td class="o_account_aged_name_cell">
+                                            <button
+                                                t-if="line.action"
+                                                type="button"
+                                                class="o_account_report_line_button"
+                                                t-on-click="() => this.activateLine(line)"
+                                            >
+                                                <span><t t-esc="formatCell(line, report.columns[0])"/></span>
+                                            </button>
+                                            <span t-else=""><t t-esc="formatCell(line, report.columns[0])"/></span>
+                                        </td>
+                                        <td
+                                            t-foreach="report.columns.slice(1)"
+                                            t-as="column"
+                                            t-key="column.key"
+                                            t-att-class="cellClass(column, line)"
+                                        >
+                                            <t t-esc="formatCell(line, column)"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </section>
+                    <section t-elif="isTrialBalanceReport" class="o_account_report_sheet o_account_trial_balance_sheet">
+                        <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
+                        <t t-else="">
+                            <table class="o_account_trial_balance_table">
+                                <thead>
+                                    <tr class="o_account_trial_group_row">
+                                        <th class="o_account_trial_name_header"></th>
+                                        <th>Initial Balance</th>
+                                        <th colspan="2"><t t-esc="periodMenuLabel"/></th>
+                                        <th>End Balance</th>
+                                    </tr>
+                                    <tr class="o_account_trial_measure_row">
+                                        <th></th>
+                                        <th class="o_account_report_number">Balance</th>
+                                        <th class="o_account_report_number o_account_trial_current_col">Debit</th>
+                                        <th class="o_account_report_number o_account_trial_current_col">Credit</th>
+                                        <th class="o_account_report_number">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-if="!hasLines">
+                                        <td colspan="5" class="o_account_report_empty">No records for the selected filters.</td>
+                                    </tr>
+                                    <tr t-foreach="visibleLines" t-as="line" t-key="line.id" t-att-class="lineClass(line)">
+                                        <td class="o_account_trial_name_cell">
+                                            <span t-if="hasLineActions(line)" class="o_account_line_action_wrap">
+                                                <span><t t-esc="line.values.name"/></span>
+                                                <button
+                                                    type="button"
+                                                    class="o_account_line_menu_btn"
+                                                    title="More actions"
+                                                    t-on-click="(ev) => this.toggleLineMenu(line, ev)"
+                                                >
+                                                    <i class="fa fa-ellipsis-v"/>
+                                                </button>
+                                                <div t-if="state.openLineMenuId === line.id" class="o_account_line_action_menu">
+                                                    <button
+                                                        t-foreach="lineActions(line)"
+                                                        t-as="lineAction"
+                                                        t-key="lineAction.key"
+                                                        type="button"
+                                                        t-on-click="(ev) => this.runLineAction(line, lineAction.key, ev)"
+                                                    >
+                                                        <t t-esc="lineAction.label"/>
+                                                    </button>
+                                                </div>
+                                            </span>
+                                            <span t-else=""><t t-esc="line.values.name"/></span>
+                                        </td>
+                                        <td
+                                            t-foreach="report.columns.slice(1)"
+                                            t-as="column"
+                                            t-key="column.key"
+                                            t-att-class="cellClass(column, line) + (['debit', 'credit'].includes(column.key) ? ' o_account_trial_current_col' : '')"
+                                        >
+                                            <t t-esc="formatCell(line, column)"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </section>
+                    <section t-else="" t-attf-class="o_account_report_sheet {{ isStatementReport ? 'o_account_statement_sheet' : '' }} {{ isGeneralLedgerReport ? 'o_account_general_ledger_sheet' : '' }}">
+                        <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
+                        <t t-else="">
+                            <div t-if="showStatementHeader" class="o_account_statement_header">
+                                <div class="o_account_statement_period">
+                                    <t t-esc="periodMenuLabel"/>
+                                </div>
+                                <div class="o_account_statement_measure">Balance</div>
+                            </div>
+                            <table t-attf-class="o_account_report_table {{ showStatementHeader ? 'has_statement_header' : '' }}">
+                                <thead t-if="!showStatementHeader">
+                                    <tr>
+                                        <th t-foreach="report.columns" t-as="column" t-key="column.key" t-att-class="column.type === 'number' ? 'o_account_report_number' : ''">
+                                            <t t-esc="column.label"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-if="!hasLines">
+                                        <td t-att-colspan="report.columns.length" class="o_account_report_empty">No records for the selected filters.</td>
+                                    </tr>
+                                    <tr t-foreach="visibleLines" t-as="line" t-key="line.id" t-att-class="lineClass(line)">
+                                        <td
+                                            t-foreach="report.columns"
+                                            t-as="column"
+                                            t-key="column.key"
+                                            t-att-class="cellClass(column, line)"
+                                            t-att-style="column.key === 'name' || column.key === 'move' ? nameCellStyle(line) : ''"
+                                        >
+                                            <t t-if="column.key === 'name' || column.key === 'move'">
+                                                <t t-if="line.unfoldable">
+                                                    <button
+                                                        type="button"
+                                                        class="o_account_report_caret_button"
+                                                        t-on-click="() => this.toggleLine(line)"
+                                                        title="Expand or collapse"
+                                                    >
+                                                        <i t-att-class="isUnfolded(line) ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+                                                    </button>
+                                                    <span class="o_account_report_line_text">
+                                                        <t t-esc="formatCell(line, column)"/>
+                                                    </span>
+                                                </t>
+                                                <span t-elif="hasLineActions(line)" class="o_account_line_action_wrap">
+                                                    <span class="o_account_report_line_text">
+                                                        <t t-esc="formatCell(line, column)"/>
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        class="o_account_line_menu_btn"
+                                                        title="More actions"
+                                                        t-on-click="(ev) => this.toggleLineMenu(line, ev)"
+                                                    >
+                                                        <i class="fa fa-ellipsis-v"/>
+                                                    </button>
+                                                    <div t-if="state.openLineMenuId === line.id" class="o_account_line_action_menu">
+                                                        <button
+                                                            t-foreach="lineActions(line)"
+                                                            t-as="lineAction"
+                                                            t-key="lineAction.key"
+                                                            type="button"
+                                                            t-on-click="(ev) => this.runLineAction(line, lineAction.key, ev)"
+                                                        >
+                                                            <t t-esc="lineAction.label"/>
+                                                        </button>
+                                                    </div>
+                                                </span>
+                                                <span t-else="" class="o_account_report_line_text">
+                                                    <t t-esc="formatCell(line, column)"/>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="formatCell(line, column)"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </section>
+                </main>
+            </div>
+        </Layout>
+    </t>
+</templates>

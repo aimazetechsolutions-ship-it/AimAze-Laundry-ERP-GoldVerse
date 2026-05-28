@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_order_form_phase2" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form.phase2</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="view_laundry_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_start_washing']" position="before">
+                <button name="action_mark_sorting" type="object" string="Start Sorting" class="alm-btn-stage"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_start_ironing']" position="before">
+                <button name="action_start_drying" type="object" string="Start Drying" class="alm-btn-stage"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_mark_ready']" position="before">
+                <button name="action_mark_packing" type="object" string="Start Packing" class="alm-btn-stage"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_register_final_payment']" position="after">
+                <button name="action_use_wallet" type="object" string="Use Wallet" class="alm-btn-payment"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_open_garments" class="oe_stat_button" icon="fa-tags">
+                    <field name="garment_count" widget="statinfo" string="Garments"/>
+                </button>
+                <button type="object" name="action_open_notification_queue" class="oe_stat_button" icon="fa-envelope">
+                    <field name="notification_queue_count" widget="statinfo" string="Messages"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/ancestor::page[1]//group[hasclass('alm-total-box')]/group[2]" position="inside">
+                <field name="wallet_used_amount" readonly="1"/>
+                <field name="net_balance_amount" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='delivery_ids']/ancestor::page[1]" position="before">
+                <page string="Garment Lifecycle">
+                    <field name="garment_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="barcode"/>
+                            <field name="garment_type"/>
+                            <field name="color"/>
+                            <field name="brand"/>
+                            <field name="current_stage" widget="badge"/>
+                            <field name="qc_result" widget="badge"/>
+                            <field name="lost_item"/>
+                            <field name="rewash_count"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='payment_ids']" position="after">
+                <field name="wallet_transaction_ids" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.list</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="arch" type="xml">
+            <list string="Garment Tracking" multi_edit="1">
+                <field name="name" optional="show"/>
+                <field name="barcode" optional="show"/>
+                <field name="order_id" optional="show"/>
+                <field name="customer_id" optional="show"/>
+                <field name="branch_id" optional="show"/>
+                <field name="garment_type" optional="show"/>
+                <field name="color" optional="show"/>
+                <field name="brand" optional="show"/>
+                <field name="current_stage" widget="badge" optional="show" decoration-info="current_stage in ('received','sorted','washing','drying','ironing')" decoration-warning="current_stage in ('qc','rewash')" decoration-success="current_stage in ('packing','ready','delivered')" decoration-danger="lost_item"/>
+                <field name="current_staff_id" optional="show"/>
+                <field name="qc_result" widget="badge" optional="show"/>
+                <field name="rewash_count" optional="show"/>
+                <field name="delivered" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.form</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="arch" type="xml">
+            <form string="Garment">
+                <header>
+                    <button name="action_mark_sorted" type="object" string="Sorted" class="alm-btn-stage"/>
+                    <button name="action_mark_washing" type="object" string="Washing" class="alm-btn-stage"/>
+                    <button name="action_mark_drying" type="object" string="Drying" class="alm-btn-stage"/>
+                    <button name="action_mark_ironing" type="object" string="Ironing" class="alm-btn-stage"/>
+                    <button name="action_send_qc" type="object" string="QC" class="alm-btn-warning"/>
+                    <button name="action_mark_rewash" type="object" string="Rewash" class="alm-btn-danger"/>
+                    <button name="action_mark_packed" type="object" string="Packed" class="alm-btn-stage"/>
+                    <button name="action_mark_ready" type="object" string="Ready" class="alm-btn-success"/>
+                    <button name="action_mark_delivered" type="object" string="Delivered" class="alm-btn-success"/>
+                    <field name="current_stage" widget="statusbar" statusbar_visible="received,sorted,washing,drying,ironing,qc,rewash,packing,ready,delivered"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="barcode" readonly="1"/>
+                            <field name="order_id"/>
+                            <field name="order_line_id"/>
+                            <field name="customer_id"/>
+                            <field name="branch_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="garment_type"/>
+                            <field name="color"/>
+                            <field name="brand"/>
+                            <field name="fabric_type"/>
+                            <field name="current_staff_id"/>
+                            <field name="current_location"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Condition">
+                            <group>
+                                <field name="condition_received"/>
+                                <field name="stain_details"/>
+                                <field name="damage_details"/>
+                                <field name="special_instructions"/>
+                            </group>
+                        </page>
+                        <page string="Photos">
+                            <group>
+                                <field name="photo_before" widget="image"/>
+                                <field name="photo_after" widget="image"/>
+                            </group>
+                        </page>
+                        <page string="QC &amp; Delivery">
+                            <group>
+                                <field name="qc_result"/>
+                                <field name="lost_item"/>
+                                <field name="rewash_count" readonly="1"/>
+                                <field name="delivered" readonly="1"/>
+                                <field name="delivery_datetime" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="History">
+                            <field name="history_ids" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_search" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.search</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="arch" type="xml">
+            <search string="Garments">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="order_id"/>
+                <field name="customer_id"/>
+                <field name="garment_type"/>
+                <filter string="Lost" name="lost" domain="[('lost_item','=',True)]"/>
+                <filter string="Rewash" name="rewash" domain="[('current_stage','=','rewash')]"/>
+                <filter string="Ready" name="ready" domain="[('current_stage','=','ready')]"/>
+                <group>
+                    <filter string="Stage" name="group_stage" context="{'group_by':'current_stage'}"/>
+                    <filter string="Branch" name="group_branch" context="{'group_by':'branch_id'}"/>
+                    <filter string="Customer" name="group_customer" context="{'group_by':'customer_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_kanban" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.kanban</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="current_stage">
+                <field name="name"/>
+                <field name="garment_type"/>
+                <field name="customer_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record">
+                            <strong><field name="name"/></strong>
+                            <div><field name="garment_type"/></div>
+                            <div><field name="customer_id"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_history_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.history.list</field>
+        <field name="model">aimaze.laundry.garment.history</field>
+        <field name="arch" type="xml">
+            <list string="Garment History">
+                <field name="date"/>
+                <field name="garment_id"/>
+                <field name="order_id"/>
+                <field name="previous_stage"/>
+                <field name="new_stage" widget="badge"/>
+                <field name="staff_id"/>
+                <field name="user_id"/>
+                <field name="remarks"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_laundry_garment" model="ir.actions.act_window">
+        <field name="name">Garment Tracking</field>
+        <field name="res_model">aimaze.laundry.garment</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="search_view_id" ref="view_laundry_garment_search"/>
+    </record>
+    <record id="action_laundry_garment_history" model="ir.actions.act_window">
+        <field name="name">Garment History</field>
+        <field name="res_model">aimaze.laundry.garment.history</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+    <record id="action_laundry_washing_screen" model="ir.actions.act_window">
+        <field name="name">Washing Screen</field>
+        <field name="res_model">aimaze.laundry.garment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('current_stage','=','washing')]</field>
+    </record>
+    <record id="action_laundry_drying_screen" model="ir.actions.act_window">
+        <field name="name">Drying Screen</field>
+        <field name="res_model">aimaze.laundry.garment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('current_stage','=','drying')]</field>
+    </record>
+    <record id="action_laundry_ironing_screen" model="ir.actions.act_window">
+        <field name="name">Ironing Screen</field>
+        <field name="res_model">aimaze.laundry.garment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('current_stage','=','ironing')]</field>
+    </record>
+    <record id="action_laundry_qc_screen" model="ir.actions.act_window">
+        <field name="name">QC Screen</field>
+        <field name="res_model">aimaze.laundry.garment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('current_stage','=','qc')]</field>
+    </record>
+    <record id="action_laundry_packing_screen" model="ir.actions.act_window">
+        <field name="name">Packing Screen</field>
+        <field name="res_model">aimaze.laundry.garment</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('current_stage','=','packing')]</field>
+    </record>
+
+    <record id="view_notification_provider_list" model="ir.ui.view">
+        <field name="name">aimaze.notification.provider.list</field>
+        <field name="model">aimaze.notification.provider</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="provider_type" widget="badge"/>
+                <field name="sender_id"/>
+                <field name="company_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_notification_provider_form" model="ir.ui.view">
+        <field name="name">aimaze.notification.provider.form</field>
+        <field name="model">aimaze.notification.provider</field>
+        <field name="arch" type="xml">
+            <form string="Notification Provider">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="provider_type"/>
+                        <field name="api_url"/>
+                        <field name="api_token_placeholder" password="True"/>
+                        <field name="sender_id"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_notification_provider" model="ir.actions.act_window">
+        <field name="name">Notification Providers</field>
+        <field name="res_model">aimaze.notification.provider</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_notification_template_list" model="ir.ui.view">
+        <field name="name">aimaze.notification.template.list</field>
+        <field name="model">aimaze.notification.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="event_type" widget="badge"/>
+                <field name="language"/>
+                <field name="company_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_notification_template_form" model="ir.ui.view">
+        <field name="name">aimaze.notification.template.form</field>
+        <field name="model">aimaze.notification.template</field>
+        <field name="arch" type="xml">
+            <form string="Notification Template">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="event_type"/>
+                        <field name="language"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="message_body" placeholder="Use placeholders such as {{customer}}, {{order}}, {{amount}}, {{balance}}, {{currency}}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_notification_template" model="ir.actions.act_window">
+        <field name="name">Notification Templates</field>
+        <field name="res_model">aimaze.notification.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_notification_queue_list" model="ir.ui.view">
+        <field name="name">aimaze.notification.queue.list</field>
+        <field name="model">aimaze.notification.queue</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date"/>
+                <field name="partner_id"/>
+                <field name="mobile"/>
+                <field name="email"/>
+                <field name="order_id"/>
+                <field name="template_id"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-warning="state == 'queued'" decoration-success="state == 'sent'" decoration-danger="state == 'failed'"/>
+                <field name="sent_date"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_notification_queue_form" model="ir.ui.view">
+        <field name="name">aimaze.notification.queue.form</field>
+        <field name="model">aimaze.notification.queue</field>
+        <field name="arch" type="xml">
+            <form string="Notification Queue">
+                <header>
+                    <button name="action_queue" type="object" string="Queue" class="btn-primary"/>
+                    <button name="action_mark_sent" type="object" string="Mark Sent" class="alm-btn-success"/>
+                    <button name="action_mark_failed" type="object" string="Mark Failed" class="alm-btn-danger"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="mobile"/>
+                            <field name="email"/>
+                            <field name="order_id"/>
+                        </group>
+                        <group>
+                            <field name="template_id"/>
+                            <field name="provider_id"/>
+                            <field name="sent_date" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="message"/>
+                    <field name="error_message"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_notification_queue" model="ir.actions.act_window">
+        <field name="name">Notification Queue</field>
+        <field name="res_model">aimaze.notification.queue</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+
+    <record id="view_customer_wallet_list" model="ir.ui.view">
+        <field name="name">aimaze.customer.wallet.list</field>
+        <field name="model">aimaze.customer.wallet</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="partner_id"/>
+                <field name="company_id"/>
+                <field name="branch_id"/>
+                <field name="balance"/>
+                <field name="currency_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_customer_wallet_form" model="ir.ui.view">
+        <field name="name">aimaze.customer.wallet.form</field>
+        <field name="model">aimaze.customer.wallet</field>
+        <field name="arch" type="xml">
+            <form string="Customer Wallet">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id"/>
+                            <field name="branch_id"/>
+                        </group>
+                        <group>
+                            <field name="balance" readonly="1"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="transaction_ids"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_customer_wallet" model="ir.actions.act_window">
+        <field name="name">Customer Wallets</field>
+        <field name="res_model">aimaze.customer.wallet</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_wallet_transaction_list" model="ir.ui.view">
+        <field name="name">aimaze.customer.wallet.transaction.list</field>
+        <field name="model">aimaze.customer.wallet.transaction</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="transaction_type" widget="badge"/>
+                <field name="amount"/>
+                <field name="currency_id"/>
+                <field name="order_id"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_wallet_transaction_form" model="ir.ui.view">
+        <field name="name">aimaze.customer.wallet.transaction.form</field>
+        <field name="model">aimaze.customer.wallet.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Wallet Transaction">
+                <header>
+                    <button name="action_post" type="object" string="Post" class="btn-primary"/>
+                    <button name="action_cancel" type="object" string="Cancel" class="alm-btn-danger"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="wallet_id"/>
+                            <field name="partner_id"/>
+                            <field name="order_id"/>
+                            <field name="transaction_type"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                            <field name="currency_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="branch_id"/>
+                            <field name="journal_id"/>
+                            <field name="account_move_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="description"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_wallet_transaction" model="ir.actions.act_window">
+        <field name="name">Wallet Transactions</field>
+        <field name="res_model">aimaze.customer.wallet.transaction</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+
+    <record id="view_subscription_package_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.subscription.package.list</field>
+        <field name="model">aimaze.laundry.subscription.package</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="package_type" widget="badge"/>
+                <field name="company_id"/>
+                <field name="branch_id"/>
+                <field name="price"/>
+                <field name="included_value"/>
+                <field name="included_quantity"/>
+                <field name="validity_days"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_subscription_package_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.subscription.package.form</field>
+        <field name="model">aimaze.laundry.subscription.package</field>
+        <field name="arch" type="xml">
+            <form string="Subscription Package">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="package_type"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="branch_id"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" readonly="1"/>
+                            <field name="price"/>
+                            <field name="included_value"/>
+                            <field name="included_quantity"/>
+                            <field name="validity_days"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_subscription_package" model="ir.actions.act_window">
+        <field name="name">Subscription Packages</field>
+        <field name="res_model">aimaze.laundry.subscription.package</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_laundry_subscription_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.subscription.list</field>
+        <field name="model">aimaze.laundry.subscription</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="package_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="remaining_value"/>
+                <field name="remaining_quantity"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_subscription_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.subscription.form</field>
+        <field name="model">aimaze.laundry.subscription</field>
+        <field name="arch" type="xml">
+            <form string="Customer Subscription">
+                <header>
+                    <button name="action_activate" type="object" string="Activate" class="btn-primary"/>
+                    <button name="action_cancel" type="object" string="Cancel" class="alm-btn-danger"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="package_id"/>
+                            <field name="date_start"/>
+                            <field name="date_end" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="branch_id"/>
+                            <field name="currency_id"/>
+                            <field name="remaining_value"/>
+                            <field name="remaining_quantity"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_subscription" model="ir.actions.act_window">
+        <field name="name">Customer Subscriptions</field>
+        <field name="res_model">aimaze.laundry.subscription</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_laundry_account_config_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.account.config.form</field>
+        <field name="model">aimaze.laundry.account.config</field>
+        <field name="arch" type="xml">
+            <form string="Laundry Accounting Configuration">
+                <sheet>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                    <group string="Accounts">
+                        <field name="advance_liability_account_id"/>
+                        <field name="wallet_liability_account_id"/>
+                        <field name="laundry_income_account_id"/>
+                        <field name="delivery_income_account_id"/>
+                        <field name="discount_account_id"/>
+                        <field name="compensation_expense_account_id"/>
+                    </group>
+                    <group string="Journals">
+                        <field name="cash_journal_id"/>
+                        <field name="bank_journal_id"/>
+                        <field name="card_journal_id"/>
+                    </group>
+                    <group string="Taxes">
+                        <field name="default_tax_id"/>
+                        <field name="uae_vat_tax_id"/>
+                        <field name="pakistan_tax_id"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_laundry_account_config_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.account.config.list</field>
+        <field name="model">aimaze.laundry.account.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="company_id"/>
+                <field name="advance_liability_account_id"/>
+                <field name="wallet_liability_account_id"/>
+                <field name="cash_journal_id"/>
+                <field name="bank_journal_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_laundry_account_config" model="ir.actions.act_window">
+        <field name="name">Accounting Configuration</field>
+        <field name="res_model">aimaze.laundry.account.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_branch_profitability_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.profitability.list</field>
+        <field name="model">aimaze.laundry.branch.profitability</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="revenue"/>
+                <field name="discounts"/>
+                <field name="consumable_cost"/>
+                <field name="delivery_cost"/>
+                <field name="maintenance_cost"/>
+                <field name="compensation_cost"/>
+                <field name="net_profit"/>
+                <field name="profit_margin"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_branch_profitability_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.profitability.form</field>
+        <field name="model">aimaze.laundry.branch.profitability</field>
+        <field name="arch" type="xml">
+            <form string="Branch Profitability">
+                <header>
+                    <button name="action_compute_profitability" type="object" string="Compute" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="branch_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="revenue"/>
+                            <field name="discounts"/>
+                            <field name="tax"/>
+                            <field name="staff_cost"/>
+                        </group>
+                    </group>
+                    <group string="Costs">
+                        <field name="consumable_cost"/>
+                        <field name="delivery_cost"/>
+                        <field name="maintenance_cost"/>
+                        <field name="compensation_cost"/>
+                    </group>
+                    <group string="Profit">
+                        <field name="gross_profit" readonly="1"/>
+                        <field name="net_profit" readonly="1"/>
+                        <field name="profit_margin" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_branch_profitability" model="ir.actions.act_window">
+        <field name="name">Branch Profitability</field>
+        <field name="res_model">aimaze.laundry.branch.profitability</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+    </record>
+
+    <record id="view_laundry_executive_dashboard_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.executive.dashboard.form</field>
+        <field name="model">aimaze.laundry.executive.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Executive Dashboard">
+                <sheet>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="branch_id"/>
+                        <field name="currency_id"/>
+                    </group>
+                    <button name="action_open_orders" type="object" string="Open Laundry Analysis" class="btn-primary"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_executive_dashboard" model="ir.actions.act_window">
+        <field name="name">Executive Dashboard</field>
+        <field name="res_model">aimaze.laundry.executive.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <record id="action_laundry_driver_mobile" model="ir.actions.act_window">
+        <field name="name">Driver Mobile View</field>
+        <field name="res_model">aimaze.laundry.delivery</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('driver_id.user_id', '=', uid)]</field>
+        <field name="context">{'search_default_my_jobs': 1}</field>
+    </record>
+</odoo>

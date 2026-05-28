@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_aimaze_laundry_root" name="Dashboards" sequence="10" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+
+    <menuitem id="menu_laundry_dashboard" name="Operational Dashboard" parent="menu_aimaze_laundry_root" action="action_laundry_dashboard" sequence="10"/>
+    <menuitem id="menu_laundry_executive_dashboard" name="Executive Dashboard" parent="menu_aimaze_laundry_root" action="action_laundry_executive_dashboard" sequence="11"/>
+    <menuitem id="menu_laundry_branch_dashboard" name="Branch Dashboard" parent="menu_aimaze_laundry_root" action="action_laundry_branch_dashboard" sequence="12"/>
+
+    <menuitem id="menu_laundry_orders_root" name="Orders" sequence="20" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_orders" name="Laundry Orders" parent="menu_laundry_orders_root" action="action_laundry_order" sequence="10"/>
+    <menuitem id="menu_laundry_quick_order" name="Quick Order" parent="menu_laundry_orders_root" action="action_laundry_quick_order" sequence="20"/>
+    <menuitem id="menu_laundry_quick_counter_order" name="Quick Counter Order" parent="menu_laundry_orders_root" action="action_laundry_quick_counter_order" sequence="25"/>
+    <menuitem id="menu_laundry_order_lines" name="Order Lines" parent="menu_laundry_orders_root" action="action_laundry_order_line" sequence="30"/>
+    <menuitem id="menu_laundry_garment_tags" name="Garment Tags" parent="menu_laundry_orders_root" action="action_laundry_order_line" sequence="40"/>
+
+    <menuitem id="menu_laundry_pickup_delivery_root" name="Pickup &amp; Delivery" sequence="30" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_pickup_requests" name="Pickup Requests" parent="menu_laundry_pickup_delivery_root" action="action_laundry_delivery" sequence="10"/>
+    <menuitem id="menu_laundry_delivery_orders" name="Delivery Orders" parent="menu_laundry_pickup_delivery_root" action="action_laundry_delivery" sequence="20"/>
+    <menuitem id="menu_laundry_driver_schedule" name="Driver Schedule" parent="menu_laundry_pickup_delivery_root" action="action_laundry_delivery" sequence="30"/>
+    <menuitem id="menu_laundry_driver_mobile" name="Driver Mobile View" parent="menu_laundry_pickup_delivery_root" action="action_laundry_driver_mobile" sequence="40"/>
+    <menuitem id="menu_laundry_my_driver_jobs" name="My Driver Jobs" parent="menu_laundry_pickup_delivery_root" action="action_laundry_my_driver_jobs" sequence="50"/>
+
+    <menuitem id="menu_laundry_customers_root" name="Customers &amp; B2B" sequence="40" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_customers" name="Customers" parent="menu_laundry_customers_root" action="action_laundry_customers" sequence="10"/>
+    <menuitem id="menu_laundry_corporate_customers" name="Corporate Customers" parent="menu_laundry_customers_root" action="action_laundry_customers" sequence="20"/>
+    <menuitem id="menu_laundry_contracts" name="Contracts" parent="menu_laundry_customers_root" action="action_laundry_contract" sequence="30"/>
+    <menuitem id="menu_laundry_customer_statements" name="Customer Statements" parent="menu_laundry_customers_root" action="action_laundry_outstanding_receivables" sequence="40"/>
+
+    <menuitem id="menu_laundry_operations_root" name="Operations" sequence="50" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_sorting" name="Sorting Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_sorting" sequence="10"/>
+    <menuitem id="menu_laundry_washing" name="Washing Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_washing" sequence="20"/>
+    <menuitem id="menu_laundry_drying" name="Drying Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_drying" sequence="30"/>
+    <menuitem id="menu_laundry_ironing" name="Ironing Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_ironing" sequence="40"/>
+    <menuitem id="menu_laundry_qc" name="QC Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_qc" sequence="50"/>
+    <menuitem id="menu_laundry_packing" name="Packing Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_packing" sequence="60"/>
+    <menuitem id="menu_laundry_ready_orders" name="Ready Orders" parent="menu_laundry_operations_root" action="action_laundry_orders_ready" sequence="70"/>
+    <menuitem id="menu_laundry_garment_tracking" name="Garment Tracking" parent="menu_laundry_operations_root" action="action_laundry_garment" sequence="80"/>
+    <menuitem id="menu_laundry_garment_history" name="Garment History" parent="menu_laundry_operations_root" action="action_laundry_garment_history" sequence="90"/>
+    <menuitem id="menu_laundry_washing_screen" name="Washing Garments" parent="menu_laundry_operations_root" action="action_laundry_washing_screen" sequence="100"/>
+    <menuitem id="menu_laundry_drying_screen" name="Drying Garments" parent="menu_laundry_operations_root" action="action_laundry_drying_screen" sequence="110"/>
+    <menuitem id="menu_laundry_ironing_screen" name="Ironing Garments" parent="menu_laundry_operations_root" action="action_laundry_ironing_screen" sequence="120"/>
+    <menuitem id="menu_laundry_qc_screen" name="QC Garments" parent="menu_laundry_operations_root" action="action_laundry_qc_screen" sequence="130"/>
+    <menuitem id="menu_laundry_packing_screen" name="Packing Garments" parent="menu_laundry_operations_root" action="action_laundry_packing_screen" sequence="140"/>
+    <menuitem id="menu_laundry_barcode_scan_wizard_menu" name="Barcode Scan" parent="menu_laundry_operations_root" action="action_laundry_barcode_scan_wizard" sequence="150"/>
+
+    <menuitem id="menu_laundry_accounting_root" name="Laundry" parent="account.menu_finance" sequence="25" active="False"/>
+    <menuitem id="menu_laundry_customer_invoices" name="Customer Invoices" parent="menu_laundry_accounting_root" action="action_laundry_customer_invoices" sequence="10"/>
+    <menuitem id="menu_laundry_advance_payments" name="Advance Payments" parent="menu_laundry_accounting_root" action="action_laundry_advance_payments" sequence="20"/>
+    <menuitem id="menu_laundry_payments" name="Payments" parent="menu_laundry_accounting_root" action="action_laundry_payments" sequence="30"/>
+    <menuitem id="menu_laundry_refunds" name="Refunds" parent="menu_laundry_accounting_root" action="action_laundry_refunds" sequence="40"/>
+    <menuitem id="menu_laundry_cash_closing" name="Daily Cash Closing" parent="menu_laundry_accounting_root" action="action_laundry_cash_closing" sequence="50"/>
+    <menuitem id="menu_laundry_customer_ledger" name="Customer Ledger" parent="menu_laundry_accounting_root" action="action_laundry_outstanding_receivables" sequence="60"/>
+    <menuitem id="menu_laundry_outstanding" name="Outstanding Receivables" parent="menu_laundry_accounting_root" action="action_laundry_outstanding_receivables" sequence="70"/>
+
+    <menuitem id="menu_laundry_inventory_root" name="Inventory &amp; Purchase" sequence="70" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_consumable_usage" name="Consumable Usage" parent="menu_laundry_inventory_root" action="action_laundry_inventory_usage" sequence="10"/>
+    <menuitem id="menu_laundry_stock_items" name="Stock Items" parent="menu_laundry_inventory_root" action="action_laundry_stock_items" sequence="20"/>
+    <menuitem id="menu_laundry_purchase_requests" name="Purchase Requests" parent="menu_laundry_inventory_root" action="action_laundry_purchase_requests" sequence="30"/>
+    <menuitem id="menu_laundry_low_stock" name="Low Stock Alerts" parent="menu_laundry_inventory_root" action="action_laundry_stock_items" sequence="40"/>
+
+    <menuitem id="menu_laundry_maintenance_root" name="Machines &amp; HR" sequence="80" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_machines" name="Machines" parent="menu_laundry_maintenance_root" action="action_laundry_machine" sequence="10"/>
+    <menuitem id="menu_laundry_maintenance_requests" name="Maintenance Requests" parent="menu_laundry_maintenance_root" action="action_laundry_maintenance_requests" sequence="20"/>
+    <menuitem id="menu_laundry_breakdown_logs" name="Breakdown Logs" parent="menu_laundry_maintenance_root" action="action_laundry_machine" sequence="30"/>
+
+    <menuitem id="menu_laundry_staff_tasks" name="Staff Tasks" parent="menu_laundry_maintenance_root" action="action_laundry_staff_task" sequence="40"/>
+    <menuitem id="menu_laundry_productivity" name="Productivity" parent="menu_laundry_maintenance_root" action="action_laundry_staff_task" sequence="50"/>
+    <menuitem id="menu_laundry_driver_assignment" name="Driver Assignment" parent="menu_laundry_maintenance_root" action="action_laundry_delivery" sequence="60"/>
+
+    <menuitem id="menu_laundry_complaints_root" name="Complaints" sequence="90" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_customer_complaints" name="Customer Complaints" parent="menu_laundry_complaints_root" action="action_laundry_complaint" sequence="10"/>
+    <menuitem id="menu_laundry_claims" name="Claims &amp; Compensation" parent="menu_laundry_complaints_root" action="action_laundry_complaint" sequence="20"/>
+
+    <menuitem id="menu_laundry_loyalty_root" name="Loyalty" sequence="100" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_membership_plans" name="Membership Plans" parent="menu_laundry_loyalty_root" action="action_laundry_membership_plan" sequence="10"/>
+    <menuitem id="menu_laundry_loyalty_transactions" name="Loyalty Transactions" parent="menu_laundry_loyalty_root" action="action_laundry_loyalty_transaction" sequence="20"/>
+    <menuitem id="menu_laundry_customer_wallets" name="Customer Wallets" parent="menu_laundry_loyalty_root" action="action_customer_wallet" sequence="30"/>
+    <menuitem id="menu_laundry_wallet_transactions" name="Wallet Transactions" parent="menu_laundry_loyalty_root" action="action_wallet_transaction" sequence="40"/>
+    <menuitem id="menu_laundry_subscription_packages" name="Subscription Packages" parent="menu_laundry_loyalty_root" action="action_subscription_package" sequence="50"/>
+    <menuitem id="menu_laundry_customer_subscriptions" name="Customer Subscriptions" parent="menu_laundry_loyalty_root" action="action_laundry_subscription" sequence="60"/>
+
+    <menuitem id="menu_laundry_notifications" name="Notifications" sequence="110" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_notification_providers" name="Providers" parent="menu_laundry_notifications" action="action_notification_provider" sequence="10"/>
+    <menuitem id="menu_laundry_notification_templates" name="Templates" parent="menu_laundry_notifications" action="action_notification_template" sequence="20"/>
+    <menuitem id="menu_laundry_notification_queue" name="Queue" parent="menu_laundry_notifications" action="action_notification_queue" sequence="30"/>
+    <menuitem id="menu_laundry_notification_logs" name="Logs" parent="menu_laundry_notifications" action="action_laundry_notification_log" sequence="40"/>
+    <menuitem id="menu_laundry_integration_logs" name="Integration Logs" parent="menu_laundry_notifications" action="action_laundry_integration_log" sequence="50"/>
+
+    <menuitem id="menu_laundry_reports_root" name="Reports" sequence="120" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_sales_reports" name="Sales Reports" parent="menu_laundry_reports_root" action="action_laundry_dashboard" sequence="10"/>
+    <menuitem id="menu_laundry_delivery_reports" name="Delivery Reports" parent="menu_laundry_reports_root" action="action_laundry_delivery" sequence="20"/>
+    <menuitem id="menu_laundry_accounting_reports" name="Accounting Reports" parent="menu_laundry_reports_root" action="action_laundry_outstanding_receivables" sequence="30"/>
+    <menuitem id="menu_laundry_inventory_reports" name="Inventory Reports" parent="menu_laundry_reports_root" action="action_laundry_inventory_usage" sequence="40"/>
+    <menuitem id="menu_laundry_staff_reports" name="Staff Reports" parent="menu_laundry_reports_root" action="action_laundry_staff_task" sequence="50"/>
+    <menuitem id="menu_laundry_branch_profitability" name="Branch Profitability" parent="menu_laundry_reports_root" action="action_branch_profitability" sequence="60"/>
+    <menuitem id="menu_laundry_advance_liability_report" name="Advance Liability Report" parent="menu_laundry_reports_root" action="action_laundry_advance_liability_report" sequence="70"/>
+    <menuitem id="menu_laundry_wallet_liability_report" name="Wallet Liability Report" parent="menu_laundry_reports_root" action="action_laundry_wallet_liability_report" sequence="80"/>
+    <menuitem id="menu_laundry_branch_collection_report" name="Branch Collection Report" parent="menu_laundry_reports_root" action="action_laundry_branch_collection_report" sequence="90"/>
+    <menuitem id="menu_laundry_payment_method_report" name="Payment Method Report" parent="menu_laundry_reports_root" action="action_laundry_payment_method_report" sequence="100"/>
+    <menuitem id="menu_laundry_customer_ledger_report" name="Customer Ledger Report" parent="menu_laundry_reports_root" action="action_laundry_customer_ledger_report" sequence="110"/>
+
+    <menuitem id="menu_laundry_configuration_root" name="Configuration" sequence="130" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_branches" name="Branches" parent="menu_laundry_configuration_root" action="action_laundry_branch" sequence="10"/>
+    <menuitem id="menu_laundry_services" name="Services" parent="menu_laundry_configuration_root" action="action_laundry_service" sequence="20"/>
+    <menuitem id="menu_laundry_service_categories" name="Service Categories" parent="menu_laundry_configuration_root" action="action_laundry_service_category" sequence="30"/>
+    <menuitem id="menu_laundry_rate_cards" name="Rate Cards" parent="menu_laundry_configuration_root" action="action_laundry_rate_card" sequence="40"/>
+    <menuitem id="menu_laundry_delivery_zones" name="Delivery Zones" parent="menu_laundry_configuration_root" action="action_laundry_delivery_zone" sequence="50"/>
+    <menuitem id="menu_laundry_payment_methods" name="Payment Methods" parent="menu_laundry_configuration_root" action="action_laundry_payment_method" sequence="60"/>
+    <menuitem id="menu_laundry_workflow_stages" name="Workflow Stages" parent="menu_laundry_configuration_root" action="action_laundry_order" sequence="70"/>
+    <menuitem id="menu_laundry_account_config" name="Accounting Configuration" parent="menu_laundry_configuration_root" action="action_laundry_account_config" sequence="80"/>
+    <menuitem id="menu_laundry_initial_setup_wizard" name="Initial Setup Wizard" parent="menu_laundry_configuration_root" action="action_laundry_setup_wizard" sequence="90"/>
+    <menuitem id="menu_laundry_saas_tenants" name="SaaS Tenants" parent="menu_laundry_configuration_root" action="action_laundry_saas_tenant" sequence="100"/>
+    <menuitem id="menu_laundry_backup_config" name="Backup Configuration" parent="menu_laundry_configuration_root" action="action_laundry_backup_config" sequence="110"/>
+    <menuitem id="menu_laundry_settings" name="Settings" parent="menu_laundry_configuration_root" action="base_setup.action_general_configuration" sequence="120"/>
+    <menuitem id="menu_laundry_barcode_scans" name="Barcode Scans" parent="menu_laundry_configuration_root" action="action_laundry_barcode_scan" sequence="130"/>
+
+    <menuitem id="menu_laundry_ai_root" name="AI Tools" sequence="140" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_laundry_ai_analysis" name="AI Analysis" parent="menu_laundry_ai_root" action="action_laundry_ai_analysis" sequence="10"/>
+
+    <!-- Keep each operational area as a real app-level menu so the app switcher
+         shows modules on the left, while the selected module's children become
+         the relevant top menu tabs. Explicit parent clearing is required on
+         upgrades because older records were previously children of the main app. -->
+    <record id="menu_laundry_orders_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_pickup_delivery_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_customers_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_operations_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_accounting_root" model="ir.ui.menu">
+        <field name="name">Laundry</field>
+        <field name="parent_id" ref="account.menu_finance"/>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="menu_laundry_inventory_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_maintenance_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_complaints_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_loyalty_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_notifications" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_reports_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_configuration_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+    <record id="menu_laundry_ai_root" model="ir.ui.menu">
+        <field name="parent_id" eval="False"/>
+    </record>
+</odoo>

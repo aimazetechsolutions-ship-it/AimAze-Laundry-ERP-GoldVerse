@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="res.company" name="_aimaze_fix_laundry_country_defaults">
+        <value model="res.company" search="[]"/>
+    </function>
+</odoo>

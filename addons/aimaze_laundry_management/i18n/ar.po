@@ -1,0 +1,31 @@
+# Translation placeholder for AimAze Laundry ERP.
+# Copyright (C) 2026 AimAze Tech Solutions
+# This file intentionally contains professional placeholders only.
+msgid ""
+msgstr ""
+"Project-Id-Version: aimaze_laundry_management 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-24 00:00+0000\n"
+"PO-Revision-Date: 2026-05-24 00:00+0000\n"
+"Last-Translator: AimAze Tech Solutions\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+
+#. module: aimaze_laundry_management
+msgid "AimAze Laundry ERP"
+msgstr "AimAze Laundry ERP"
+
+#. module: aimaze_laundry_management
+msgid "Laundry Order Receipt"
+msgstr "Laundry Order Receipt"
+
+#. module: aimaze_laundry_management
+msgid "Customer VAT / TRN"
+msgstr "Customer VAT / TRN"
+
+#. module: aimaze_laundry_management
+msgid "Barcode / RFID Scan"
+msgstr "Barcode / RFID Scan"

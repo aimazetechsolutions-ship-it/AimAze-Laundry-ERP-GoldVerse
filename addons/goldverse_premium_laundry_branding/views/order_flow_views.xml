@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_order_form_goldverse_flow" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form.goldverse.flow</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form/header" position="replace">
+                <header>
+                    <button name="action_create_order" type="object" string="Create Order" class="oe_highlight alm-btn-success" invisible="state != 'draft'"/>
+                    <button name="action_send_to_warehouse" type="object" string="Send to Warehouse" class="oe_highlight alm-btn-info" invisible="state != 'order_created'"/>
+                    <button name="action_mark_received_branch" type="object" string="Mark Received at Branch" class="oe_highlight alm-btn-success" invisible="state != 'warehouse_pending'"/>
+                    <button name="action_mark_delivered" type="object" string="Mark Delivered" class="alm-btn-success" invisible="state != 'received_branch'"/>
+                    <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting" invisible="state in ('draft','cancelled')"/>
+                    <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment"/>
+                    <button name="action_register_final_payment" type="object" string="Register Final Payment" class="alm-btn-payment"/>
+                    <button name="action_use_wallet" type="object" string="Use Wallet" class="alm-btn-payment"/>
+                    <button name="action_print_receipt" type="object" string="Print Receipt"/>
+                    <button name="action_print_garment_tags" type="object" string="Print Garment Tags"/>
+                    <button name="action_cancel" type="object" string="Cancel Order" class="alm-btn-danger" invisible="state not in ('draft','confirmed','picked_up','received','order_created','collection','shift_to_plant')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,order_created,warehouse_pending,received_branch,delivered,invoiced,paid"/>
+                </header>
+            </xpath>
+            <xpath expr="//field[@name='service_type']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='email']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='customer_type']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='priority']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='expected_delivery_datetime']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='barcode']" position="after">
+                <field name="warehouse_collected_datetime" readonly="1"/>
+                <field name="warehouse_received_datetime" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_list_goldverse_flow" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.list.goldverse.flow</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_list"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <button name="action_mark_received_branch" type="object" string="Mark Received" class="btn-primary" invisible="state != 'warehouse_pending'"/>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="decoration-info">state in ('order_created','received_branch','collection','shift_to_plant','in_process','shift_to_outlet','ready_for_delivery')</attribute>
+                <attribute name="decoration-warning">state == 'warehouse_pending'</attribute>
+                <attribute name="decoration-success">state in ('delivered','invoiced','paid')</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_warehouse_pending_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.warehouse.pending.list</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <list string="Warehouse Pending Orders">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="partner_id"/>
+                <field name="mobile"/>
+                <field name="branch_id"/>
+                <field name="order_date"/>
+                <field name="expected_delivery_datetime"/>
+                <field name="warehouse_collected_datetime"/>
+                <field name="amount_total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_goldverse_warehouse_pending_orders" model="ir.actions.act_window">
+        <field name="name">Warehouse Pending Orders</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,form,activity</field>
+        <field name="view_id" ref="view_laundry_order_warehouse_pending_list"/>
+        <field name="domain">[('state','=','warehouse_pending')]</field>
+        <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+    </record>
+
+    <record id="action_goldverse_warehouse_pending_orders_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_laundry_order_warehouse_pending_list"/>
+        <field name="act_window_id" ref="action_goldverse_warehouse_pending_orders"/>
+    </record>
+
+    <record id="view_laundry_order_warehouse_movement_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.warehouse.movement.list</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <list string="Warehouse Movement Report" create="0">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="mobile"/>
+                <field name="branch_id"/>
+                <field name="warehouse_collected_datetime"/>
+                <field name="warehouse_received_datetime"/>
+                <field name="state" widget="badge" decoration-warning="state == 'warehouse_pending'" decoration-info="state == 'received_branch'" decoration-success="state in ('delivered','invoiced','paid')"/>
+                <field name="expected_delivery_datetime"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_goldverse_warehouse_movement_report" model="ir.actions.act_window">
+        <field name="name">Warehouse Movement Report</field>
+        <field name="res_model">aimaze.laundry.order.line</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_laundry_order_line_warehouse_movement_list"/>
+        <field name="domain">['|', ('warehouse_sent_datetime','!=',False), ('warehouse_received_datetime','!=',False)]</field>
+    </record>
+
+    <record id="action_goldverse_warehouse_movement_report_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_laundry_order_line_warehouse_movement_list"/>
+        <field name="act_window_id" ref="action_goldverse_warehouse_movement_report"/>
+    </record>
+
+    <record id="action_goldverse_warehouse_line_movement_report" model="ir.actions.act_window">
+        <field name="name">Warehouse Movement Report</field>
+        <field name="res_model">aimaze.laundry.order.line</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_laundry_order_line_warehouse_movement_list"/>
+        <field name="domain">['|', ('warehouse_sent_datetime','!=',False), ('warehouse_received_datetime','!=',False)]</field>
+    </record>
+
+    <record id="action_goldverse_warehouse_line_movement_report_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_laundry_order_line_warehouse_movement_list"/>
+        <field name="act_window_id" ref="action_goldverse_warehouse_line_movement_report"/>
+    </record>
+
+    <menuitem id="menu_goldverse_warehouse_pending_orders"
+              name="Warehouse Pending Orders"
+              parent="aimaze_laundry_management.menu_laundry_orders_root"
+              action="action_goldverse_warehouse_pending_orders"
+              sequence="20"/>
+    <menuitem id="menu_goldverse_warehouse_movement_report"
+              name="Warehouse Movement Report"
+              parent="aimaze_laundry_management.menu_laundry_orders_root"
+              action="action_goldverse_warehouse_line_movement_report"
+              sequence="30"/>
+</odoo>

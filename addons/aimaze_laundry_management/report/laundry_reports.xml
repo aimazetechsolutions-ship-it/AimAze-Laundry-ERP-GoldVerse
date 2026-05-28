@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_laundry_order_receipt" model="ir.actions.report">
+        <field name="name">Laundry Order Receipt</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_order_receipt</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_order_receipt</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_order"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_garment_tags" model="ir.actions.report">
+        <field name="name">Garment Tags / Barcodes</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_garment_tags</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_garment_tags</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_order"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_advance_receipt" model="ir.actions.report">
+        <field name="name">Advance Payment Receipt</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_advance_receipt</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_advance_receipt</field>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_delivery_note" model="ir.actions.report">
+        <field name="name">Laundry Delivery Note</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_delivery_note</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_delivery_note</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_delivery"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_cash_closing" model="ir.actions.report">
+        <field name="name">Cash Closing Report</field>
+        <field name="model">aimaze.laundry.cash.closing</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_cash_closing</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_cash_closing</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_cash_closing"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_inventory_usage" model="ir.actions.report">
+        <field name="name">Inventory Usage Report</field>
+        <field name="model">aimaze.laundry.inventory.usage</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_inventory_usage</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_inventory_usage</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_inventory_usage"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_machine_maintenance" model="ir.actions.report">
+        <field name="name">Machine Maintenance Report</field>
+        <field name="model">aimaze.laundry.machine</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_machine_maintenance</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_machine_maintenance</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_machine"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_staff_productivity" model="ir.actions.report">
+        <field name="name">Staff Productivity Report</field>
+        <field name="model">aimaze.laundry.staff.task</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_staff_productivity</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_staff_productivity</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_staff_task"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_laundry_garment_label_phase3" model="ir.actions.report">
+        <field name="name">Thermal Garment Label</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">aimaze_laundry_management.report_laundry_garment_label_phase3</field>
+        <field name="report_file">aimaze_laundry_management.report_laundry_garment_label_phase3</field>
+        <field name="binding_model_id" ref="model_aimaze_laundry_garment"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="aimaze.laundry.order" name="_goldverse_normalize_order_flow">
+        <value model="aimaze.laundry.order" search="[]"/>
+    </function>
+    <function model="aimaze.laundry.order" name="_goldverse_configure_order_sequence"/>
+    <function model="res.users" name="_goldverse_assign_admin_all_laundry_branches"/>
+</odoo>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_service_list_goldverse_subcategory" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.list.goldverse.subcategory</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_service_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="editable">bottom</attribute>
+                <attribute name="multi_edit">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="goldverse_subcategory_id" string="Sub Category" optional="show"/>
+                <field name="income_account_id" string="Income Head" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='list_price']" position="before">
+                <field name="goldverse_base_price" string="Base Price" optional="show"/>
+                <field name="goldverse_discount_percent" string="Discount (%)" optional="show"/>
+                <field name="goldverse_discount_amount" string="Disc (Rs.)" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='list_price']" position="attributes">
+                <attribute name="string">Net Price</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_service_form_goldverse_subcategory" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.form.goldverse.subcategory</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_service_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="goldverse_subcategory_id" string="Sub Category"/>
+            </xpath>
+            <xpath expr="//field[@name='list_price']" position="before">
+                <field name="goldverse_base_price" string="Base Price"/>
+                <field name="goldverse_discount_percent" string="Discount (%)"/>
+                <field name="goldverse_discount_amount" string="Disc (Rs.)"/>
+            </xpath>
+            <xpath expr="//field[@name='list_price']" position="attributes">
+                <attribute name="string">Net Price</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_service" model="ir.actions.act_window">
+        <field name="name">Service Items</field>
+    </record>
+
+    <record id="view_laundry_service_search_goldverse" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.search.goldverse</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="arch" type="xml">
+            <search string="Service Items">
+                <field name="goldverse_search_text" string="Search All Columns" filter_domain="[('goldverse_search_text', 'ilike', self)]"/>
+                <field name="code" string="Code" filter_domain="[('code', 'ilike', self)]"/>
+                <field name="name" string="Name" filter_domain="[('name', 'ilike', self)]"/>
+                <field name="category_id" string="Category"/>
+                <field name="goldverse_subcategory_id" string="Sub Category"/>
+                <field name="income_account_id" string="Income Head"/>
+                <field name="pricing_method" string="Pricing Method"/>
+                <field name="goldverse_base_price" string="Base Price"/>
+                <field name="goldverse_discount_percent" string="Discount (%)"/>
+                <field name="goldverse_discount_amount" string="Disc (Rs.)"/>
+                <field name="list_price" string="Net Price"/>
+                <filter name="tax_applicable" string="Tax Applicable" domain="[('tax_applicable', '=', True)]"/>
+                <filter name="tax_not_applicable" string="Tax Not Applicable" domain="[('tax_applicable', '=', False)]"/>
+                <filter name="active_services" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive_services" string="Inactive" domain="[('active', '=', False)]" context="{'active_test': False}"/>
+                <separator/>
+                <filter name="group_category" string="Group by Category" context="{'group_by': 'category_id'}"/>
+                <filter name="group_subcategory" string="Group by Sub Category" context="{'group_by': 'goldverse_subcategory_id'}"/>
+                <filter name="group_pricing_method" string="Group by Pricing Method" context="{'group_by': 'pricing_method'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_service" model="ir.actions.act_window">
+        <field name="search_view_id" ref="view_laundry_service_search_goldverse"/>
+    </record>
+
+    <record id="view_laundry_account_config_list_goldverse_delivery_income" model="ir.ui.view">
+        <field name="name">aimaze.laundry.account.config.list.goldverse.delivery.income</field>
+        <field name="model">aimaze.laundry.account.config</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_account_config_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='wallet_liability_account_id']" position="after">
+                <field name="laundry_income_account_id" optional="show"/>
+                <field name="delivery_income_account_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_goldverse_laundry_subcategory_list" model="ir.ui.view">
+        <field name="name">goldverse.laundry.subcategory.list</field>
+        <field name="model">goldverse.laundry.subcategory</field>
+        <field name="arch" type="xml">
+            <list string="Sub Categories">
+                <field name="sequence" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="code" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_goldverse_laundry_subcategory_form" model="ir.ui.view">
+        <field name="name">goldverse.laundry.subcategory.form</field>
+        <field name="model">goldverse.laundry.subcategory</field>
+        <field name="arch" type="xml">
+            <form string="Sub Category">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_goldverse_laundry_subcategory" model="ir.actions.act_window">
+        <field name="name">Sub Categories</field>
+        <field name="res_model">goldverse.laundry.subcategory</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_goldverse_laundry_colour_list" model="ir.ui.view">
+        <field name="name">goldverse.laundry.colour.list</field>
+        <field name="model">goldverse.laundry.colour</field>
+        <field name="arch" type="xml">
+            <list string="Colours">
+                <field name="sequence" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="code" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_goldverse_laundry_colour_form" model="ir.ui.view">
+        <field name="name">goldverse.laundry.colour.form</field>
+        <field name="model">goldverse.laundry.colour</field>
+        <field name="arch" type="xml">
+            <form string="Colour">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_goldverse_laundry_colour" model="ir.actions.act_window">
+        <field name="name">Colours</field>
+        <field name="res_model">goldverse.laundry.colour</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_goldverse_laundry_qc_option_list" model="ir.ui.view">
+        <field name="name">goldverse.laundry.qc.option.list</field>
+        <field name="model">goldverse.laundry.qc.option</field>
+        <field name="arch" type="xml">
+            <list string="QC Options">
+                <field name="sequence" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="code" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_goldverse_laundry_qc_option_form" model="ir.ui.view">
+        <field name="name">goldverse.laundry.qc.option.form</field>
+        <field name="model">goldverse.laundry.qc.option</field>
+        <field name="arch" type="xml">
+            <form string="QC Option">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_goldverse_laundry_qc_option" model="ir.actions.act_window">
+        <field name="name">QC Options</field>
+        <field name="res_model">goldverse.laundry.qc.option</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_goldverse_laundry_topup_list" model="ir.ui.view">
+        <field name="name">goldverse.laundry.topup.list</field>
+        <field name="model">goldverse.laundry.topup</field>
+        <field name="arch" type="xml">
+            <list string="Add Ons">
+                <field name="sequence" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="code" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_goldverse_laundry_topup_form" model="ir.ui.view">
+        <field name="name">goldverse.laundry.topup.form</field>
+        <field name="model">goldverse.laundry.topup</field>
+        <field name="arch" type="xml">
+            <form string="Add On">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_goldverse_laundry_topup" model="ir.actions.act_window">
+        <field name="name">Add Ons</field>
+        <field name="res_model">goldverse.laundry.topup</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_service_categories" model="ir.ui.menu">
+        <field name="name">Categories</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="aimaze_laundry_management.menu_laundry_services" model="ir.ui.menu">
+        <field name="name">Service Items</field>
+        <field name="sequence">22</field>
+    </record>
+    <menuitem id="menu_goldverse_laundry_subcategories" name="Sub Categories" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_subcategory" sequence="21"/>
+    <menuitem id="menu_goldverse_laundry_colours" name="Colours" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_colour" sequence="23"/>
+    <menuitem id="menu_goldverse_laundry_qc_options" name="QC Options" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_qc_option" sequence="24"/>
+    <menuitem id="menu_goldverse_laundry_topups" name="Add Ons" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_topup" sequence="25"/>
+</odoo>

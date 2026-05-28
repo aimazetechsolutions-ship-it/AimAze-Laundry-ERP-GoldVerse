@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="goldverse_premium_laundry_branding.AccountReportDrilldown"
+       t-inherit="base_accounting_kit.InteractiveAccountReport"
+       t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'o_account_report_filters')]/div[contains(@class, 'o_account_report_search')]" position="attributes">
+            <attribute name="t-if">isTrialBalanceReport || showLedgerSearch</attribute>
+        </xpath>
+        <xpath expr="//section[@t-else='']" position="before">
+            <section t-elif="isGeneralLedgerReport" class="o_account_report_sheet goldverse-general-ledger-sheet">
+                <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
+                <t t-else="">
+                    <table class="goldverse-general-ledger-table">
+                        <colgroup>
+                            <col class="goldverse-ledger-col-name"/>
+                            <col class="goldverse-ledger-col-date"/>
+                            <col class="goldverse-ledger-col-partner"/>
+                            <col class="goldverse-ledger-col-currency"/>
+                            <col class="goldverse-ledger-col-amount"/>
+                            <col class="goldverse-ledger-col-amount"/>
+                            <col class="goldverse-ledger-col-amount"/>
+                        </colgroup>
+                        <thead>
+                            <tr class="goldverse-ledger-period-row">
+                                <th></th>
+                                <th colspan="6"><t t-esc="periodMenuLabel"/></th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th>Date</th>
+                                <th>Partner</th>
+                                <th>Currency</th>
+                                <th class="o_account_report_number">Debit</th>
+                                <th class="o_account_report_number">Credit</th>
+                                <th class="o_account_report_number">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-if="!hasLines">
+                                <td colspan="7" class="o_account_report_empty">No records for the selected filters.</td>
+                            </tr>
+                            <tr t-foreach="visibleLines" t-as="line" t-key="line.id" t-att-class="lineClass(line)">
+                                <t t-if="line.type === 'account'">
+                                    <td class="goldverse-ledger-name-cell">
+                                        <i class="fa fa-caret-down goldverse-ledger-caret"/>
+                                        <strong><t t-esc="line.values.name"/></strong>
+                                        <button t-if="line.action"
+                                                type="button"
+                                                class="goldverse-journal-items-pill"
+                                                t-on-click="(ev) => this.openGoldverseJournalItems(line, ev)">
+                                            Journal Items
+                                        </button>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td><t t-esc="line.values.currency"/></td>
+                                    <td class="o_account_report_number"><strong><t t-esc="formatLedgerAmount(line.values.debit)"/></strong></td>
+                                    <td class="o_account_report_number"><strong><t t-esc="formatLedgerAmount(line.values.credit)"/></strong></td>
+                                    <td class="o_account_report_number"><strong><t t-esc="formatLedgerAmount(line.values.balance)"/></strong></td>
+                                </t>
+                                <t t-else="">
+                                    <td class="goldverse-ledger-name-cell goldverse-ledger-move-name">
+                                        <span><t t-esc="line.values.name"/></span>
+                                        <details t-if="line.move_action" class="goldverse-ledger-move-details">
+                                            <summary class="goldverse-ledger-move-menu-button" title="Open journal entry actions">
+                                                <i class="fa fa-ellipsis-v o_account_report_drill_icon"/>
+                                            </summary>
+                                            <div class="goldverse-report-line-menu goldverse-ledger-move-menu">
+                                                <button type="button"
+                                                        class="dropdown-item goldverse-ledger-view-journal-entry"
+                                                        t-on-click="(ev) => this.openGoldverseJournalEntry(line, ev)">
+                                                    View Journal Voucher
+                                                </button>
+                                            </div>
+                                        </details>
+                                    </td>
+                                    <td><t t-esc="line.values.date ? this.formatDateLabel(line.values.date) : ''"/></td>
+                                    <td><t t-esc="line.values.partner"/></td>
+                                    <td><t t-esc="line.values.currency"/></td>
+                                    <td class="o_account_report_number"><t t-esc="formatLedgerAmount(line.values.debit)"/></td>
+                                    <td class="o_account_report_number"><t t-esc="formatLedgerAmount(line.values.credit)"/></td>
+                                    <td class="o_account_report_number"><t t-esc="formatLedgerAmount(line.values.balance)"/></td>
+                                </t>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </section>
+        </xpath>
+        <xpath expr="//td[contains(@class, 'o_account_trial_name_cell')]/button[contains(@class, 'o_account_report_line_button')]" position="replace">
+            <div t-if="line.action" class="goldverse-report-line-actions">
+                <button
+                    type="button"
+                    class="o_account_report_line_button"
+                    t-on-click="(ev) => this.toggleGoldverseLineMenu(line, ev)"
+                    title="Open line actions"
+                >
+                    <span><t t-esc="line.values.name"/></span>
+                    <i class="fa fa-ellipsis-v o_account_report_drill_icon"/>
+                </button>
+                <div t-if="state.goldverseLineMenuId === line.id" class="goldverse-report-line-menu" t-on-click="(ev) => ev.stopPropagation()">
+                    <button
+                        type="button"
+                        class="dropdown-item"
+                        t-on-click="(ev) => this.openGoldverseGeneralLedger(line, ev)"
+                    >
+                        General Ledger
+                    </button>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//button[@t-elif='line.action' and contains(@class, 'o_account_report_line_button')]" position="replace">
+            <div t-elif="line.action" class="goldverse-report-line-actions">
+                <button
+                    type="button"
+                    class="o_account_report_line_button"
+                    t-on-click="(ev) => this.toggleGoldverseLineMenu(line, ev)"
+                    title="Open line actions"
+                >
+                    <span><t t-esc="formatCell(line, column)"/></span>
+                    <span class="o_account_report_reviewed">Reviewed</span>
+                    <i class="fa fa-ellipsis-v o_account_report_drill_icon"/>
+                </button>
+                <div t-if="state.goldverseLineMenuId === line.id" class="goldverse-report-line-menu" t-on-click="(ev) => ev.stopPropagation()">
+                    <button
+                        type="button"
+                        class="dropdown-item"
+                        t-on-click="(ev) => this.openGoldverseGeneralLedger(line, ev)"
+                    >
+                        General Ledger
+                    </button>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

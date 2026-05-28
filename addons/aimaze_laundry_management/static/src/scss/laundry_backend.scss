@@ -1,0 +1,137 @@
+.o_form_view .alm-total-box {
+  border-top: 1px solid #d8dde6;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.o_form_view button.alm-btn-success,
+.o_list_button_add {
+  background-color: #2bbbd3 !important;
+  border-color: #2bbbd3 !important;
+  color: #fff !important;
+}
+
+.o_form_view button.alm-btn-payment {
+  background-color: #715070 !important;
+  border-color: #715070 !important;
+  color: #fff !important;
+}
+
+.o_form_view button.alm-btn-accounting {
+  background-color: #0f766e !important;
+  border-color: #0f766e !important;
+  color: #fff !important;
+}
+
+.o_form_view button.alm-btn-info {
+  background-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #fff !important;
+}
+
+.o_form_view button.alm-btn-stage {
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #111827 !important;
+}
+
+.o_form_view button.alm-btn-warning {
+  background-color: #f97316 !important;
+  border-color: #f97316 !important;
+  color: #fff !important;
+}
+
+.o_form_view button.alm-btn-danger {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #fff !important;
+}
+
+.alm-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 12px 0 18px;
+}
+
+.alm-kpi-card {
+  border: 1px solid #d8dde6;
+  border-left: 4px solid #715070;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px 12px;
+  min-height: 74px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.alm-kpi-card span {
+  display: block;
+  color: #5f6b7a;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.alm-kpi-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #102a43;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.alm-kpi-primary { border-left-color: #3b82f6; }
+.alm-kpi-success { border-left-color: #2bbbd3; }
+.alm-kpi-warning { border-left-color: #f59e0b; }
+.alm-kpi-info { border-left-color: #0f766e; }
+.alm-kpi-danger { border-left-color: #dc2626; }
+
+.alm-mobile-card {
+  border: 1px solid #d8dde6;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+.o_kanban_renderer .o_kanban_record {
+  border-radius: 6px;
+  border-left: 4px solid #715070;
+}
+
+.o_kanban_renderer .o_kanban_group:nth-child(3n + 1) .o_kanban_record {
+  border-left-color: #2bbbd3;
+}
+
+.o_kanban_renderer .o_kanban_group:nth-child(3n + 2) .o_kanban_record {
+  border-left-color: #f59e0b;
+}
+
+.o_kanban_renderer .o_kanban_group:nth-child(3n + 3) .o_kanban_record {
+  border-left-color: #0f766e;
+}
+
+@media (max-width: 768px) {
+  .alm-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .alm-kpi-card {
+    min-height: 64px;
+    padding: 8px 10px;
+  }
+
+  .alm-kpi-card strong {
+    font-size: 15px;
+  }
+
+  .o_form_view button.alm-btn-success,
+  .o_form_view button.alm-btn-payment,
+  .o_form_view button.alm-btn-accounting,
+  .o_form_view button.alm-btn-info,
+  .o_form_view button.alm-btn-stage,
+  .o_form_view button.alm-btn-warning,
+  .o_form_view button.alm-btn-danger {
+    margin-bottom: 4px;
+    min-height: 34px;
+  }
+}

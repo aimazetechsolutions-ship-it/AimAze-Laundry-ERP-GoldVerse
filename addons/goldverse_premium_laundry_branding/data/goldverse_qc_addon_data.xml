@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="goldverse.laundry.qc.option" name="write">
+        <function model="goldverse.laundry.qc.option" name="search">
+            <value eval="[('name', 'not in', ['Hard Stains', 'Mild Stains', 'Torn/Ripped', 'Holes', 'Color Faulty', 'Burned', 'Color Risk', 'Deformed', 'Missing Buttons', 'Faulty Zip', 'Shrunk', 'Damaged Stitch', 'Loose Beads', 'Damaged EMB', 'Missing Accessories', 'Weak Fabric', 'Delicate'])]"/>
+        </function>
+        <value eval="{'active': False}"/>
+    </function>
+    <function model="goldverse.laundry.topup" name="write">
+        <function model="goldverse.laundry.topup" name="search">
+            <value eval="[('name', 'not in', ['Full Hang', 'Fold Hang', 'No Starch', 'Light Starch', 'High Starch'])]"/>
+        </function>
+        <value eval="{'active': False}"/>
+    </function>
+
+    <record id="qc_hard_stains" model="goldverse.laundry.qc.option">
+        <field name="name">Hard Stains</field>
+        <field name="code">hard_stains</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">10</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_mild_stains" model="goldverse.laundry.qc.option">
+        <field name="name">Mild Stains</field>
+        <field name="code">mild_stains</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">20</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_torn_ripped" model="goldverse.laundry.qc.option">
+        <field name="name">Torn/Ripped</field>
+        <field name="code">torn_ripped</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">30</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_holes" model="goldverse.laundry.qc.option">
+        <field name="name">Holes</field>
+        <field name="code">holes</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">40</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_color_faulty" model="goldverse.laundry.qc.option">
+        <field name="name">Color Faulty</field>
+        <field name="code">color_faulty</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">50</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_burned" model="goldverse.laundry.qc.option">
+        <field name="name">Burned</field>
+        <field name="code">burned</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">60</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_color_risk" model="goldverse.laundry.qc.option">
+        <field name="name">Color Risk</field>
+        <field name="code">color_risk</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">70</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_deformed" model="goldverse.laundry.qc.option">
+        <field name="name">Deformed</field>
+        <field name="code">deformed</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">80</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_missing_buttons" model="goldverse.laundry.qc.option">
+        <field name="name">Missing Buttons</field>
+        <field name="code">missing_buttons</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">90</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_faulty_zip" model="goldverse.laundry.qc.option">
+        <field name="name">Faulty Zip</field>
+        <field name="code">faulty_zip</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">100</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_shrunk" model="goldverse.laundry.qc.option">
+        <field name="name">Shrunk</field>
+        <field name="code">shrunk</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">110</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_damaged_stitch" model="goldverse.laundry.qc.option">
+        <field name="name">Damaged Stitch</field>
+        <field name="code">damaged_stitch</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">120</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_loose_beads" model="goldverse.laundry.qc.option">
+        <field name="name">Loose Beads</field>
+        <field name="code">loose_beads</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">130</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_damaged_emb" model="goldverse.laundry.qc.option">
+        <field name="name">Damaged EMB</field>
+        <field name="code">damaged_emb</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">140</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_missing_accessories" model="goldverse.laundry.qc.option">
+        <field name="name">Missing Accessories</field>
+        <field name="code">missing_accessories</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">150</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_weak_fabric" model="goldverse.laundry.qc.option">
+        <field name="name">Weak Fabric</field>
+        <field name="code">weak_fabric</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">160</field>
+        <field name="active">1</field>
+    </record>
+    <record id="qc_delicate" model="goldverse.laundry.qc.option">
+        <field name="name">Delicate</field>
+        <field name="code">delicate</field>
+        <field name="base_qc_status">fail</field>
+        <field name="sequence">170</field>
+        <field name="active">1</field>
+    </record>
+
+    <record id="addon_full_hang" model="goldverse.laundry.topup">
+        <field name="name">Full Hang</field>
+        <field name="code">full_hang</field>
+        <field name="sequence">10</field>
+        <field name="active">1</field>
+    </record>
+    <record id="addon_fold_hang" model="goldverse.laundry.topup">
+        <field name="name">Fold Hang</field>
+        <field name="code">fold_hang</field>
+        <field name="sequence">20</field>
+        <field name="active">1</field>
+    </record>
+    <record id="addon_no_starch" model="goldverse.laundry.topup">
+        <field name="name">No Starch</field>
+        <field name="code">no_starch</field>
+        <field name="sequence">30</field>
+        <field name="active">1</field>
+    </record>
+    <record id="addon_light_starch" model="goldverse.laundry.topup">
+        <field name="name">Light Starch</field>
+        <field name="code">light_starch</field>
+        <field name="sequence">40</field>
+        <field name="active">1</field>
+    </record>
+    <record id="addon_high_starch" model="goldverse.laundry.topup">
+        <field name="name">High Starch</field>
+        <field name="code">high_starch</field>
+        <field name="sequence">50</field>
+        <field name="active">1</field>
+    </record>
+</odoo>

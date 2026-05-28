@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="service_category_washing" model="aimaze.laundry.service.category">
+        <field name="name">Washing</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="service_category_dry_clean" model="aimaze.laundry.service.category">
+        <field name="name">Dry Cleaning</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="service_category_ironing" model="aimaze.laundry.service.category">
+        <field name="name">Ironing</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="service_wash_fold" model="aimaze.laundry.service">
+        <field name="name">Wash and Fold</field>
+        <field name="code">WASH-FOLD</field>
+        <field name="category_id" ref="service_category_washing"/>
+        <field name="pricing_method">piece</field>
+        <field name="list_price">12.0</field>
+    </record>
+    <record id="service_dry_clean_shirt" model="aimaze.laundry.service">
+        <field name="name">Dry Clean Shirt</field>
+        <field name="code">DC-SHIRT</field>
+        <field name="category_id" ref="service_category_dry_clean"/>
+        <field name="pricing_method">piece</field>
+        <field name="list_price">20.0</field>
+    </record>
+    <record id="payment_method_cash" model="aimaze.laundry.payment.method">
+        <field name="name">Cash</field>
+        <field name="method_type">cash</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="payment_method_card" model="aimaze.laundry.payment.method">
+        <field name="name">Card</field>
+        <field name="method_type">card</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="payment_method_bank" model="aimaze.laundry.payment.method">
+        <field name="name">Bank Transfer</field>
+        <field name="method_type">bank</field>
+        <field name="sequence">30</field>
+    </record>
+</odoo>

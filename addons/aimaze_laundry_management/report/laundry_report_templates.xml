@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_laundry_order_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page aimaze-report-page" style="font-size:12px; color:#102a43;">
+                        <div class="aimaze-report-header" style="border-bottom:3px solid #2bbbd3; padding-bottom:12px; margin-bottom:14px;">
+                            <div>
+                                <h2 class="aimaze-report-title" style="color:#12456f; font-size:22px; font-weight:800; margin:0;">Laundry Order Receipt</h2>
+                                <div style="color:#6b778c;">AimAze Laundry ERP</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <strong><span t-field="doc.company_id"/></strong><br/>
+                                <span t-field="doc.branch_id"/><br/>
+                                <span t-if="doc.branch_id.tax_registration_number">TRN: <span t-field="doc.branch_id.tax_registration_number"/></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 aimaze-report-box" style="border:1px solid #d8e4ed; border-radius:6px; padding:10px; background:#fbfdff;">
+                                <strong>Order:</strong> <span t-field="doc.name"/><br/>
+                                <strong>Customer:</strong> <span t-field="doc.partner_id"/><br/>
+                                <strong>Mobile:</strong> <span t-field="doc.mobile"/><br/>
+                                <strong>Branch:</strong> <span t-field="doc.branch_id"/><br/>
+                                <strong>Branch TRN:</strong> <span t-field="doc.branch_id.tax_registration_number"/>
+                            </div>
+                            <div class="col-6 aimaze-report-box" style="border:1px solid #d8e4ed; border-radius:6px; padding:10px; background:#fbfdff;">
+                                <strong>Date:</strong> <span t-field="doc.order_date"/><br/>
+                                <strong>Expected:</strong> <span t-field="doc.expected_delivery_datetime"/><br/>
+                                <strong>Status:</strong> <span t-out="dict(doc._fields['state'].selection).get(doc.state)"/><br/>
+                                <strong>Currency:</strong> <span t-field="doc.currency_id"/><br/>
+                                <strong>Customer TRN:</strong> <span t-field="doc.partner_id.laundry_trn"/>
+                            </div>
+                        </div>
+                        <table class="table table-sm mt16 aimaze-report-table">
+                            <thead>
+                                <tr><th>Service</th><th>Garment</th><th class="text-end">Qty</th><th class="text-end">Subtotal</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.line_ids" t-as="line">
+                                    <td><span t-field="line.service_id"/></td>
+                                    <td><span t-field="line.name"/></td>
+                                    <td class="text-end"><span t-field="line.quantity"/></td>
+                                    <td class="text-end"><span t-field="line.price_subtotal"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row" style="margin-top:12px;">
+                            <div class="col-6"/>
+                            <div class="col-6">
+                                <table class="table table-sm" style="border:1px solid #d8e4ed;">
+                                    <tr><td>Untaxed</td><td class="text-end"><span t-field="doc.amount_untaxed"/></td></tr>
+                                    <tr><td>Tax</td><td class="text-end"><span t-field="doc.amount_tax"/></td></tr>
+                                    <tr><td>Delivery</td><td class="text-end"><span t-field="doc.delivery_charge"/></td></tr>
+                                    <tr><td>Discount</td><td class="text-end"><span t-field="doc.discount_amount"/></td></tr>
+                                    <tr style="background:#eaf7fa;"><th>Total</th><th class="text-end"><span t-field="doc.amount_total"/></th></tr>
+                                    <tr><td>Received</td><td class="text-end"><span t-field="doc.advance_paid"/></td></tr>
+                                    <tr style="background:#fff5e8;"><th>Balance</th><th class="text-end"><span t-field="doc.balance_amount"/></th></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_garment_tags">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.basic_layout">
+                    <div class="page">
+                        <h3 style="color:#12456f; font-weight:800;">Garment Tags - <span t-field="doc.name"/></h3>
+                        <div class="row">
+                            <div class="col-4 mb16" t-foreach="doc.line_ids" t-as="line">
+                                <div style="border:1px solid #2bbbd3; border-radius:6px; padding:8px; min-height:110px; font-size:11px;">
+                                    <strong><span t-field="line.tag_number"/></strong><br/>
+                                    <span t-field="doc.partner_id"/><br/>
+                                    <span t-field="line.name"/><br/>
+                                    <span t-field="line.barcode"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_advance_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page aimaze-report-page" style="font-size:12px; color:#102a43;">
+                        <div style="border-bottom:3px solid #2bbbd3; padding-bottom:12px; margin-bottom:14px;">
+                            <h2 style="color:#12456f; font-size:22px; font-weight:800; margin:0;">Advance Payment Receipt</h2>
+                            <div style="color:#6b778c;">AimAze Laundry ERP</div>
+                        </div>
+                        <div style="border:1px solid #d8e4ed; border-radius:6px; padding:12px; background:#fbfdff;">
+                            <p><strong>Payment:</strong> <span t-field="doc.name"/></p>
+                            <p><strong>Order:</strong> <span t-field="doc.aimaze_laundry_order_id"/></p>
+                            <p><strong>Customer:</strong> <span t-field="doc.partner_id"/></p>
+                            <p><strong>Date:</strong> <span t-field="doc.date"/></p>
+                            <p><strong>Amount:</strong> <span t-field="doc.amount"/></p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_delivery_note">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page aimaze-report-page" style="font-size:12px; color:#102a43;">
+                        <div style="border-bottom:3px solid #2bbbd3; padding-bottom:12px; margin-bottom:14px;">
+                            <h2 style="color:#12456f; font-size:22px; font-weight:800; margin:0;">Delivery Note</h2>
+                            <div style="color:#6b778c;">AimAze Laundry ERP</div>
+                        </div>
+                        <div style="border:1px solid #d8e4ed; border-radius:6px; padding:12px; background:#fbfdff;">
+                            <p><strong>Job:</strong> <span t-field="doc.name"/></p>
+                            <p><strong>Type:</strong> <span t-field="doc.job_type"/></p>
+                            <p><strong>Order:</strong> <span t-field="doc.order_id"/></p>
+                            <p><strong>Customer:</strong> <span t-field="doc.partner_id"/></p>
+                            <p><strong>Driver:</strong> <span t-field="doc.driver_id"/></p>
+                            <p><strong>Address:</strong> <span t-field="doc.address"/></p>
+                            <p><strong>Status:</strong> <span t-field="doc.state"/></p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_cash_closing">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Daily Cash Closing</h2>
+                        <table class="table table-sm">
+                            <tr><td>Date</td><td><span t-field="doc.date"/></td></tr>
+                            <tr><td>Branch</td><td><span t-field="doc.branch_id"/></td></tr>
+                            <tr><td>Cashier</td><td><span t-field="doc.cashier_id"/></td></tr>
+                            <tr><td>Cash Received</td><td><span t-field="doc.cash_received"/></td></tr>
+                            <tr><td>Card Received</td><td><span t-field="doc.card_received"/></td></tr>
+                            <tr><td>Bank Received</td><td><span t-field="doc.bank_received"/></td></tr>
+                            <tr><td>Expected Cash</td><td><span t-field="doc.expected_cash"/></td></tr>
+                            <tr><td>Counted Cash</td><td><span t-field="doc.counted_cash"/></td></tr>
+                            <tr><th>Difference</th><th><span t-field="doc.difference"/></th></tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_inventory_usage">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Inventory Usage</h2>
+                        <p><strong>Reference:</strong> <span t-field="doc.name"/></p>
+                        <p><strong>Date:</strong> <span t-field="doc.date"/></p>
+                        <p><strong>Branch:</strong> <span t-field="doc.branch_id"/></p>
+                        <p><strong>Product:</strong> <span t-field="doc.product_id"/></p>
+                        <p><strong>Quantity:</strong> <span t-field="doc.quantity"/></p>
+                        <p><strong>Cost:</strong> <span t-field="doc.cost_amount"/></p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_machine_maintenance">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Machine Maintenance</h2>
+                        <p><strong>Machine:</strong> <span t-field="doc.name"/></p>
+                        <p><strong>Type:</strong> <span t-field="doc.machine_type"/></p>
+                        <p><strong>Branch:</strong> <span t-field="doc.branch_id"/></p>
+                        <p><strong>Status:</strong> <span t-field="doc.status"/></p>
+                        <p><strong>Last Maintenance:</strong> <span t-field="doc.last_maintenance_date"/></p>
+                        <p><strong>Next Maintenance:</strong> <span t-field="doc.next_maintenance_date"/></p>
+                        <p><strong>Downtime Hours:</strong> <span t-field="doc.downtime_hours"/></p>
+                        <p><strong>Repair Cost:</strong> <span t-field="doc.repair_cost"/></p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_staff_productivity">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Staff Productivity</h2>
+                        <p><strong>Staff:</strong> <span t-field="doc.employee_id"/></p>
+                        <p><strong>Order:</strong> <span t-field="doc.order_id"/></p>
+                        <p><strong>Stage:</strong> <span t-field="doc.process_stage"/></p>
+                        <p><strong>Quantity:</strong> <span t-field="doc.quantity_handled"/></p>
+                        <p><strong>Rewash:</strong> <span t-field="doc.rewash_count"/></p>
+                        <p><strong>QC Fail:</strong> <span t-field="doc.qc_fail_count"/></p>
+                        <p><strong>Score:</strong> <span t-field="doc.productivity_score"/></p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <template id="report_laundry_garment_label_phase3">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.basic_layout">
+                    <div class="page" style="width:58mm; min-height:38mm; padding:4mm; font-size:10px;">
+                        <div style="font-weight:700; font-size:13px;">AimAze Laundry ERP</div>
+                        <div t-if="doc.branch_id.commercial_registration">CR: <span t-field="doc.branch_id.commercial_registration"/></div>
+                        <div><strong><span t-field="doc.name"/></strong></div>
+                        <div>Order: <span t-field="doc.order_id.name"/></div>
+                        <div>Customer: <span t-field="doc.customer_id.name"/></div>
+                        <div>Garment: <span t-field="doc.garment_type"/></div>
+                        <div>Stage: <span t-field="doc.current_stage"/></div>
+                        <div style="border:1px solid #111; padding:4px; margin-top:4px; text-align:center; font-size:12px;">
+                            <span t-field="doc.barcode"/>
+                        </div>
+                        <div t-if="doc.rfid_tag_uid">RFID: <span t-field="doc.rfid_tag_uid"/></div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

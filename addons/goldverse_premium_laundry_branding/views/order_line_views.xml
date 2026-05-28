@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_order_form_goldverse_line_columns" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form.goldverse.line.columns</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list" position="replace">
+                <list editable="bottom">
+                    <field name="currency_id" column_invisible="1"/>
+                    <field name="goldverse_category_id" string="Category"/>
+                    <field name="goldverse_subcategory_id" string="Sub Category"/>
+                    <field name="service_id" string="Service Item" domain="[('category_id', '=', goldverse_category_id)]"/>
+                    <field name="goldverse_colour_id" string="Colour"/>
+                    <field name="goldverse_qc_option_id" string="QC"/>
+                    <field name="goldverse_topup_id" string="Add On"/>
+                    <field name="quantity" string="Qty"/>
+                    <field name="unit_price" string="Unit Price"/>
+                    <field name="goldverse_discount" string="Discount"/>
+                    <field name="tax_ids" string="Tax" widget="many2many_tags" readonly="1"/>
+                    <field name="goldverse_total_amount" string="Total Amount" readonly="1"/>
+                </list>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/ancestor::page[1]//group[hasclass('alm-total-box')]" position="attributes">
+                <attribute name="class">alm-total-box goldverse-total-box</attribute>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/ancestor::page[1]//field[@name='total_qty']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='discount_amount']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='amount_tax']" position="after">
+                <xpath expr="//field[@name='delivery_charge']" position="move"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/ancestor::page[1]" position="after">
+                <page string="Warehouse Receiving">
+                    <field name="line_ids" readonly="1">
+                        <list>
+                            <field name="name" string="Line"/>
+                            <field name="service_id" string="Service Item"/>
+                            <field name="goldverse_colour_id" string="Colour"/>
+                            <field name="quantity" string="Qty"/>
+                            <field name="warehouse_sent_datetime"/>
+                            <field name="warehouse_received_datetime"/>
+                            <field name="warehouse_received" widget="boolean_toggle"/>
+                            <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_line_warehouse_movement_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.line.warehouse.movement.list</field>
+        <field name="model">aimaze.laundry.order.line</field>
+        <field name="arch" type="xml">
+            <list string="Warehouse Movement Report" create="0">
+                <field name="order_id"/>
+                <field name="name" string="Line"/>
+                <field name="service_id" string="Service Item"/>
+                <field name="goldverse_colour_id" string="Colour"/>
+                <field name="quantity" string="Qty"/>
+                <field name="branch_id"/>
+                <field name="warehouse_sent_datetime"/>
+                <field name="warehouse_received_datetime"/>
+                <field name="warehouse_received" widget="boolean_toggle"/>
+                <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received"/>
+            </list>
+        </field>
+    </record>
+</odoo>

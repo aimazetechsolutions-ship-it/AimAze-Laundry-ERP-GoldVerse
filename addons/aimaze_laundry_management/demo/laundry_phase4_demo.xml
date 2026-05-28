@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_company_uae_phase4" model="res.company">
+        <field name="name">AimAze Laundry ERP UAE Demo</field>
+        <field name="country_id" search="[('code','=','AE')]"/>
+        <field name="currency_id" search="[('name','=','AED')]"/>
+    </record>
+    <record id="demo_company_pakistan_phase4" model="res.company">
+        <field name="name">AimAze Laundry ERP Pakistan Demo</field>
+        <field name="country_id" search="[('code','=','PK')]"/>
+        <field name="currency_id" search="[('name','=','PKR')]"/>
+    </record>
+
+    <record id="demo_partner_customer_uae_phase4" model="res.partner">
+        <field name="name">Demo Customer Dubai Marina</field>
+        <field name="phone">+971500100100</field>
+        <field name="laundry_trn">100000000000111</field>
+    </record>
+    <record id="demo_partner_customer_pk_phase4" model="res.partner">
+        <field name="name">Demo Customer Lahore DHA</field>
+        <field name="phone">+923001001001</field>
+    </record>
+    <record id="demo_partner_hotel_phase4" model="res.partner">
+        <field name="name">Demo Business Hotel Linen Account</field>
+        <field name="phone">+971500200200</field>
+        <field name="laundry_trn">100000000000222</field>
+    </record>
+
+    <record id="demo_branch_dubai_phase4" model="aimaze.laundry.branch">
+        <field name="name">Dubai Marina Demo Branch</field>
+        <field name="code">DXB-MAR</field>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+        <field name="phone">+97144001000</field>
+        <field name="commercial_registration">DXB-DEMO-2026</field>
+        <field name="tax_registration_number">100000000000111</field>
+    </record>
+    <record id="demo_branch_lahore_phase4" model="aimaze.laundry.branch">
+        <field name="name">Lahore DHA Demo Branch</field>
+        <field name="code">LHE-DHA</field>
+        <field name="company_id" ref="demo_company_pakistan_phase4"/>
+        <field name="phone">+924200100100</field>
+        <field name="commercial_registration">LHE-DEMO-2026</field>
+    </record>
+
+    <record id="demo_service_premium_wash_phase4" model="aimaze.laundry.service">
+        <field name="name">Demo Premium Wash and Fold</field>
+        <field name="code">P-WF</field>
+        <field name="pricing_method">piece</field>
+        <field name="list_price">25.0</field>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+    </record>
+    <record id="demo_service_linen_phase4" model="aimaze.laundry.service">
+        <field name="name">Demo Hotel Linen Cleaning</field>
+        <field name="code">H-LINEN</field>
+        <field name="pricing_method">kg</field>
+        <field name="list_price">8.0</field>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+    </record>
+    <record id="demo_service_pk_iron_phase4" model="aimaze.laundry.service">
+        <field name="name">Demo Steam Ironing</field>
+        <field name="code">PK-IRON</field>
+        <field name="pricing_method">piece</field>
+        <field name="list_price">120.0</field>
+        <field name="company_id" ref="demo_company_pakistan_phase4"/>
+    </record>
+
+    <record id="demo_employee_driver_phase4" model="hr.employee">
+        <field name="name">Demo Driver Mobile User</field>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+    </record>
+    <record id="demo_employee_qc_phase4" model="hr.employee">
+        <field name="name">Demo QC Specialist</field>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+    </record>
+
+    <record id="demo_order_uae_phase4" model="aimaze.laundry.order">
+        <field name="partner_id" ref="demo_partner_customer_uae_phase4"/>
+        <field name="branch_id" ref="demo_branch_dubai_phase4"/>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+        <field name="source">mobile_app</field>
+        <field name="priority">express</field>
+        <field name="pickup_required" eval="True"/>
+        <field name="delivery_required" eval="True"/>
+        <field name="line_ids" eval="[(0, 0, {'service_id': ref('demo_service_premium_wash_phase4'), 'name': 'Premium Wash - Shirts', 'quantity': 5, 'unit_price': 25.0})]"/>
+    </record>
+    <record id="demo_order_corporate_phase4" model="aimaze.laundry.order">
+        <field name="partner_id" ref="demo_partner_hotel_phase4"/>
+        <field name="branch_id" ref="demo_branch_dubai_phase4"/>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+        <field name="source">corporate_contract</field>
+        <field name="customer_type">hotel</field>
+        <field name="line_ids" eval="[(0, 0, {'service_id': ref('demo_service_linen_phase4'), 'name': 'Hotel Linen 80kg', 'quantity': 80, 'unit_price': 8.0})]"/>
+    </record>
+    <record id="demo_delivery_phase4" model="aimaze.laundry.delivery">
+        <field name="job_type">pickup_delivery</field>
+        <field name="order_id" ref="demo_order_uae_phase4"/>
+        <field name="partner_id" ref="demo_partner_customer_uae_phase4"/>
+        <field name="branch_id" ref="demo_branch_dubai_phase4"/>
+        <field name="driver_id" ref="demo_employee_driver_phase4"/>
+        <field name="address">Dubai Marina, Dubai</field>
+        <field name="state">assigned</field>
+    </record>
+    <record id="demo_qc_phase4" model="aimaze.laundry.qc">
+        <field name="order_id" ref="demo_order_uae_phase4"/>
+        <field name="qc_staff_id" ref="demo_employee_qc_phase4"/>
+        <field name="result">pass</field>
+        <field name="remarks">Demo QC passed.</field>
+    </record>
+    <record id="demo_complaint_phase4" model="aimaze.laundry.complaint">
+        <field name="partner_id" ref="demo_partner_customer_uae_phase4"/>
+        <field name="order_id" ref="demo_order_uae_phase4"/>
+        <field name="complaint_type">delay</field>
+        <field name="notes">Demo complaint for SLA reporting.</field>
+    </record>
+    <record id="demo_machine_phase4" model="aimaze.laundry.machine">
+        <field name="name">Demo Washer 25kg</field>
+        <field name="machine_type">washer</field>
+        <field name="branch_id" ref="demo_branch_dubai_phase4"/>
+        <field name="capacity">25kg</field>
+        <field name="status">running</field>
+        <field name="running_hours">420</field>
+    </record>
+    <record id="demo_saas_tenant_phase4" model="aimaze.laundry.saas.tenant">
+        <field name="name">Demo UAE Tenant</field>
+        <field name="tenant_code">DEMO-UAE</field>
+        <field name="company_id" ref="demo_company_uae_phase4"/>
+        <field name="domain">laundry-demo.example.com</field>
+        <field name="database_strategy">single_db</field>
+        <field name="max_branches">5</field>
+        <field name="max_users">50</field>
+    </record>
+</odoo>

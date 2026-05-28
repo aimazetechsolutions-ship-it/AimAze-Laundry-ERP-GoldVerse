@@ -1,0 +1,37 @@
+{
+    "name": "GoldVerse Premium Laundry Branding",
+    "summary": "Client-specific login branding for the GoldVerse Premium Laundry tenant",
+    "version": "19.0.1.0.0",
+    "category": "Services/Laundry",
+    "author": "AimAze Tech Solutions",
+    "website": "https://aimazetechsolutions.com",
+    "license": "LGPL-3",
+    "depends": [
+        "aimaze_laundry_management",
+        "base_accounting_kit",
+        "l10n_pk",
+        "web",
+    ],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/pakistan_defaults.xml",
+        "data/goldverse_dropdown_data.xml",
+        "data/goldverse_qc_addon_data.xml",
+        "data/order_flow_defaults.xml",
+        "data/menu_cleanup.xml",
+        "views/login_branding_views.xml",
+        "views/goldverse_config_views.xml",
+        "views/dashboard_views.xml",
+        "views/order_line_views.xml",
+        "views/order_flow_views.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "goldverse_premium_laundry_branding/static/src/js/goldverse_account_report_drilldown.js",
+            "goldverse_premium_laundry_branding/static/src/xml/goldverse_account_report_drilldown.xml",
+            "goldverse_premium_laundry_branding/static/src/scss/goldverse_backend.scss",
+        ],
+    },
+    "application": False,
+    "installable": True,
+}

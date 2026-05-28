@@ -1,0 +1,61 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_laundry_branch_admin,aimaze.laundry.branch admin,model_aimaze_laundry_branch,group_laundry_admin,1,1,1,1
+access_laundry_branch_manager,aimaze.laundry.branch manager,model_aimaze_laundry_branch,group_branch_manager,1,1,0,0
+access_laundry_service_category_admin,aimaze.laundry.service.category admin,model_aimaze_laundry_service_category,group_laundry_admin,1,1,1,1
+access_laundry_service_user,aimaze.laundry.service user,model_aimaze_laundry_service,base.group_user,1,0,0,0
+access_laundry_service_admin,aimaze.laundry.service admin,model_aimaze_laundry_service,group_laundry_admin,1,1,1,1
+access_laundry_rate_card_admin,aimaze.laundry.rate.card admin,model_aimaze_laundry_rate_card,group_laundry_admin,1,1,1,1
+access_laundry_rate_card_line_admin,aimaze.laundry.rate.card.line admin,model_aimaze_laundry_rate_card_line,group_laundry_admin,1,1,1,1
+access_laundry_contract_user,aimaze.laundry.contract user,model_aimaze_laundry_contract,group_corporate_manager,1,1,1,0
+access_laundry_contract_admin,aimaze.laundry.contract admin,model_aimaze_laundry_contract,group_laundry_admin,1,1,1,1
+access_laundry_order_user,aimaze.laundry.order user,model_aimaze_laundry_order,base.group_user,1,1,1,0
+access_laundry_order_admin,aimaze.laundry.order admin,model_aimaze_laundry_order,group_laundry_admin,1,1,1,1
+access_laundry_order_line_user,aimaze.laundry.order.line user,model_aimaze_laundry_order_line,base.group_user,1,1,1,1
+access_laundry_delivery_user,aimaze.laundry.delivery user,model_aimaze_laundry_delivery,base.group_user,1,1,1,0
+access_laundry_delivery_admin,aimaze.laundry.delivery admin,model_aimaze_laundry_delivery,group_laundry_admin,1,1,1,1
+access_laundry_delivery_zone_admin,aimaze.laundry.delivery.zone admin,model_aimaze_laundry_delivery_zone,group_laundry_admin,1,1,1,1
+access_laundry_inventory_usage_user,aimaze.laundry.inventory.usage user,model_aimaze_laundry_inventory_usage,base.group_user,1,1,1,0
+access_laundry_inventory_usage_admin,aimaze.laundry.inventory.usage admin,model_aimaze_laundry_inventory_usage,group_laundry_admin,1,1,1,1
+access_laundry_machine_user,aimaze.laundry.machine user,model_aimaze_laundry_machine,base.group_user,1,1,1,0
+access_laundry_staff_task_user,aimaze.laundry.staff.task user,model_aimaze_laundry_staff_task,base.group_user,1,1,1,0
+access_laundry_qc_user,aimaze.laundry.qc user,model_aimaze_laundry_qc,base.group_user,1,1,1,0
+access_laundry_complaint_user,aimaze.laundry.complaint user,model_aimaze_laundry_complaint,base.group_user,1,1,1,0
+access_laundry_barcode_scan_user,aimaze.laundry.barcode.scan user,model_aimaze_laundry_barcode_scan,base.group_user,1,1,1,0
+access_laundry_payment_method_admin,aimaze.laundry.payment.method admin,model_aimaze_laundry_payment_method,group_laundry_admin,1,1,1,1
+access_laundry_payment_wizard,aimaze.laundry.payment.wizard,model_aimaze_laundry_payment_wizard,base.group_user,1,1,1,1
+access_laundry_membership_plan_user,aimaze.laundry.membership.plan user,model_aimaze_laundry_membership_plan,base.group_user,1,0,0,0
+access_laundry_membership_plan_admin,aimaze.laundry.membership.plan admin,model_aimaze_laundry_membership_plan,group_laundry_admin,1,1,1,1
+access_laundry_loyalty_transaction_user,aimaze.laundry.loyalty.transaction user,model_aimaze_laundry_loyalty_transaction,base.group_user,1,1,1,0
+access_laundry_notification_log_user,aimaze.laundry.notification.log user,model_aimaze_laundry_notification_log,base.group_user,1,1,1,0
+access_laundry_cash_closing_user,aimaze.laundry.cash.closing user,model_aimaze_laundry_cash_closing,base.group_user,1,1,1,0
+access_laundry_dashboard_user,aimaze.laundry.dashboard user,model_aimaze_laundry_dashboard,base.group_user,1,0,0,0
+access_laundry_garment_user,aimaze.laundry.garment user,model_aimaze_laundry_garment,base.group_user,1,1,1,0
+access_laundry_garment_admin,aimaze.laundry.garment admin,model_aimaze_laundry_garment,group_laundry_admin,1,1,1,1
+access_laundry_garment_history_user,aimaze.laundry.garment.history user,model_aimaze_laundry_garment_history,base.group_user,1,0,0,0
+access_notification_provider_admin,aimaze.notification.provider admin,model_aimaze_notification_provider,group_laundry_admin,1,1,1,1
+access_notification_template_admin,aimaze.notification.template admin,model_aimaze_notification_template,group_laundry_admin,1,1,1,1
+access_notification_queue_user,aimaze.notification.queue user,model_aimaze_notification_queue,base.group_user,1,1,1,0
+access_notification_queue_admin,aimaze.notification.queue admin,model_aimaze_notification_queue,group_laundry_admin,1,1,1,1
+access_customer_wallet_user,aimaze.customer.wallet user,model_aimaze_customer_wallet,base.group_user,1,0,0,0
+access_customer_wallet_admin,aimaze.customer.wallet admin,model_aimaze_customer_wallet,group_laundry_admin,1,1,1,1
+access_wallet_transaction_user,aimaze.customer.wallet.transaction user,model_aimaze_customer_wallet_transaction,base.group_user,1,1,1,0
+access_wallet_transaction_admin,aimaze.customer.wallet.transaction admin,model_aimaze_customer_wallet_transaction,group_laundry_admin,1,1,1,1
+access_subscription_package_user,aimaze.laundry.subscription.package user,model_aimaze_laundry_subscription_package,base.group_user,1,0,0,0
+access_subscription_package_admin,aimaze.laundry.subscription.package admin,model_aimaze_laundry_subscription_package,group_laundry_admin,1,1,1,1
+access_laundry_subscription_user,aimaze.laundry.subscription user,model_aimaze_laundry_subscription,base.group_user,1,1,1,0
+access_laundry_subscription_admin,aimaze.laundry.subscription admin,model_aimaze_laundry_subscription,group_laundry_admin,1,1,1,1
+access_laundry_account_config_admin,aimaze.laundry.account.config admin,model_aimaze_laundry_account_config,group_laundry_admin,1,1,1,1
+access_branch_profitability_user,aimaze.laundry.branch.profitability user,model_aimaze_laundry_branch_profitability,base.group_user,1,0,0,0
+access_branch_profitability_manager,aimaze.laundry.branch.profitability manager,model_aimaze_laundry_branch_profitability,group_branch_manager,1,1,1,0
+access_branch_profitability_admin,aimaze.laundry.branch.profitability admin,model_aimaze_laundry_branch_profitability,group_laundry_admin,1,1,1,1
+access_laundry_executive_dashboard_user,aimaze.laundry.executive.dashboard user,model_aimaze_laundry_executive_dashboard,base.group_user,1,1,1,1
+access_quick_order_wizard,aimaze.laundry.quick.order.wizard,model_aimaze_laundry_quick_order_wizard,base.group_user,1,1,1,1
+access_quick_order_wizard_line,aimaze.laundry.quick.order.wizard.line,model_aimaze_laundry_quick_order_wizard_line,base.group_user,1,1,1,1
+access_laundry_ai_analysis_user,aimaze.laundry.ai.analysis user,model_aimaze_laundry_ai_analysis,base.group_user,1,1,1,0
+access_laundry_ai_analysis_admin,aimaze.laundry.ai.analysis admin,model_aimaze_laundry_ai_analysis,group_laundry_admin,1,1,1,1
+access_laundry_scan_wizard,aimaze.laundry.scan.wizard,model_aimaze_laundry_scan_wizard,base.group_user,1,1,1,1
+access_laundry_setup_wizard,aimaze.laundry.setup.wizard,model_aimaze_laundry_setup_wizard,group_laundry_admin,1,1,1,1
+access_laundry_saas_tenant_admin,aimaze.laundry.saas.tenant admin,model_aimaze_laundry_saas_tenant,group_laundry_admin,1,1,1,1
+access_laundry_integration_log_admin,aimaze.laundry.integration.log admin,model_aimaze_laundry_integration_log,group_laundry_admin,1,1,1,1
+access_laundry_integration_log_branch_manager,aimaze.laundry.integration.log branch manager,model_aimaze_laundry_integration_log,group_branch_manager,1,0,0,0
+access_laundry_backup_config_admin,aimaze.laundry.backup.config admin,model_aimaze_laundry_backup_config,group_laundry_admin,1,1,1,1

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="demo_branch_main" model="aimaze.laundry.branch">
+        <field name="name">Main Laundry Branch</field>
+        <field name="code">MAIN</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="phone">+971000000000</field>
+    </record>
+    <record id="demo_delivery_zone_city" model="aimaze.laundry.delivery.zone">
+        <field name="name">City Zone</field>
+        <field name="branch_id" ref="demo_branch_main"/>
+        <field name="delivery_charge">10.0</field>
+    </record>
+</odoo>

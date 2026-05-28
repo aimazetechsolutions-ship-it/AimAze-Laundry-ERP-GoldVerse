@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_laundry_delivery" model="ir.actions.act_window">
+        <field name="name">Pickup &amp; Delivery Jobs</field>
+        <field name="res_model">aimaze.laundry.delivery</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+    <record id="view_laundry_delivery_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.list</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="arch" type="xml">
+            <list string="Pickup and Delivery">
+                <field name="name" optional="show"/>
+                <field name="job_type" optional="show" widget="badge"/>
+                <field name="order_id" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="driver_id" optional="show"/>
+                <field name="pickup_datetime" optional="show"/>
+                <field name="delivery_datetime" optional="show"/>
+                <field name="state" optional="show" widget="badge" decoration-warning="state in ('scheduled','assigned','in_transit')" decoration-success="state in ('picked_up','delivered')" decoration-danger="state in ('failed_pickup','failed_delivery','cancelled')"/>
+                <field name="delivery_charge" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_delivery_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.form</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="arch" type="xml">
+            <form string="Pickup and Delivery">
+                <header>
+                    <button name="action_assigned" type="object" string="Assign" class="btn-primary"/>
+                    <button name="action_picked_up" type="object" string="Picked Up" class="alm-btn-info"/>
+                    <button name="action_in_transit" type="object" string="In Transit" class="alm-btn-stage"/>
+                    <button name="action_delivered" type="object" string="Delivered" class="alm-btn-success"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="job_type" widget="radio"/>
+                            <field name="order_id"/>
+                            <field name="partner_id"/>
+                            <field name="branch_id"/>
+                            <field name="zone_id"/>
+                            <field name="address"/>
+                        </group>
+                        <group>
+                            <field name="driver_id"/>
+                            <field name="vehicle"/>
+                            <field name="pickup_datetime"/>
+                            <field name="delivery_datetime"/>
+                            <field name="delivery_charge"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Proof">
+                            <group>
+                                <field name="proof_receiver_name"/>
+                                <field name="proof_pickup" widget="image"/>
+                                <field name="proof_delivery" widget="image"/>
+                                <field name="signature_photo" widget="image"/>
+                            </group>
+                        </page>
+                        <page string="Failure / Driver Notes">
+                            <field name="remarks"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_laundry_qc" model="ir.actions.act_window">
+        <field name="name">Quality Control</field>
+        <field name="res_model">aimaze.laundry.qc</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+    <record id="action_laundry_barcode_scan" model="ir.actions.act_window">
+        <field name="name">Barcode / QR Scans</field>
+        <field name="res_model">aimaze.laundry.barcode.scan</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+    <record id="action_laundry_complaint" model="ir.actions.act_window">
+        <field name="name">Customer Complaints</field>
+        <field name="res_model">aimaze.laundry.complaint</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+    <record id="action_laundry_inventory_usage" model="ir.actions.act_window">
+        <field name="name">Consumable Usage</field>
+        <field name="res_model">aimaze.laundry.inventory.usage</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+    <record id="action_laundry_machine" model="ir.actions.act_window">
+        <field name="name">Machines</field>
+        <field name="res_model">aimaze.laundry.machine</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+    <record id="action_laundry_staff_task" model="ir.actions.act_window">
+        <field name="name">Staff Tasks &amp; Productivity</field>
+        <field name="res_model">aimaze.laundry.staff.task</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+    </record>
+    <record id="action_laundry_notification_log" model="ir.actions.act_window">
+        <field name="name">Notification Logs</field>
+        <field name="res_model">aimaze.laundry.notification.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_stock_items" model="ir.actions.act_window">
+        <field name="name">Stock Items</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('type', 'in', ('consu','product'))]</field>
+    </record>
+    <record id="action_laundry_purchase_requests" model="ir.actions.act_window">
+        <field name="name">Purchase Requests</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_maintenance_requests" model="ir.actions.act_window">
+        <field name="name">Maintenance Requests</field>
+        <field name="res_model">maintenance.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_membership_plan" model="ir.actions.act_window">
+        <field name="name">Membership Plans</field>
+        <field name="res_model">aimaze.laundry.membership.plan</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_laundry_loyalty_transaction" model="ir.actions.act_window">
+        <field name="name">Loyalty Transactions</field>
+        <field name="res_model">aimaze.laundry.loyalty.transaction</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+    <record id="action_laundry_contract" model="ir.actions.act_window">
+        <field name="name">Corporate Contracts</field>
+        <field name="res_model">aimaze.laundry.contract</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+    <record id="action_laundry_customers" model="ir.actions.act_window">
+        <field name="name">Laundry Customers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('customer_rank', '&gt;', 0)]</field>
+    </record>
+</odoo>

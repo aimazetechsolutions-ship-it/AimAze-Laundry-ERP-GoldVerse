@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="aimaze_laundry_management.InteractiveAccountReportDateFilter"
+       t-inherit="base_accounting_kit.InteractiveAccountReport"
+       t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'o_account_date_range_dropdown')]/div[contains(@class, 'o_account_custom_date_popover')]" position="replace">
+            <div t-if="state.dateMenuOpen &amp;&amp; !state.accountCustomDateOpen" class="o_account_period_menu">
+                <div t-att-class="periodRowClass('month')">
+                    <button type="button" class="o_account_period_select" t-on-click="() => this.selectPeriod('month')">
+                        <span class="o_account_period_check"><i t-if="(options.period || 'month') === 'month'" class="fa fa-check"/></span>
+                        <span>Month</span>
+                    </button>
+                    <button type="button" class="o_account_period_arrow" t-on-click="(ev) => this.shiftPeriod('month', -1, ev)">
+                        <i class="fa fa-caret-left"/>
+                    </button>
+                    <button type="button" class="o_account_period_value" t-on-click="() => this.selectPeriod('month')">
+                        <t t-esc="periodOptionLabel('month')"/>
+                    </button>
+                    <button type="button" class="o_account_period_arrow" t-on-click="(ev) => this.shiftPeriod('month', 1, ev)">
+                        <i class="fa fa-caret-right"/>
+                    </button>
+                </div>
+                <div t-att-class="periodRowClass('quarter')">
+                    <button type="button" class="o_account_period_select" t-on-click="() => this.selectPeriod('quarter')">
+                        <span class="o_account_period_check"><i t-if="options.period === 'quarter'" class="fa fa-check"/></span>
+                        <span>Quarter</span>
+                    </button>
+                    <button type="button" class="o_account_period_arrow" t-on-click="(ev) => this.shiftPeriod('quarter', -1, ev)">
+                        <i class="fa fa-caret-left"/>
+                    </button>
+                    <button type="button" class="o_account_period_value" t-on-click="() => this.selectPeriod('quarter')">
+                        <t t-esc="periodOptionLabel('quarter')"/>
+                    </button>
+                    <button type="button" class="o_account_period_arrow" t-on-click="(ev) => this.shiftPeriod('quarter', 1, ev)">
+                        <i class="fa fa-caret-right"/>
+                    </button>
+                </div>
+                <div t-att-class="periodRowClass('year')">
+                    <button type="button" class="o_account_period_select" t-on-click="() => this.selectPeriod('year')">
+                        <span class="o_account_period_check"><i t-if="options.period === 'year'" class="fa fa-check"/></span>
+                        <span>Year</span>
+                    </button>
+                    <button type="button" class="o_account_period_arrow" t-on-click="(ev) => this.shiftPeriod('year', -1, ev)">
+                        <i class="fa fa-caret-left"/>
+                    </button>
+                    <button type="button" class="o_account_period_value" t-on-click="() => this.selectPeriod('year')">
+                        <t t-esc="periodOptionLabel('year')"/>
+                    </button>
+                    <button type="button" class="o_account_period_arrow" t-on-click="(ev) => this.shiftPeriod('year', 1, ev)">
+                        <i class="fa fa-caret-right"/>
+                    </button>
+                </div>
+                <button type="button" class="o_account_period_custom" t-on-click="(ev) => this.openCustomDateEditor(ev)">
+                    <i class="fa fa-calendar-o"/>
+                    <span>Custom Dates...</span>
+                </button>
+            </div>
+            <div t-if="state.dateMenuOpen &amp;&amp; state.accountCustomDateOpen" class="o_account_custom_date_popover o_account_custom_date_popover_compact">
+                <button type="button" class="o_account_custom_date_back" t-on-click="(ev) => this.backToPeriodMenu(ev)">
+                    <i class="fa fa-caret-left"/>
+                    <span>Periods</span>
+                </button>
+                <label>From</label>
+                <input type="date" class="form-control" t-att-value="state.pendingDateFrom" t-on-change="(ev) => this.setPendingCustomStart(ev.target.value)"/>
+                <label>To</label>
+                <input type="date" class="form-control" t-att-value="state.pendingDateTo" t-on-change="(ev) => this.setPendingCustomEnd(ev.target.value)"/>
+                <div class="o_account_custom_date_actions">
+                    <button type="button" class="o_account_custom_date_cancel" t-on-click="() => this.cancelCustomRange()">Cancel</button>
+                    <button type="button" class="o_account_custom_date_apply" t-on-click="() => this.applyCustomRange()">Apply Range</button>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

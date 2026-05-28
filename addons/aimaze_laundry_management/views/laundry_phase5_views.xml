@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_executive_dashboard_form_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.executive.dashboard.form.phase5</field>
+        <field name="model">aimaze.laundry.executive.dashboard</field>
+        <field name="inherit_id" ref="view_laundry_executive_dashboard_form_phase3"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='branch_id']" position="attributes">
+                <attribute name="class">aimaze-dashboard-branch-filter</attribute>
+            </xpath>
+            <xpath expr="//div[hasclass('alm-dashboard-grid')]" position="replace">
+                <div class="aimaze-dashboard-shell">
+                    <div class="aimaze-dashboard-hero">
+                        <div>
+                            <h2 class="aimaze-gradient-title">Executive Command Center</h2>
+                            <p>Live revenue, operations, branch performance, receivables, and service risk signals.</p>
+                        </div>
+                        <div class="aimaze-dashboard-actions">
+                            <div class="aimaze-report-filter-strip">
+                                <field name="period_filter" widget="selection_badge" nolabel="1" class="aimaze-segmented-field"/>
+                                <field name="date_from" invisible="1"/>
+                                <field name="date_to" invisible="1"/>
+                                <div class="aimaze-custom-range-wrapper" invisible="period_filter != 'custom'">
+                                    <a class="aimaze-date-range-pill" role="button">
+                                        <i class="fa fa-calendar-o" title="Date range"/>
+                                        <field name="date_range_label" nolabel="1" readonly="1" class="aimaze-date-range-label"/>
+                                        <i class="fa fa-caret-down aimaze-range-caret" title="Open date range"/>
+                                    </a>
+                                    <div class="aimaze-date-popover">
+                                        <div class="aimaze-date-popover-body">
+                                            <span class="o_form_label">From</span>
+                                            <input type="date" class="aimaze-range-native-input aimaze-date-from-input"/>
+                                            <span class="o_form_label">To</span>
+                                            <input type="date" class="aimaze-range-native-input aimaze-date-to-input"/>
+                                        </div>
+                                        <div class="aimaze-date-popover-footer">
+                                            <a class="btn btn-light aimaze-range-cancel" role="button">Cancel</a>
+                                            <a class="btn btn-primary aimaze-range-apply" role="button">Apply Range</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="aimaze-status-badge">AimAze Laundry ERP</div>
+                        </div>
+                    </div>
+                    <div class="alm-dashboard-grid aimaze-premium-grid">
+                        <div class="alm-kpi-card alm-kpi-primary"><span>Today Sales</span><strong><field name="today_sales"/></strong></div>
+                        <div class="alm-kpi-card alm-kpi-success"><span>Monthly Sales</span><strong><field name="month_sales"/></strong></div>
+                        <div class="alm-kpi-card alm-kpi-warning"><span>Pending Orders</span><strong><field name="pending_orders"/></strong></div>
+                        <div class="alm-kpi-card alm-kpi-info"><span>Ready Orders</span><strong><field name="ready_orders"/></strong></div>
+                        <div class="alm-kpi-card alm-kpi-success"><span>Delivered</span><strong><field name="delivered_orders"/></strong></div>
+                        <div class="alm-kpi-card alm-kpi-danger"><span>Delayed</span><strong><field name="delayed_orders"/></strong></div>
+                        <div class="alm-kpi-card"><span>Open Complaints</span><strong><field name="open_complaints"/></strong></div>
+                        <div class="alm-kpi-card"><span>Rewash Ratio</span><strong><field name="rewash_ratio"/></strong></div>
+                        <div class="alm-kpi-card"><span>Wallet Liability</span><strong><field name="wallet_liability"/></strong></div>
+                        <div class="alm-kpi-card"><span>Advance Liability</span><strong><field name="advance_liability"/></strong></div>
+                        <div class="alm-kpi-card"><span>Receivables</span><strong><field name="outstanding_receivables"/></strong></div>
+                        <div class="alm-kpi-card"><span>Branch Profit</span><strong><field name="branch_profitability"/></strong></div>
+                        <div class="alm-kpi-card"><span>Staff Score</span><strong><field name="staff_productivity"/></strong></div>
+                        <div class="alm-kpi-card"><span>Driver Performance</span><strong><field name="driver_performance"/></strong></div>
+                        <div class="alm-kpi-card"><span>Machine Utilization</span><strong><field name="machine_utilization"/></strong></div>
+                        <div class="alm-kpi-card alm-kpi-danger"><span>Low Stock</span><strong><field name="inventory_low_stock"/></strong></div>
+                    </div>
+                    <div class="aimaze-alert-strip">
+                        <div class="aimaze-alert">Delayed order and branch SLA alerts are highlighted for managers.</div>
+                        <div class="aimaze-alert aimaze-alert-danger">Rewash, complaints, and low stock should be reviewed daily.</div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_kanban_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.kanban.phase5</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="view_laundry_order_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="inside">
+                <field name="state"/>
+                <field name="priority"/>
+                <field name="payment_status"/>
+                <field name="expected_delivery_datetime"/>
+                <field name="is_delayed"/>
+            </xpath>
+            <xpath expr="//kanban/templates/t[@t-name='card']" position="replace">
+                <t t-name="card">
+                    <div class="o_kanban_record aimaze-kanban-card">
+                        <div class="aimaze-kanban-top">
+                            <span class="aimaze-kanban-title"><field name="name"/></span>
+                            <span class="aimaze-badge" t-if="record.state.raw_value"><field name="state"/></span>
+                        </div>
+                        <div class="aimaze-kanban-meta"><field name="partner_id"/></div>
+                        <div>
+                            <span t-if="record.priority.raw_value == 'express'" class="aimaze-badge aimaze-badge-danger">Express</span>
+                            <span t-if="record.priority.raw_value == 'urgent'" class="aimaze-badge aimaze-badge-warning">Urgent</span>
+                            <span t-if="record.is_delayed.raw_value" class="aimaze-badge aimaze-badge-danger">Delayed</span>
+                        </div>
+                        <div class="aimaze-kanban-footer">
+                            <strong><field name="amount_total" widget="monetary"/></strong>
+                            <span class="aimaze-badge aimaze-badge-dark"><field name="payment_status"/></span>
+                        </div>
+                    </div>
+                </t>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_kanban_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.kanban.phase5</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="inherit_id" ref="view_laundry_garment_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="inside">
+                <field name="barcode"/>
+                <field name="qc_result"/>
+                <field name="lost_item"/>
+                <field name="rewash_count"/>
+                <field name="current_stage"/>
+            </xpath>
+            <xpath expr="//kanban/templates/t[@t-name='card']" position="replace">
+                <t t-name="card">
+                    <div class="o_kanban_record aimaze-kanban-card">
+                        <div class="aimaze-kanban-top">
+                            <span class="aimaze-kanban-title"><field name="name"/></span>
+                            <span class="aimaze-badge"><field name="current_stage"/></span>
+                        </div>
+                        <div class="aimaze-kanban-meta"><field name="garment_type"/> - <field name="customer_id"/></div>
+                        <div>
+                            <span class="aimaze-badge aimaze-badge-dark"><field name="barcode"/></span>
+                            <span t-if="record.rewash_count.raw_value &gt; 0" class="aimaze-badge aimaze-badge-warning">Rewash</span>
+                            <span t-if="record.lost_item.raw_value" class="aimaze-badge aimaze-badge-danger">Lost</span>
+                        </div>
+                        <div class="aimaze-timeline">
+                            <span class="aimaze-timeline-step">Received</span>
+                            <span class="aimaze-timeline-step">Wash</span>
+                            <span class="aimaze-timeline-step">QC</span>
+                            <span class="aimaze-timeline-step">Ready</span>
+                        </div>
+                    </div>
+                </t>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_delivery_kanban_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.kanban.phase5</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="name"/>
+                <field name="job_type"/>
+                <field name="partner_id"/>
+                <field name="driver_id"/>
+                <field name="address"/>
+                <field name="state"/>
+                <field name="cash_collected"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record aimaze-driver-card">
+                            <div class="aimaze-kanban-top">
+                                <span class="aimaze-kanban-title"><field name="name"/></span>
+                                <span class="aimaze-badge"><field name="state"/></span>
+                            </div>
+                            <div class="aimaze-kanban-meta"><field name="partner_id"/></div>
+                            <div class="aimaze-kanban-meta"><field name="address"/></div>
+                            <div class="aimaze-driver-actions">
+                                <span class="aimaze-badge aimaze-badge-dark"><field name="job_type"/></span>
+                                <span class="aimaze-badge aimaze-badge-success">Cash <field name="cash_collected"/></span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_laundry_complaint_kanban_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.complaint.kanban.phase5</field>
+        <field name="model">aimaze.laundry.complaint</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="complaint_type"/>
+                <field name="priority"/>
+                <field name="state"/>
+                <field name="compensation_amount"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record aimaze-kanban-card">
+                            <div class="aimaze-kanban-top">
+                                <span class="aimaze-kanban-title"><field name="name"/></span>
+                                <span t-if="record.priority.raw_value == 'urgent'" class="aimaze-badge aimaze-badge-danger">Urgent</span>
+                            </div>
+                            <div class="aimaze-kanban-meta"><field name="partner_id"/></div>
+                            <div class="aimaze-kanban-footer">
+                                <span class="aimaze-badge aimaze-badge-warning"><field name="complaint_type"/></span>
+                                <strong><field name="compensation_amount"/></strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_laundry_delivery" model="ir.actions.act_window">
+        <field name="name">Pickup &amp; Delivery Jobs</field>
+        <field name="res_model">aimaze.laundry.delivery</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+    </record>
+
+    <record id="action_laundry_complaint" model="ir.actions.act_window">
+        <field name="name">Customer Complaints</field>
+        <field name="res_model">aimaze.laundry.complaint</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+    </record>
+
+    <record id="view_laundry_quick_order_wizard_form_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.quick.order.wizard.form.phase5</field>
+        <field name="model">aimaze.laundry.quick.order.wizard</field>
+        <field name="inherit_id" ref="view_laundry_quick_order_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="class">aimaze-pos-shell</attribute>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="before">
+                <div class="aimaze-dashboard-hero">
+                    <div>
+                        <h2 class="aimaze-pos-title">Quick Counter POS</h2>
+                        <p class="aimaze-pos-subtitle">Touch-friendly walk-in ordering with live wallet, loyalty, and payment totals.</p>
+                    </div>
+                    <span class="aimaze-status-badge">Counter Mode</span>
+                </div>
+            </xpath>
+            <xpath expr="//header" position="attributes">
+                <attribute name="class">aimaze-pos-actions</attribute>
+            </xpath>
+            <xpath expr="//group[.//field[@name='service_category_id']]" position="attributes">
+                <attribute name="class">aimaze-form-card</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_form_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form.phase5</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="view_laundry_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="class">aimaze-dark-ready</attribute>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_phase5_open_invoice" class="oe_stat_button" icon="fa-file-text">
+                    <field name="phase5_invoice_count" widget="statinfo" string="Invoice"/>
+                </button>
+                <button type="object" name="action_phase5_open_payments" class="oe_stat_button" icon="fa-money">
+                    <field name="phase5_payment_count" widget="statinfo" string="Payments"/>
+                </button>
+                <button type="object" name="action_phase5_open_deliveries" class="oe_stat_button" icon="fa-truck">
+                    <field name="phase5_delivery_count" widget="statinfo" string="Delivery"/>
+                </button>
+                <button type="object" name="action_phase5_open_complaints" class="oe_stat_button" icon="fa-exclamation-circle">
+                    <field name="phase5_complaint_count" widget="statinfo" string="Complaints"/>
+                </button>
+                <button type="object" name="action_phase5_open_notifications" class="oe_stat_button" icon="fa-bell">
+                    <field name="phase5_notification_count" widget="statinfo" string="Messages"/>
+                </button>
+                <button type="object" name="action_phase5_open_wallets" class="oe_stat_button" icon="fa-credit-card">
+                    <field name="phase5_wallet_count" widget="statinfo" string="Wallet"/>
+                </button>
+                <button type="object" name="action_phase5_open_subscriptions" class="oe_stat_button" icon="fa-refresh">
+                    <field name="phase5_subscription_count" widget="statinfo" string="Packages"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="before">
+                <div class="aimaze-timeline">
+                    <span class="aimaze-timeline-step">Confirm</span>
+                    <span class="aimaze-timeline-step">Pickup</span>
+                    <span class="aimaze-timeline-step">Wash</span>
+                    <span class="aimaze-timeline-step">QC</span>
+                    <span class="aimaze-timeline-step">Pack</span>
+                    <span class="aimaze-timeline-step">Deliver</span>
+                    <span class="aimaze-timeline-step">Paid</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_delivery_form_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.form.phase5</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="inherit_id" ref="view_laundry_delivery_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="class">aimaze-driver-card</attribute>
+            </xpath>
+            <xpath expr="//field[@name='address']" position="after">
+                <div class="aimaze-alert">Driver mobile view: verify address, proof photo, signature, OTP placeholder, and cash collection before closing the job.</div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_garment_form_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.garment.form.phase5</field>
+        <field name="model">aimaze.laundry.garment</field>
+        <field name="inherit_id" ref="view_laundry_garment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <div class="aimaze-timeline">
+                    <span class="aimaze-timeline-step">Received</span>
+                    <span class="aimaze-timeline-step">Sorted</span>
+                    <span class="aimaze-timeline-step">Washing</span>
+                    <span class="aimaze-timeline-step">Drying</span>
+                    <span class="aimaze-timeline-step">Ironing</span>
+                    <span class="aimaze-timeline-step">QC</span>
+                    <span class="aimaze-timeline-step">Ready</span>
+                    <span class="aimaze-timeline-step">Delivered</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_form_laundry_phase5" model="ir.ui.view">
+        <field name="name">res.partner.form.laundry.phase5</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button type="object" name="action_phase5_open_laundry_orders" class="oe_stat_button" icon="fa-shopping-bag">
+                    <field name="phase5_laundry_order_count" widget="statinfo" string="Laundry Orders"/>
+                </button>
+                <button type="object" name="action_phase5_open_laundry_wallets" class="oe_stat_button" icon="fa-credit-card">
+                    <field name="phase5_wallet_count" widget="statinfo" string="Wallets"/>
+                </button>
+                <button type="object" name="action_phase5_open_laundry_subscriptions" class="oe_stat_button" icon="fa-refresh">
+                    <field name="phase5_subscription_count" widget="statinfo" string="Packages"/>
+                </button>
+                <button type="object" name="action_phase5_open_laundry_complaints" class="oe_stat_button" icon="fa-exclamation-triangle">
+                    <field name="phase5_complaint_count" widget="statinfo" string="Complaints"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_branch_form_phase5" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.form.phase5</field>
+        <field name="model">aimaze.laundry.branch</field>
+        <field name="inherit_id" ref="view_laundry_branch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <div class="oe_button_box" name="button_box">
+                    <button type="object" name="action_phase5_open_branch_orders" class="oe_stat_button" icon="fa-shopping-bag">
+                        <field name="phase5_order_count" widget="statinfo" string="Orders"/>
+                    </button>
+                    <button type="object" name="action_phase5_open_branch_deliveries" class="oe_stat_button" icon="fa-truck">
+                        <field name="phase5_delivery_count" widget="statinfo" string="Deliveries"/>
+                    </button>
+                    <button type="object" name="action_phase5_open_branch_orders" class="oe_stat_button" icon="fa-line-chart">
+                        <field name="phase5_revenue" widget="statinfo" string="Revenue"/>
+                    </button>
+                    <button type="object" name="action_phase5_open_branch_deliveries" class="oe_stat_button" icon="fa-users">
+                        <field name="phase5_driver_count" widget="statinfo" string="Drivers"/>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_partner_walkin_phase3" model="res.partner">
+        <field name="name">Demo Walk-in Customer</field>
+        <field name="phone">+971500000001</field>
+        <field name="laundry_customer_type">individual</field>
+        <field name="laundry_arabic_name">عميل تجريبي</field>
+    </record>
+    <record id="demo_partner_corporate_phase3" model="res.partner">
+        <field name="name">Demo Corporate Hotel</field>
+        <field name="phone">+971500000002</field>
+        <field name="laundry_customer_type">hotel</field>
+        <field name="laundry_trn">100000000000003</field>
+    </record>
+
+    <record id="demo_branch_uae_phase3" model="aimaze.laundry.branch">
+        <field name="name">Dubai Demo Branch</field>
+        <field name="code">DXB-DEMO</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="phone">+97140000000</field>
+        <field name="commercial_registration">DEMO-CR-001</field>
+        <field name="tax_registration_number">100000000000003</field>
+    </record>
+
+    <record id="demo_service_wash_fold_phase3" model="aimaze.laundry.service">
+        <field name="name">Demo Wash and Fold</field>
+        <field name="code">DEMO-WF</field>
+        <field name="pricing_method">piece</field>
+        <field name="list_price">18.0</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="demo_service_express_iron_phase3" model="aimaze.laundry.service">
+        <field name="name">Demo Express Ironing</field>
+        <field name="code">DEMO-XIR</field>
+        <field name="pricing_method">piece</field>
+        <field name="list_price">12.0</field>
+        <field name="express_surcharge_percent">50.0</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="demo_rate_card_phase3" model="aimaze.laundry.rate.card">
+        <field name="name">Demo Standard Rate Card</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="branch_id" ref="demo_branch_uae_phase3"/>
+    </record>
+    <record id="demo_rate_card_line_wash_fold_phase3" model="aimaze.laundry.rate.card.line">
+        <field name="rate_card_id" ref="demo_rate_card_phase3"/>
+        <field name="service_id" ref="demo_service_wash_fold_phase3"/>
+        <field name="price">18.0</field>
+    </record>
+
+    <record id="demo_wallet_phase3" model="aimaze.customer.wallet">
+        <field name="partner_id" ref="demo_partner_walkin_phase3"/>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="branch_id" ref="demo_branch_uae_phase3"/>
+    </record>
+
+    <record id="demo_subscription_package_phase3" model="aimaze.laundry.subscription.package">
+        <field name="name">Demo Family Wash Package</field>
+        <field name="package_type">fixed_value</field>
+        <field name="validity_days">30</field>
+        <field name="price">500.0</field>
+        <field name="included_value">600.0</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="demo_ai_analysis_phase3" model="aimaze.laundry.ai.analysis">
+        <field name="reference_type">stain</field>
+        <field name="partner_id" ref="demo_partner_walkin_phase3"/>
+        <field name="branch_id" ref="demo_branch_uae_phase3"/>
+        <field name="recommendation">Demo placeholder for future stain analysis workflow.</field>
+    </record>
+</odoo>

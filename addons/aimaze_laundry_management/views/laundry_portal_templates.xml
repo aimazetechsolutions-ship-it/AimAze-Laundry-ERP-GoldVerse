@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_laundry_orders" name="My Laundry Orders">
+        <t t-call="portal.portal_layout">
+            <t t-set="title">Laundry Orders</t>
+            <div class="container aimaze-portal-shell">
+                <div class="aimaze-dashboard-hero">
+                    <div>
+                        <h3 class="aimaze-gradient-title">My Laundry</h3>
+                        <p>Track orders, garments, wallet balance, subscriptions, pickups, and complaints.</p>
+                    </div>
+                    <span class="aimaze-status-badge">Customer Portal</span>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="aimaze-portal-card"><div class="card-body">
+                            <h5>Wallet Balance</h5>
+                            <t t-if="wallets">
+                                <div t-foreach="wallets" t-as="wallet"><span t-field="wallet.balance"/> <span t-field="wallet.currency_id"/></div>
+                            </t>
+                            <t t-if="not wallets">No wallet balance yet.</t>
+                        </div></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="aimaze-portal-card"><div class="card-body">
+                            <h5>Active Subscriptions</h5>
+                            <t t-if="subscriptions">
+                                <div t-foreach="subscriptions" t-as="subscription"><span t-field="subscription.package_id"/> - valid until <span t-field="subscription.date_end"/></div>
+                            </t>
+                            <t t-if="not subscriptions">No active subscription.</t>
+                        </div></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <a href="/my/laundry/request-pickup" class="btn btn-primary btn-sm">Request Pickup</a>
+                    <a href="/my/laundry/complaint" class="btn btn-outline-secondary btn-sm">Submit Complaint</a>
+                </div>
+                <table class="table table-sm aimaze-report-table">
+                    <thead>
+                        <tr><th>Order</th><th>Status</th><th>Total</th><th>Balance</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="orders" t-as="order">
+                            <td><a t-att-href="'/my/laundry/orders/%s' % order.id"><t t-out="order.name"/></a></td>
+                            <td><t t-out="dict(order._fields['state'].selection).get(order.state)"/></td>
+                            <td><span t-field="order.amount_total"/></td>
+                            <td><span t-field="order.balance_amount"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+    <template id="portal_laundry_order" name="Laundry Order Detail">
+        <t t-call="portal.portal_layout">
+            <div class="container aimaze-portal-shell">
+                <div class="aimaze-dashboard-hero">
+                    <div>
+                        <h3 class="aimaze-gradient-title"><t t-out="order.name"/></h3>
+                        <p>Garment tracking, invoice totals, delivery progress, and QC status.</p>
+                    </div>
+                    <span class="aimaze-status-badge"><t t-out="dict(order._fields['state'].selection).get(order.state)"/></span>
+                </div>
+                <div class="progress mb-3">
+                    <div class="progress-bar" role="progressbar" t-att-style="'width: %s%%' % order.operation_progress">
+                        <t t-out="'%.0f%%' % order.operation_progress"/>
+                    </div>
+                </div>
+                <p>Expected Delivery: <span t-field="order.expected_delivery_datetime"/></p>
+                <p>Delivery Jobs: <t t-out="len(order.delivery_ids)"/></p>
+                <table class="table table-sm aimaze-report-table">
+                    <thead><tr><th>Service</th><th>Qty</th><th>Subtotal</th></tr></thead>
+                    <tbody>
+                        <tr t-foreach="order.line_ids" t-as="line">
+                            <td><t t-out="line.name"/></td>
+                            <td><t t-out="line.quantity"/></td>
+                            <td><span t-field="line.price_subtotal"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>Garments</h5>
+                <table class="table table-sm aimaze-report-table">
+                    <thead><tr><th>UID</th><th>Garment</th><th>Stage</th><th>QC</th></tr></thead>
+                    <tbody>
+                        <tr t-foreach="order.garment_ids" t-as="garment">
+                            <td><span t-field="garment.name"/></td>
+                            <td><span t-field="garment.garment_type"/></td>
+                            <td><span t-field="garment.current_stage"/></td>
+                            <td><span t-field="garment.qc_result"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+    <template id="portal_laundry_request_pickup" name="Request Laundry Pickup">
+        <t t-call="portal.portal_layout">
+            <div class="container aimaze-portal-shell">
+                <h3 class="aimaze-gradient-title">Request Pickup</h3>
+                <form method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label class="form-label">Order</label>
+                        <select name="order_id" class="form-select">
+                            <option value="">New pickup request</option>
+                            <option t-foreach="orders" t-as="order" t-att-value="order.id"><t t-out="order.name"/></option>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Address</label><input name="address" class="form-control"/></div>
+                    <div class="mb-3"><label class="form-label">Remarks</label><textarea name="remarks" class="form-control"/></div>
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </form>
+            </div>
+        </t>
+    </template>
+    <template id="portal_laundry_complaint" name="Laundry Complaint">
+        <t t-call="portal.portal_layout">
+            <div class="container aimaze-portal-shell">
+                <h3 class="aimaze-gradient-title">Submit Complaint</h3>
+                <form method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label class="form-label">Order</label>
+                        <select name="order_id" class="form-select">
+                            <option t-foreach="orders" t-as="order" t-att-value="order.id"><t t-out="order.name"/></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select name="complaint_type" class="form-select">
+                            <option value="delay">Delay</option>
+                            <option value="damage">Damage</option>
+                            <option value="lost">Lost Item</option>
+                            <option value="poor_cleaning">Poor Cleaning</option>
+                            <option value="billing">Billing Issue</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Notes</label><textarea name="notes" class="form-control"/></div>
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>

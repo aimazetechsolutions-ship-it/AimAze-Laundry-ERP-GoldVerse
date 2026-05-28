@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_notification_provider_form_phase4" model="ir.ui.view">
+        <field name="name">aimaze.notification.provider.form.phase4</field>
+        <field name="model">aimaze.notification.provider</field>
+        <field name="inherit_id" ref="view_notification_provider_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sender_id']" position="after">
+                <field name="auth_type"/>
+                <field name="api_version"/>
+                <field name="phone_number_id_placeholder"/>
+                <field name="twilio_account_sid_placeholder"/>
+                <field name="timeout_seconds"/>
+                <field name="retry_limit"/>
+                <field name="delivery_status_webhook"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_notification_template_form_phase4" model="ir.ui.view">
+        <field name="name">aimaze.notification.template.form.phase4</field>
+        <field name="model">aimaze.notification.template</field>
+        <field name="inherit_id" ref="view_notification_template_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='language']" position="after">
+                <field name="channel"/>
+                <field name="branch_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_notification_queue_list_phase4" model="ir.ui.view">
+        <field name="name">aimaze.notification.queue.list.phase4</field>
+        <field name="model">aimaze.notification.queue</field>
+        <field name="inherit_id" ref="view_notification_queue_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="delivery_status" widget="badge"/>
+                <field name="retry_count"/>
+                <field name="next_retry_datetime"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_notification_queue_form_phase4" model="ir.ui.view">
+        <field name="name">aimaze.notification.queue.form.phase4</field>
+        <field name="model">aimaze.notification.queue</field>
+        <field name="inherit_id" ref="view_notification_queue_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_queue']" position="after">
+                <button name="action_retry" type="object" string="Retry" class="alm-btn-stage"/>
+            </xpath>
+            <xpath expr="//field[@name='sent_date']" position="after">
+                <field name="delivery_status"/>
+                <field name="retry_count"/>
+                <field name="max_retry"/>
+                <field name="next_retry_datetime"/>
+                <field name="external_message_id"/>
+                <field name="last_attempt_datetime"/>
+            </xpath>
+            <xpath expr="//field[@name='error_message']" position="after">
+                <field name="provider_payload"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_saas_tenant_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.saas.tenant.list</field>
+        <field name="model">aimaze.laundry.saas.tenant</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="tenant_code"/>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="domain"/>
+                <field name="database_strategy" widget="badge"/>
+                <field name="state" widget="badge"/>
+                <field name="max_branches"/>
+                <field name="max_users"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_saas_tenant_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.saas.tenant.form</field>
+        <field name="model">aimaze.laundry.saas.tenant</field>
+        <field name="arch" type="xml">
+            <form string="SaaS Tenant">
+                <header>
+                    <button name="action_activate" type="object" string="Activate" class="btn-primary"/>
+                    <button name="action_suspend" type="object" string="Suspend" class="alm-btn-danger"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="tenant_code"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="domain"/>
+                        </group>
+                        <group>
+                            <field name="database_strategy"/>
+                            <field name="primary_contact_id"/>
+                            <field name="max_branches"/>
+                            <field name="max_users"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_saas_tenant" model="ir.actions.act_window">
+        <field name="name">SaaS Tenants</field>
+        <field name="res_model">aimaze.laundry.saas.tenant</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+
+    <record id="view_laundry_integration_log_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.integration.log.list</field>
+        <field name="model">aimaze.laundry.integration.log</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="create_date"/>
+                <field name="level" widget="badge"/>
+                <field name="log_type" widget="badge"/>
+                <field name="name"/>
+                <field name="endpoint"/>
+                <field name="status_code"/>
+                <field name="duration_ms"/>
+                <field name="company_id"/>
+                <field name="branch_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_integration_log_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.integration.log.form</field>
+        <field name="model">aimaze.laundry.integration.log</field>
+        <field name="arch" type="xml">
+            <form string="Integration Log" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="log_type"/>
+                        <field name="level"/>
+                        <field name="endpoint"/>
+                        <field name="method"/>
+                        <field name="status_code"/>
+                        <field name="duration_ms"/>
+                    </group>
+                    <group>
+                        <field name="company_id"/>
+                        <field name="branch_id"/>
+                        <field name="order_id"/>
+                        <field name="notification_id"/>
+                        <field name="user_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Request"><field name="request_payload"/></page>
+                        <page string="Response"><field name="response_payload"/></page>
+                        <page string="Error"><field name="error_message"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_integration_log" model="ir.actions.act_window">
+        <field name="name">Integration Logs</field>
+        <field name="res_model">aimaze.laundry.integration.log</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+    </record>
+
+    <record id="view_laundry_backup_config_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.backup.config.list</field>
+        <field name="model">aimaze.laundry.backup.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="backup_database"/>
+                <field name="backup_filestore"/>
+                <field name="retention_days"/>
+                <field name="last_backup_datetime"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_laundry_backup_config_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.backup.config.form</field>
+        <field name="model">aimaze.laundry.backup.config</field>
+        <field name="arch" type="xml">
+            <form string="Backup Configuration">
+                <header>
+                    <button name="action_mark_configured" type="object" string="Mark Configured" class="btn-primary"/>
+                    <button name="action_log_backup_placeholder" type="object" string="Log Backup Placeholder" class="alm-btn-info"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="backup_database"/>
+                            <field name="backup_filestore"/>
+                            <field name="retention_days"/>
+                        </group>
+                        <group>
+                            <field name="backup_path_placeholder"/>
+                            <field name="offsite_target_placeholder"/>
+                            <field name="last_backup_datetime"/>
+                            <field name="last_restore_test_datetime"/>
+                        </group>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_laundry_backup_config" model="ir.actions.act_window">
+        <field name="name">Backup Configuration</field>
+        <field name="res_model">aimaze.laundry.backup.config</field>
+        <field name="view_mode">list,form,activity</field>
+    </record>
+</odoo>
