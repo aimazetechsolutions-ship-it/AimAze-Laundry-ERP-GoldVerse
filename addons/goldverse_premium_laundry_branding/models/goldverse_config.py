@@ -23,6 +23,21 @@ class LaundryService(models.Model):
     goldverse_net_price = fields.Monetary(string="Net Price", currency_field="currency_id")
     goldverse_search_text = fields.Char(compute="_compute_goldverse_search_text", store=True)
 
+    @api.onchange("goldverse_base_price", "goldverse_discount_percent")
+    def _onchange_goldverse_price_master_percent(self):
+        for service in self:
+            service._goldverse_sync_price_fields("percent")
+
+    @api.onchange("goldverse_discount_amount")
+    def _onchange_goldverse_price_master_amount(self):
+        for service in self:
+            service._goldverse_sync_price_fields("amount")
+
+    @api.onchange("goldverse_net_price")
+    def _onchange_goldverse_price_master_net(self):
+        for service in self:
+            service._goldverse_sync_price_fields("net")
+
     @api.depends(
         "code",
         "name",
@@ -70,8 +85,73 @@ class LaundryService(models.Model):
                 )
             )
 
+    def _goldverse_compute_price_values(self, values, source="percent"):
+        base_price = values.get("goldverse_base_price") or 0.0
+        discount_percent = values.get("goldverse_discount_percent") or 0.0
+        discount_amount = values.get("goldverse_discount_amount") or 0.0
+        net_price = values.get("goldverse_net_price")
+
+        if source == "amount":
+            discount_percent = (discount_amount / base_price) * 100.0 if base_price else 0.0
+        elif source == "net":
+            discount_amount = max(base_price - (net_price or 0.0), 0.0)
+            discount_percent = (discount_amount / base_price) * 100.0 if base_price else 0.0
+        else:
+            discount_amount = base_price * discount_percent / 100.0
+
+        net_price = max(base_price - discount_amount, 0.0)
+        return {
+            "goldverse_discount_percent": discount_percent,
+            "goldverse_discount_amount": discount_amount,
+            "goldverse_net_price": net_price,
+            "list_price": net_price,
+        }
+
+    def _goldverse_price_values_from_record(self):
+        self.ensure_one()
+        return {
+            "goldverse_base_price": self.goldverse_base_price,
+            "goldverse_discount_percent": self.goldverse_discount_percent,
+            "goldverse_discount_amount": self.goldverse_discount_amount,
+            "goldverse_net_price": self.goldverse_net_price,
+        }
+
+    def _goldverse_sync_price_fields(self, source="percent"):
+        self.ensure_one()
+        values = self._goldverse_price_values_from_record()
+        computed = self._goldverse_compute_price_values(values, source)
+        self.goldverse_discount_percent = computed["goldverse_discount_percent"]
+        self.goldverse_discount_amount = computed["goldverse_discount_amount"]
+        self.goldverse_net_price = computed["goldverse_net_price"]
+        self.list_price = computed["list_price"]
+
     def _goldverse_prepare_service_values(self, vals):
+        price_fields = {
+            "goldverse_base_price",
+            "goldverse_discount_percent",
+            "goldverse_discount_amount",
+            "goldverse_net_price",
+            "list_price",
+        }
+        if price_fields & set(vals):
+            values = self._goldverse_price_values_from_record() if self else {}
+            values.update(vals)
+            if "goldverse_net_price" not in vals and "list_price" in vals:
+                values["goldverse_net_price"] = vals["list_price"]
+            source = "percent"
+            if "goldverse_discount_amount" in vals and "goldverse_discount_percent" not in vals:
+                source = "amount"
+            if {"goldverse_net_price", "list_price"} & set(vals) and not {"goldverse_discount_percent", "goldverse_discount_amount"} & set(vals):
+                source = "net"
+            vals.update(self._goldverse_compute_price_values(values, source))
         return vals
+
+    def _goldverse_sync_draft_order_lines(self):
+        Line = self.env["aimaze.laundry.order.line"].sudo()
+        for service in self:
+            draft_lines = Line.search([("service_id", "=", service.id), ("order_id.state", "=", "draft")])
+            draft_lines.write({"unit_price": service.list_price})
+        return True
 
     @api.onchange("goldverse_subcategory_id")
     def _onchange_goldverse_subcategory_id(self):
@@ -88,8 +168,22 @@ class LaundryService(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        self._goldverse_prepare_service_values(vals)
-        return super().write(vals)
+        price_fields = {
+            "goldverse_base_price",
+            "goldverse_discount_percent",
+            "goldverse_discount_amount",
+            "goldverse_net_price",
+            "list_price",
+        }
+        if not (price_fields & set(vals)):
+            return super().write(vals)
+        result = True
+        for service in self:
+            service_vals = dict(vals)
+            service._goldverse_prepare_service_values(service_vals)
+            result = super(LaundryService, service).write(service_vals) and result
+            service._goldverse_sync_draft_order_lines()
+        return result
 
 
 class GoldVerseLaundrySubcategory(models.Model):

@@ -79,6 +79,74 @@
         <field name="search_view_id" ref="view_laundry_service_search_goldverse"/>
     </record>
 
+    <record id="view_goldverse_master_price_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.goldverse.master.price.list</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="arch" type="xml">
+            <list string="GVP Master Price List" editable="bottom" multi_edit="1">
+                <field name="code" string="Code" optional="show"/>
+                <field name="name" string="Service Item" optional="show"/>
+                <field name="category_id" string="Category" optional="show"/>
+                <field name="goldverse_subcategory_id" string="Sub Category" optional="show"/>
+                <field name="goldverse_base_price" string="Base Price" optional="show"/>
+                <field name="goldverse_discount_percent" string="Discount (%)" optional="show"/>
+                <field name="goldverse_discount_amount" string="Disc (Rs.)" optional="show"/>
+                <field name="goldverse_net_price" string="Net Price" optional="show"/>
+                <field name="list_price" string="Order Price" optional="hide" readonly="1"/>
+                <field name="income_account_id" string="Income Head" optional="show"/>
+                <field name="tax_applicable" string="Tax Applicable" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_goldverse_master_price_form" model="ir.ui.view">
+        <field name="name">aimaze.laundry.service.goldverse.master.price.form</field>
+        <field name="model">aimaze.laundry.service</field>
+        <field name="arch" type="xml">
+            <form string="GVP Master Price">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name" string="Service Item"/>
+                            <field name="category_id" string="Category"/>
+                            <field name="goldverse_subcategory_id" string="Sub Category"/>
+                            <field name="pricing_method"/>
+                        </group>
+                        <group>
+                            <field name="goldverse_base_price" string="Base Price"/>
+                            <field name="goldverse_discount_percent" string="Discount (%)"/>
+                            <field name="goldverse_discount_amount" string="Disc (Rs.)"/>
+                            <field name="goldverse_net_price" string="Net Price"/>
+                            <field name="list_price" string="Order Price" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="income_account_id" string="Income Head"/>
+                            <field name="tax_applicable"/>
+                            <field name="tax_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_goldverse_master_price_list" model="ir.actions.act_window">
+        <field name="name">GVP Master Price List</field>
+        <field name="res_model">aimaze.laundry.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_goldverse_master_price_list"/>
+        <field name="search_view_id" ref="view_laundry_service_search_goldverse"/>
+        <field name="domain">[('active', '=', True)]</field>
+        <field name="context">{'active_test': True}</field>
+    </record>
+
     <record id="view_laundry_account_config_list_goldverse_delivery_income" model="ir.ui.view">
         <field name="name">aimaze.laundry.account.config.list.goldverse.delivery.income</field>
         <field name="model">aimaze.laundry.account.config</field>
@@ -251,6 +319,7 @@
         <field name="name">Service Items</field>
         <field name="sequence">22</field>
     </record>
+    <menuitem id="menu_goldverse_master_price_list" name="GVP Master Price List" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_master_price_list" sequence="18"/>
     <menuitem id="menu_goldverse_laundry_subcategories" name="Sub Categories" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_subcategory" sequence="21"/>
     <menuitem id="menu_goldverse_laundry_colours" name="Colours" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_colour" sequence="23"/>
     <menuitem id="menu_goldverse_laundry_qc_options" name="QC Options" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_qc_option" sequence="24"/>
