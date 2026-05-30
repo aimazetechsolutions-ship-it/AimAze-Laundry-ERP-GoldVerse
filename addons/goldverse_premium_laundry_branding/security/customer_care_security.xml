@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_customer_care_executive" model="res.groups">
+        <field name="name">Customer Care Executive</field>
+        <field name="privilege_id" ref="aimaze_laundry_management.privilege_aimaze_laundry"/>
+        <field name="sequence">25</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="menu_access" eval="[
+            (4, ref('mail.menu_root_discuss')),
+            (4, ref('aimaze_laundry_management.menu_laundry_orders_root')),
+            (4, ref('aimaze_laundry_management.menu_laundry_pickup_delivery_root')),
+            (4, ref('aimaze_laundry_management.menu_laundry_customers_root')),
+            (4, ref('aimaze_laundry_management.menu_laundry_complaints_root')),
+            (4, ref('aimaze_laundry_management.menu_laundry_loyalty_root')),
+            (4, ref('aimaze_laundry_management.menu_laundry_notifications'))
+        ]"/>
+    </record>
+
+    <record id="aimaze_laundry_management.rule_laundry_order_branch" model="ir.rule">
+        <field name="groups" eval="[(4, ref('group_customer_care_executive'))]"/>
+    </record>
+
+    <record id="aimaze_laundry_management.rule_laundry_garment_branch" model="ir.rule">
+        <field name="groups" eval="[(4, ref('group_customer_care_executive'))]"/>
+    </record>
+
+    <record id="aimaze_laundry_management.rule_laundry_garment_history_branch" model="ir.rule">
+        <field name="groups" eval="[(4, ref('group_customer_care_executive'))]"/>
+    </record>
+</odoo>
