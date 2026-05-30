@@ -53,7 +53,21 @@ class LaundryOrderLine(models.Model):
         string="Colour",
     )
     goldverse_qc_option_id = fields.Many2one("goldverse.laundry.qc.option", string="QC")
+    goldverse_qc_option_ids = fields.Many2many(
+        "goldverse.laundry.qc.option",
+        "goldverse_laundry_order_line_qc_rel",
+        "line_id",
+        "qc_option_id",
+        string="QC",
+    )
     goldverse_topup_id = fields.Many2one("goldverse.laundry.topup", string="Add On")
+    goldverse_topup_ids = fields.Many2many(
+        "goldverse.laundry.topup",
+        "goldverse_laundry_order_line_topup_rel",
+        "line_id",
+        "topup_id",
+        string="Add On",
+    )
     goldverse_discount = fields.Char(string="Discount", default="0")
     goldverse_total_amount = fields.Monetary(
         string="Total Amount",
@@ -113,7 +127,19 @@ class LaundryOrderLine(models.Model):
     def _onchange_goldverse_qc_option_id(self):
         for line in self:
             if line.goldverse_qc_option_id:
+                line.goldverse_qc_option_ids = [(4, line.goldverse_qc_option_id.id)]
                 line.qc_status = line.goldverse_qc_option_id.base_qc_status
+
+    @api.onchange("goldverse_qc_option_ids")
+    def _onchange_goldverse_qc_option_ids(self):
+        for line in self:
+            line._goldverse_set_qc_status_from_options()
+
+    @api.onchange("goldverse_topup_id")
+    def _onchange_goldverse_topup_id(self):
+        for line in self:
+            if line.goldverse_topup_id:
+                line.goldverse_topup_ids = [(4, line.goldverse_topup_id.id)]
 
     @api.onchange("goldverse_discount", "quantity", "unit_price")
     def _onchange_goldverse_discount(self):
@@ -160,7 +186,9 @@ class LaundryOrderLine(models.Model):
             "goldverse_subcategory_id",
             "goldverse_colour_id",
             "goldverse_qc_option_id",
+            "goldverse_qc_option_ids",
             "goldverse_topup_id",
+            "goldverse_topup_ids",
             "goldverse_colour",
             "color",
             "goldverse_discount",
@@ -169,6 +197,18 @@ class LaundryOrderLine(models.Model):
         } & set(vals):
             self._goldverse_sync_display_fields()
         return result
+
+    def _goldverse_set_qc_status_from_options(self):
+        self.ensure_one()
+        statuses = self.goldverse_qc_option_ids.mapped("base_qc_status")
+        if "fail" in statuses:
+            self.qc_status = "fail"
+        elif "rewash" in statuses:
+            self.qc_status = "rewash"
+        elif "pass" in statuses:
+            self.qc_status = "pass"
+        else:
+            self.qc_status = "pending"
 
     def _goldverse_sync_display_fields(self):
         for line in self:
@@ -181,6 +221,15 @@ class LaundryOrderLine(models.Model):
                 updates["color"] = line.goldverse_colour_id.name
             if line.goldverse_qc_option_id and line.qc_status != line.goldverse_qc_option_id.base_qc_status:
                 updates["qc_status"] = line.goldverse_qc_option_id.base_qc_status
+            if line.goldverse_qc_option_id and line.goldverse_qc_option_id not in line.goldverse_qc_option_ids:
+                updates["goldverse_qc_option_ids"] = [(4, line.goldverse_qc_option_id.id)]
+            if line.goldverse_topup_id and line.goldverse_topup_id not in line.goldverse_topup_ids:
+                updates["goldverse_topup_ids"] = [(4, line.goldverse_topup_id.id)]
+            if line.goldverse_qc_option_ids:
+                statuses = line.goldverse_qc_option_ids.mapped("base_qc_status")
+                qc_status = "fail" if "fail" in statuses else "rewash" if "rewash" in statuses else "pass" if "pass" in statuses else "pending"
+                if line.qc_status != qc_status:
+                    updates["qc_status"] = qc_status
             if line.goldverse_colour:
                 updates["color"] = dict(line._fields["goldverse_colour"].selection).get(line.goldverse_colour)
             discount_percent = line._goldverse_discount_percent()

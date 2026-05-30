@@ -13,8 +13,8 @@
                     <field name="goldverse_subcategory_id" string="Sub Category"/>
                     <field name="service_id" string="Service Item" domain="[('category_id', '=', goldverse_category_id), ('goldverse_subcategory_id', '=', goldverse_subcategory_id)]"/>
                     <field name="goldverse_colour_id" string="Colour"/>
-                    <field name="goldverse_qc_option_id" string="QC"/>
-                    <field name="goldverse_topup_id" string="Add On"/>
+                    <field name="goldverse_qc_option_ids" string="QC" widget="many2many_tags"/>
+                    <field name="goldverse_topup_ids" string="Add On" widget="many2many_tags"/>
                     <field name="quantity" string="Qty"/>
                     <field name="unit_price" string="Unit Price"/>
                     <field name="goldverse_discount" string="Discount"/>
