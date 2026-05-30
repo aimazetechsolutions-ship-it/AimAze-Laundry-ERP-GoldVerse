@@ -11,7 +11,7 @@
                     <field name="currency_id" column_invisible="1"/>
                     <field name="goldverse_category_id" string="Category"/>
                     <field name="goldverse_subcategory_id" string="Sub Category"/>
-                    <field name="service_id" string="Service Item" domain="[('category_id', '=', goldverse_category_id)]"/>
+                    <field name="service_id" string="Service Item" domain="[('category_id', '=', goldverse_category_id), ('goldverse_subcategory_id', '=', goldverse_subcategory_id)]"/>
                     <field name="goldverse_colour_id" string="Colour"/>
                     <field name="goldverse_qc_option_id" string="QC"/>
                     <field name="goldverse_topup_id" string="Add On"/>

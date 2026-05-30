@@ -93,7 +93,9 @@ class LaundryOrderLine(models.Model):
 
     @api.onchange("goldverse_subcategory_id")
     def _onchange_goldverse_subcategory_id(self):
-        return
+        for line in self:
+            if line.service_id and line.goldverse_subcategory_id and line.service_id.goldverse_subcategory_id != line.goldverse_subcategory_id:
+                line.service_id = False
 
     @api.onchange("goldverse_colour_id")
     def _onchange_goldverse_colour_id(self):
