@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="base.menu_management" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
     <record id="base.menu_apps" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
     <record id="base.menu_module_tree" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
     <record id="base.menu_third_party" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
     <record id="base.menu_view_base_module_update" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_account_config" model="ir.ui.menu">

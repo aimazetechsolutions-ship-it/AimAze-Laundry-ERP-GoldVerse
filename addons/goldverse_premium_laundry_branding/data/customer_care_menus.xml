@@ -5,14 +5,16 @@
             ref('account.group_account_invoice'),
             ref('account.group_account_user'),
             ref('account.group_account_manager'),
-            ref('base_accounting_kit.group_account_chief')
+            ref('base_accounting_kit.group_account_chief'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_aimaze_laundry_root" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('aimaze_laundry_management.group_branch_manager')
+            ref('aimaze_laundry_management.group_branch_manager'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -24,7 +26,8 @@
             ref('aimaze_laundry_management.group_operator'),
             ref('aimaze_laundry_management.group_qc_staff'),
             ref('aimaze_laundry_management.group_driver'),
-            ref('goldverse_premium_laundry_branding.group_customer_care_executive')
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -34,7 +37,8 @@
             ref('aimaze_laundry_management.group_branch_manager'),
             ref('aimaze_laundry_management.group_cashier'),
             ref('aimaze_laundry_management.group_driver'),
-            ref('goldverse_premium_laundry_branding.group_customer_care_executive')
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -44,21 +48,24 @@
             ref('aimaze_laundry_management.group_branch_manager'),
             ref('aimaze_laundry_management.group_cashier'),
             ref('aimaze_laundry_management.group_corporate_manager'),
-            ref('goldverse_premium_laundry_branding.group_customer_care_executive')
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_inventory_root" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('aimaze_laundry_management.group_branch_manager')
+            ref('aimaze_laundry_management.group_branch_manager'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_maintenance_root" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('aimaze_laundry_management.group_branch_manager')
+            ref('aimaze_laundry_management.group_branch_manager'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -67,7 +74,8 @@
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('aimaze_laundry_management.group_branch_manager'),
             ref('aimaze_laundry_management.group_cashier'),
-            ref('goldverse_premium_laundry_branding.group_customer_care_executive')
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -76,7 +84,8 @@
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('aimaze_laundry_management.group_branch_manager'),
             ref('aimaze_laundry_management.group_cashier'),
-            ref('goldverse_premium_laundry_branding.group_customer_care_executive')
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -85,7 +94,8 @@
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('aimaze_laundry_management.group_branch_manager'),
             ref('aimaze_laundry_management.group_cashier'),
-            ref('goldverse_premium_laundry_branding.group_customer_care_executive')
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -93,18 +103,23 @@
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('aimaze_laundry_management.group_branch_manager'),
-            ref('aimaze_laundry_management.group_accountant')
+            ref('aimaze_laundry_management.group_accountant'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_configuration_root" model="ir.ui.menu">
-        <field name="group_ids" eval="[(6, 0, [ref('aimaze_laundry_management.group_laundry_admin')])]"/>
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_ai_root" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('aimaze_laundry_management.group_branch_manager')
+            ref('aimaze_laundry_management.group_branch_manager'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -112,22 +127,30 @@
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('aimaze_laundry_management.group_branch_manager'),
-            ref('aimaze_laundry_management.group_corporate_manager')
+            ref('aimaze_laundry_management.group_corporate_manager'),
+            ref('base.group_system')
         ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_notification_providers" model="ir.ui.menu">
-        <field name="group_ids" eval="[(6, 0, [ref('aimaze_laundry_management.group_laundry_admin')])]"/>
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_notification_templates" model="ir.ui.menu">
-        <field name="group_ids" eval="[(6, 0, [ref('aimaze_laundry_management.group_laundry_admin')])]"/>
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_integration_logs" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('aimaze_laundry_management.group_branch_manager')
+            ref('aimaze_laundry_management.group_branch_manager'),
+            ref('base.group_system')
         ])]"/>
     </record>
 </odoo>
