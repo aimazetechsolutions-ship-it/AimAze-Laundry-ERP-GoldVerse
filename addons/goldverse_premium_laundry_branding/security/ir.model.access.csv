@@ -16,6 +16,8 @@ access_goldverse_qc_option_admin,goldverse.laundry.qc.option laundry admin,model
 access_goldverse_topup_user,goldverse.laundry.topup user,model_goldverse_laundry_topup,base.group_user,1,0,0,0
 access_goldverse_topup_system,goldverse.laundry.topup system,model_goldverse_laundry_topup,base.group_system,1,1,1,1
 access_goldverse_topup_admin,goldverse.laundry.topup laundry admin,model_goldverse_laundry_topup,aimaze_laundry_management.group_laundry_admin,1,1,1,1
+access_goldverse_role_access_manager_system,goldverse.role.access.manager system,model_goldverse_role_access_manager,base.group_system,1,1,1,1
+access_goldverse_role_access_line_system,goldverse.role.access.line system,model_goldverse_role_access_line,base.group_system,1,1,1,1
 access_goldverse_customer_care_partner,res.partner customer care,base.model_res_partner,group_customer_care_executive,1,1,1,0
 access_goldverse_customer_care_order,aimaze.laundry.order customer care,aimaze_laundry_management.model_aimaze_laundry_order,group_customer_care_executive,1,1,1,0
 access_goldverse_customer_care_order_line,aimaze.laundry.order.line customer care,aimaze_laundry_management.model_aimaze_laundry_order_line,group_customer_care_executive,1,1,1,1

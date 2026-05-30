@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_goldverse_role_access_manager_list" model="ir.ui.view">
+        <field name="name">goldverse.role.access.manager.list</field>
+        <field name="model">goldverse.role.access.manager</field>
+        <field name="arch" type="xml">
+            <list string="Role Access Manager">
+                <field name="name"/>
+                <field name="group_id"/>
+                <field name="privilege_id"/>
+                <field name="user_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_goldverse_role_access_manager_form" model="ir.ui.view">
+        <field name="name">goldverse.role.access.manager.form</field>
+        <field name="model">goldverse.role.access.manager</field>
+        <field name="arch" type="xml">
+            <form string="Role Access Manager">
+                <header>
+                    <button name="action_load_role" string="Load Existing Role" type="object" class="btn-secondary"/>
+                    <button name="action_add_module_menus" string="Add Module Menus" type="object" class="btn-secondary"/>
+                    <button name="action_apply_role_access" string="Apply Role Access" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="group_id"/>
+                            <field name="name"/>
+                            <field name="privilege_id"/>
+                        </group>
+                        <group>
+                            <field name="user_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Menus">
+                            <group>
+                                <field name="module_menu_ids" widget="many2many_tags" domain="[('parent_id', '=', False), ('active', '=', True)]"/>
+                                <field name="menu_ids" widget="many2many_tags" domain="[('active', '=', True)]"/>
+                            </group>
+                        </page>
+                        <page string="Access Rights">
+                            <field name="access_line_ids">
+                                <list editable="bottom">
+                                    <field name="model_id"/>
+                                    <field name="perm_read"/>
+                                    <field name="perm_write"/>
+                                    <field name="perm_create"/>
+                                    <field name="perm_unlink"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_goldverse_role_access_manager" model="ir.actions.act_window">
+        <field name="name">Role Access Manager</field>
+        <field name="res_model">goldverse.role.access.manager</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_goldverse_role_access_manager"
+              name="Role Access Manager"
+              parent="aimaze_laundry_management.menu_laundry_configuration_root"
+              action="action_goldverse_role_access_manager"
+              sequence="5"
+              groups="base.group_system"/>
+</odoo>
