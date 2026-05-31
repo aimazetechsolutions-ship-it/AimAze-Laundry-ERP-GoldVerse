@@ -8,6 +8,16 @@ class ResPartner(models.Model):
     _inherit = "res.partner"
 
     mobile = fields.Char(string="Mobile")
+    laundry_customer_type = fields.Selection(
+        selection_add=[
+            ("b2c", "B2C"),
+            ("b2b", "B2B"),
+        ],
+        ondelete={
+            "b2c": "set null",
+            "b2b": "set null",
+        },
+    )
 
     def _goldverse_normalize_mobile(self, value):
         return re.sub(r"\D+", "", value or "")

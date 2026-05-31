@@ -33,7 +33,15 @@ class LaundryOrder(models.Model):
             "ready_for_delivery": "set default",
         },
     )
-    customer_type = fields.Selection(default=False, required=True)
+    customer_type = fields.Selection(
+        selection=[
+            ("b2c", "B2C"),
+            ("b2b", "B2B"),
+        ],
+        default=False,
+        required=True,
+        tracking=True,
+    )
     source = fields.Selection(default=False, required=True)
     priority = fields.Selection(default="normal")
     user_id = fields.Many2one("res.users", string="Salesperson", default=lambda self: self.env.user)
@@ -129,6 +137,27 @@ class LaundryOrder(models.Model):
                 order.mobile = order.partner_id.mobile or order.partner_id.phone
                 order.email = order.partner_id.email
 
+    @api.onchange("customer_type")
+    def _onchange_goldverse_customer_type(self):
+        for order in self:
+            if order.customer_type == "b2b":
+                order.source = "corporate_contract"
+            elif order.source == "corporate_contract":
+                order.source = False
+            order.partner_id = False
+            order.mobile = False
+            order.email = False
+        return {"domain": {"partner_id": self._goldverse_partner_domain_for_customer_type()}}
+
+    def _goldverse_partner_domain_for_customer_type(self):
+        self.ensure_one()
+        base_domain = [("customer_rank", ">", 0)]
+        if self.customer_type == "b2b":
+            return base_domain + ["|", ("is_company", "=", True), ("laundry_customer_type", "in", ["b2b", "corporate", "hotel", "salon", "gym", "restaurant"])]
+        if self.customer_type == "b2c":
+            return base_domain + ["|", ("is_company", "=", False), ("laundry_customer_type", "in", [False, "b2c", "walk_in", "individual"])]
+        return base_domain
+
     @api.onchange("expected_delivery_datetime")
     def _onchange_goldverse_expected_delivery_datetime(self):
         for order in self:
@@ -149,6 +178,8 @@ class LaundryOrder(models.Model):
         return values
 
     def _goldverse_prepare_required_order_values(self, vals):
+        if vals.get("customer_type") == "b2b":
+            vals["source"] = "corporate_contract"
         if "expected_delivery_datetime" not in vals:
             vals["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
         elif vals.get("expected_delivery_datetime"):
@@ -160,11 +191,12 @@ class LaundryOrder(models.Model):
             "partner_id": _("Customer Name"),
             "mobile": _("Mobile"),
             "customer_type": _("Customer Type"),
-            "source": _("Source"),
             "expected_delivery_datetime": _("Delivery Date & Time"),
         }
         values = self.default_get(list(labels))
         values.update(vals)
+        if values.get("customer_type") != "b2b":
+            labels["source"] = _("Source")
         missing = [label for field_name, label in labels.items() if not values.get(field_name)]
         if missing:
             raise ValidationError(_("Please fill mandatory fields: %s.") % ", ".join(dict.fromkeys(missing)))
@@ -174,11 +206,15 @@ class LaundryOrder(models.Model):
             "partner_id": _("Customer Name"),
             "mobile": _("Mobile"),
             "customer_type": _("Customer Type"),
-            "source": _("Source"),
             "expected_delivery_datetime": _("Delivery Date & Time"),
         }
         for order in self:
-            missing = [label for field_name, label in labels.items() if not order[field_name]]
+            order_labels = dict(labels)
+            if order.customer_type != "b2b":
+                order_labels["source"] = _("Source")
+            elif order.source != "corporate_contract":
+                order.source = "corporate_contract"
+            missing = [label for field_name, label in order_labels.items() if not order[field_name]]
             if missing:
                 raise ValidationError(_("Please fill mandatory fields: %s.") % ", ".join(missing))
 
@@ -202,6 +238,9 @@ class LaundryOrder(models.Model):
         return orders
 
     def write(self, vals):
+        if vals.get("customer_type") == "b2b":
+            vals = dict(vals)
+            vals["source"] = "corporate_contract"
         if vals.get("expected_delivery_datetime"):
             vals = dict(vals)
             vals["expected_delivery_datetime"] = self._goldverse_force_six_pm(vals["expected_delivery_datetime"])
