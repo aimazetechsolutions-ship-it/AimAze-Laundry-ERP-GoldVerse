@@ -12,7 +12,6 @@
                     <field name="goldverse_category_id" string="Category"/>
                     <field name="goldverse_subcategory_id" string="Sub Category"/>
                     <field name="service_id" string="Service Item" domain="[('category_id', '=', goldverse_category_id), ('goldverse_subcategory_id', '=', goldverse_subcategory_id)]"/>
-                    <field name="description" string="Description" readonly="1"/>
                     <field name="goldverse_priority" string="Priority" required="1"/>
                     <field name="goldverse_colour_id" string="Colour"/>
                     <field name="goldverse_qc_option_ids" string="QC" widget="many2many_tags"/>
