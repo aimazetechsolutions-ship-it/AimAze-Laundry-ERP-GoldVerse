@@ -75,6 +75,24 @@ class LaundryOrderLine(models.Model):
         string="Add On",
     )
     goldverse_discount = fields.Char(string="Discount", default="0")
+    goldverse_base_price = fields.Monetary(
+        string="Base Price",
+        compute="_compute_goldverse_price_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_net_price = fields.Monetary(
+        string="Net Price",
+        compute="_compute_goldverse_price_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_priority_charge = fields.Monetary(
+        string="Priority Chgs",
+        compute="_compute_goldverse_price_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
     goldverse_total_amount = fields.Monetary(
         string="Total Amount",
         compute="_compute_goldverse_total_amount",
@@ -206,6 +224,17 @@ class LaundryOrderLine(models.Model):
     def _compute_goldverse_total_amount(self):
         for line in self:
             line.goldverse_total_amount = line.price_subtotal + line.price_tax
+
+    @api.depends("service_id", "goldverse_priority", "quantity", "unit_price")
+    def _compute_goldverse_price_breakdown(self):
+        for line in self:
+            service = line.service_id
+            net_price = service.list_price if service else 0.0
+            base_price = service.goldverse_base_price if service and service.goldverse_base_price else net_price
+            priority_unit_charge = max((line.unit_price or 0.0) - net_price, 0.0)
+            line.goldverse_base_price = base_price
+            line.goldverse_net_price = net_price
+            line.goldverse_priority_charge = priority_unit_charge * (line.quantity or 0.0)
 
     @api.model_create_multi
     def create(self, vals_list):

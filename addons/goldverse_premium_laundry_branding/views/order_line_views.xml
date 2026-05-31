@@ -17,10 +17,13 @@
                     <field name="goldverse_qc_option_ids" string="QC" widget="many2many_tags"/>
                     <field name="goldverse_topup_ids" string="Add On" widget="many2many_tags"/>
                     <field name="quantity" string="Qty"/>
-                    <field name="unit_price" string="Unit Price"/>
+                    <field name="goldverse_base_price" string="Base Price" readonly="1"/>
                     <field name="goldverse_discount" string="Discount"/>
-                    <field name="tax_ids" string="Tax" widget="many2many_tags" readonly="1"/>
-                    <field name="goldverse_total_amount" string="Total Amount" readonly="1"/>
+                    <field name="goldverse_net_price" string="Net Price" readonly="1"/>
+                    <field name="goldverse_priority_charge" string="Priority Chgs" readonly="1"/>
+                    <field name="price_subtotal" string="Total Excl. Tax" readonly="1"/>
+                    <field name="price_tax" string="Tax" readonly="1"/>
+                    <field name="goldverse_total_amount" string="Total Incl. Tax" readonly="1"/>
                 </list>
             </xpath>
             <xpath expr="//field[@name='line_ids']/ancestor::page[1]//group[hasclass('alm-total-box')]" position="attributes">
