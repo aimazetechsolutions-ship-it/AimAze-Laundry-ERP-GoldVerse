@@ -198,7 +198,14 @@ class InteractiveAccountReport(models.AbstractModel):
                 "values": total_values,
             }
         ]
-        sorted_partners = sorted(partners.values(), key=lambda value: (value["name"] or "").casefold())
+        sorted_partners = sorted(
+            (
+                partner_line
+                for partner_line in partners.values()
+                if not currency.is_zero(partner_line["total"])
+            ),
+            key=lambda value: (value["name"] or "").casefold(),
+        )
         for index, partner_line in enumerate(sorted_partners):
             values = {
                 "name": partner_line["name"],
