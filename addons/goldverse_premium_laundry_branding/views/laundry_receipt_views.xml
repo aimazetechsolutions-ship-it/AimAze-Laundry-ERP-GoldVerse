@@ -35,7 +35,8 @@
                     .gv-totals { width: 100%; border-collapse: collapse; border-top: 1px solid #000; margin-top: 5px; font-size: 9px; }
                     .gv-totals td { padding: 2px 1px; }
                     .gv-summary { margin-top: 9px; text-align: center; font-size: 9px; font-weight: 700; }
-                    .gv-terms { margin-top: 6px; font-size: 7px; line-height: 1.05; }
+                    .gv-terms { margin-top: 6px; font-size: 7px; line-height: 1.05; text-align: left; }
+                    .gv-terms div { text-align: left; }
                     .gv-terms-title { text-align: center; font-weight: 800; text-decoration: underline; }
                     .gv-closing { margin-top: 16px; text-align: center; font-size: 9px; font-weight: 800; }
                 </style>
@@ -52,7 +53,8 @@
                         <div class="gv-muted">Elite Threads, Elite Care...</div>
                         <div class="gv-muted">
                             <span t-esc="doc.branch_id.address or '15-D Commercial DHA (EME Phase XII), Lahore'"/><br/>
-                            Phone <span t-esc="doc.branch_id.phone or '+92 300 1111 897'"/>
+                            Phone <span t-esc="doc.branch_id.phone or '+92 300 1111 897'"/><br/>
+                            Website: www.thegoldverse.com
                         </div>
                     </div>
 
@@ -66,7 +68,7 @@
 
                     <div class="gv-info">
                         <div><span class="gv-label">Customer :</span> <span t-esc="doc.partner_id.name or ''"/></div>
-                        <div><span class="gv-label">Customer :</span> <span t-esc="doc.mobile or doc.partner_id.mobile or doc.partner_id.phone or ''"/></div>
+                        <div><span class="gv-label">Phone No.:</span> <span t-esc="doc.mobile or doc.partner_id.mobile or doc.partner_id.phone or ''"/></div>
                         <div>
                             <span class="gv-label">Customer Address:</span>
                             <span t-esc="doc.partner_id.contact_address or ''"/>
@@ -79,8 +81,8 @@
                                 <th style="width:34%;">Items</th>
                                 <th class="gv-num" style="width:10%;">Qty</th>
                                 <th class="gv-num" style="width:20%;">Gross Amount</th>
-                                <th class="gv-num" style="width:14%;">Discount</th>
-                                <th class="gv-num" style="width:22%;">Net Amount</th>
+                                <th class="gv-num" style="width:14%;">Disc</th>
+                                <th class="gv-num" style="width:22%;">Net<br/>Amount</th>
                             </tr>
                         </thead>
                         <tbody>
