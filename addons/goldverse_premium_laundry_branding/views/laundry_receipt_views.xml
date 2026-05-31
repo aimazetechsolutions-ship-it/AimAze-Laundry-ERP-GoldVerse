@@ -53,19 +53,12 @@
                         <div class="gv-muted">Elite Threads, Elite Care...</div>
                     </div>
 
-                    <div class="gv-row">
-                        <div class="gv-left gv-info">
-                            <div><span class="gv-label">Manager:</span> <span t-esc="doc.user_id.name or doc.create_uid.name or ''"/></div>
-                            <div><span class="gv-label">Date #:</span> <span t-field="doc.order_date" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
-                            <div><span class="gv-label">Invoice #:</span> <span t-esc="doc.invoice_id.name if doc.invoice_id else ''"/></div>
-                            <div><span class="gv-label">Type:</span> <span t-esc="source_labels.get(doc.source, doc.source or '')"/></div>
-                        </div>
-                        <div class="gv-right">
-                            <div class="gv-delivery">
-                                Delivery Date:
-                                <span t-field="doc.expected_delivery_datetime" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/>
-                            </div>
-                        </div>
+                    <div class="gv-info">
+                        <div><span class="gv-label">Manager:</span> <span t-esc="doc.user_id.name or doc.create_uid.name or ''"/></div>
+                        <div><span class="gv-label">Order Date:</span> <span t-field="doc.order_date" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
+                        <div><span class="gv-label">Delivery Date:</span> <span t-field="doc.expected_delivery_datetime" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
+                        <div><span class="gv-label">Invoice #:</span> <span t-esc="doc.invoice_id.name if doc.invoice_id else ''"/></div>
+                        <div><span class="gv-label">Type:</span> <span t-esc="source_labels.get(doc.source, doc.source or '')"/></div>
                     </div>
 
                     <div class="gv-info">
@@ -81,24 +74,29 @@
                     <table class="gv-table">
                         <thead>
                             <tr>
-                                <th style="width:48%;">Items</th>
-                                <th class="gv-num" style="width:12%;">Qty</th>
-                                <th class="gv-num" style="width:18%;">Rate</th>
-                                <th class="gv-num" style="width:22%;">Amount</th>
+                                <th style="width:34%;">Items</th>
+                                <th class="gv-num" style="width:10%;">Qty</th>
+                                <th class="gv-num" style="width:20%;">Gross Amount</th>
+                                <th class="gv-num" style="width:14%;">Dis</th>
+                                <th class="gv-num" style="width:22%;">Total Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             <t t-foreach="doc.line_ids" t-as="line">
+                                <t t-set="line_qty" t-value="line.quantity or 0.0"/>
+                                <t t-set="line_gross" t-value="(line.goldverse_base_price or line.unit_price or 0.0) * line_qty"/>
+                                <t t-set="line_discount" t-value="line.goldverse_discount_amount or 0.0"/>
                                 <tr>
                                     <td>
                                         <span t-esc="line._goldverse_service_detail()"/>
                                     </td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.quantity or 0.0)"/></td>
-                                    <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.unit_price or 0.0)"/></td>
+                                    <td class="gv-num"><span t-esc="'{:,.0f}'.format(line_gross)"/></td>
+                                    <td class="gv-num"><span t-esc="'{:,.0f}'.format(line_discount)"/></td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.price_subtotal or 0.0)"/></td>
                                 </tr>
                                 <tr t-if="line.goldverse_colour_id or line.color or line.goldverse_qc_option_ids or line.goldverse_topup_ids or line.goldverse_priority != 'normal'">
-                                    <td colspan="4" class="gv-note">
+                                    <td colspan="5" class="gv-note">
                                         <div t-if="line.goldverse_colour_id or line.color">
                                             + <span t-esc="line.goldverse_colour_id.name or line.color"/> - 0
                                         </div>
@@ -117,34 +115,33 @@
                         </tbody>
                     </table>
 
+                    <t t-set="subtotal_qty" t-value="sum(doc.line_ids.mapped('quantity')) or 0.0"/>
+                    <t t-set="subtotal_gross" t-value="sum([((line.goldverse_base_price or line.unit_price or 0.0) * (line.quantity or 0.0)) for line in doc.line_ids]) or 0.0"/>
+                    <t t-set="subtotal_discount" t-value="sum(doc.line_ids.mapped('goldverse_discount_amount')) or 0.0"/>
+                    <t t-set="subtotal_amount" t-value="sum(doc.line_ids.mapped('price_subtotal')) or 0.0"/>
                     <table class="gv-totals">
                         <tr>
                             <td><strong>SubTotal</strong></td>
-                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_untaxed or 0.0)"/></td>
-                        </tr>
-                        <tr t-if="sum(doc.line_ids.mapped('goldverse_discount_amount'))">
-                            <td><strong>Invoice Discount</strong></td>
-                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(sum(doc.line_ids.mapped('goldverse_discount_amount')) or 0.0)"/></td>
-                        </tr>
-                        <tr t-if="doc.delivery_charge">
-                            <td><strong>Delivery</strong></td>
-                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.delivery_charge or 0.0)"/></td>
-                        </tr>
-                        <tr t-if="doc.amount_tax">
-                            <td><strong>Tax</strong></td>
-                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_tax or 0.0)"/></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(subtotal_qty)"/></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(subtotal_gross)"/></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(subtotal_discount)"/></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(subtotal_amount)"/></td>
                         </tr>
                         <tr>
-                            <td><strong>NetTotal</strong></td>
-                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_total or 0.0)"/></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Credit</strong></td>
+                            <td colspan="4"><strong>Advance Paid</strong></td>
                             <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.advance_paid or 0.0)"/></td>
                         </tr>
                         <tr>
-                            <td><strong>Balance</strong></td>
-                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.balance_amount or 0.0)"/></td>
+                            <td colspan="4"><strong>Net Total</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_total or 0.0)"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"><strong>Wallet Balance Used</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.wallet_used_amount or 0.0)"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"><strong>Net Balance</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.net_balance_amount or doc.balance_amount or 0.0)"/></td>
                         </tr>
                     </table>
 
