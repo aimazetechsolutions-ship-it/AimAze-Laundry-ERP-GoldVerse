@@ -1,45 +1,172 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_laundry_order_receipt_goldverse_compact" inherit_id="aimaze_laundry_management.report_laundry_order_receipt">
-        <xpath expr="//div[hasclass('aimaze-report-page')]" position="attributes">
-            <attribute name="style">font-size:10px; line-height:1.25; color:#102a43;</attribute>
-        </xpath>
-        <xpath expr="//div[hasclass('aimaze-report-header')]" position="attributes">
-            <attribute name="style">border-bottom:2px solid #2bbbd3; padding-bottom:8px; margin-bottom:10px;</attribute>
-        </xpath>
-        <xpath expr="//h2[hasclass('aimaze-report-title')]" position="attributes">
-            <attribute name="style">color:#12456f; font-size:18px; font-weight:800; margin:0;</attribute>
-        </xpath>
-        <xpath expr="//table[hasclass('aimaze-report-table')]" position="replace">
-            <table class="table table-sm mt8 aimaze-report-table" style="font-size:10px; margin-top:8px; border-collapse:collapse;">
-                <thead>
-                    <tr style="border-bottom:1px solid #102a43;">
-                        <th style="width:68%;">Service Item</th>
-                        <th class="text-end" style="width:10%;">Qty</th>
-                        <th class="text-end" style="width:22%;">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr t-foreach="doc.line_ids" t-as="line" style="border-bottom:1px solid #d8e4ed;">
-                        <td style="padding:4px 2px;">
-                            <span t-esc="line._goldverse_service_detail()"/>
-                        </td>
-                        <td class="text-end" style="padding:4px 2px;">
-                            <span t-esc="'{:,.0f}'.format(line.quantity or 0.0)"/>
-                        </td>
-                        <td class="text-end" style="padding:4px 2px;">
-                            <span t-field="line.price_subtotal"/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </xpath>
-        <xpath expr="//div[hasclass('row')][.//span[@t-field='doc.amount_untaxed']]" position="attributes">
-            <attribute name="style">margin-top:8px; font-size:10px;</attribute>
-        </xpath>
-        <xpath expr="//div[hasclass('row')][.//span[@t-field='doc.amount_untaxed']]//table" position="attributes">
-            <attribute name="class">table table-sm</attribute>
-            <attribute name="style">border:1px solid #d8e4ed; font-size:10px; margin-bottom:0;</attribute>
+        <xpath expr="//t[@t-call='web.external_layout']" position="replace">
+            <t t-call="web.basic_layout">
+                <style>
+                    @page { size: 80mm auto; margin: 2mm; }
+                    .gv-slip {
+                        width: 76mm;
+                        max-width: 76mm;
+                        margin: 0 auto;
+                        color: #000;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 10px;
+                        line-height: 1.16;
+                    }
+                    .gv-center { text-align: center; }
+                    .gv-logo { width: 25mm; height: 25mm; object-fit: contain; }
+                    .gv-brand { font-size: 14px; line-height: 1.05; font-weight: 800; margin-top: 3px; }
+                    .gv-muted { font-size: 9px; }
+                    .gv-row { display: table; width: 100%; table-layout: fixed; }
+                    .gv-left, .gv-right { display: table-cell; vertical-align: top; }
+                    .gv-right { text-align: right; }
+                    .gv-delivery { font-size: 12px; font-weight: 800; white-space: nowrap; margin-top: 3px; }
+                    .gv-line { border-top: 1px solid #000; margin: 4px 0; }
+                    .gv-info div { margin: 1px 0; }
+                    .gv-label { font-weight: 800; }
+                    .gv-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 9px; }
+                    .gv-table th { border-bottom: 1px solid #000; text-align: left; padding: 2px 1px; }
+                    .gv-table td { padding: 2px 1px; vertical-align: top; }
+                    .gv-num { text-align: right; white-space: nowrap; }
+                    .gv-note { padding-left: 6px; font-size: 8px; }
+                    .gv-totals { width: 100%; border-collapse: collapse; border-top: 1px solid #000; margin-top: 5px; font-size: 9px; }
+                    .gv-totals td { padding: 2px 1px; }
+                    .gv-summary { margin-top: 9px; text-align: center; font-size: 9px; font-weight: 700; }
+                    .gv-terms { margin-top: 6px; font-size: 7px; line-height: 1.05; }
+                    .gv-terms-title { text-align: center; font-weight: 800; text-decoration: underline; }
+                </style>
+                <div class="page gv-slip">
+                    <t t-set="source_labels" t-value="dict(doc._fields['source'].selection)"/>
+                    <t t-set="priority_labels" t-value="dict(doc.line_ids._fields['goldverse_priority'].selection) if doc.line_ids else {}"/>
+                    <t t-set="currency" t-value="doc.currency_id and doc.currency_id.name or 'Rs.'"/>
+                    <div class="gv-center">
+                        <img class="gv-logo" src="/goldverse_premium_laundry_branding/static/src/img/goldverse-logo.jpeg"/>
+                        <div class="gv-brand">
+                            GoldVerse Premium<br/>
+                            Laundry (<span t-esc="doc.branch_id.code or 'EME'"/>)
+                        </div>
+                        <div class="gv-muted">
+                            <span t-esc="doc.branch_id.address or '15-D Commercial DHA (EME Phase XII), Lahore'"/><br/>
+                            Phone <span t-esc="doc.branch_id.phone or '+92 300 1111 897'"/>
+                        </div>
+                        <div class="gv-muted">Elite Threads, Elite Care...</div>
+                    </div>
+
+                    <div class="gv-row">
+                        <div class="gv-left gv-info">
+                            <div><span class="gv-label">Manager:</span> <span t-esc="doc.user_id.name or doc.create_uid.name or ''"/></div>
+                            <div><span class="gv-label">Date #:</span> <span t-field="doc.order_date" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
+                            <div><span class="gv-label">Invoice #:</span> <span t-esc="doc.invoice_id.name if doc.invoice_id else ''"/></div>
+                            <div><span class="gv-label">Type:</span> <span t-esc="source_labels.get(doc.source, doc.source or '')"/></div>
+                        </div>
+                        <div class="gv-right">
+                            <div class="gv-delivery">
+                                Delivery Date:
+                                <span t-field="doc.expected_delivery_datetime" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gv-info">
+                        <div><span class="gv-label">Customer :</span> <span t-esc="doc.partner_id.name or ''"/></div>
+                        <div><span class="gv-label">Balance:</span> <span t-esc="'{:,.0f}'.format(doc.balance_amount or 0.0)"/></div>
+                        <div><span class="gv-label">Customer :</span> <span t-esc="doc.mobile or doc.partner_id.mobile or doc.partner_id.phone or ''"/></div>
+                        <div>
+                            <span class="gv-label">Customer Address:</span>
+                            <span t-esc="doc.partner_id.contact_address or ''"/>
+                        </div>
+                    </div>
+
+                    <table class="gv-table">
+                        <thead>
+                            <tr>
+                                <th style="width:48%;">Items</th>
+                                <th class="gv-num" style="width:12%;">Qty</th>
+                                <th class="gv-num" style="width:18%;">Rate</th>
+                                <th class="gv-num" style="width:22%;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc.line_ids" t-as="line">
+                                <tr>
+                                    <td>
+                                        <span t-esc="line._goldverse_service_detail()"/>
+                                    </td>
+                                    <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.quantity or 0.0)"/></td>
+                                    <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.unit_price or 0.0)"/></td>
+                                    <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.price_subtotal or 0.0)"/></td>
+                                </tr>
+                                <tr t-if="line.goldverse_colour_id or line.color or line.goldverse_qc_option_ids or line.goldverse_topup_ids or line.goldverse_priority != 'normal'">
+                                    <td colspan="4" class="gv-note">
+                                        <div t-if="line.goldverse_colour_id or line.color">
+                                            + <span t-esc="line.goldverse_colour_id.name or line.color"/> - 0
+                                        </div>
+                                        <div t-foreach="line.goldverse_qc_option_ids" t-as="qc">
+                                            + <span t-esc="qc.name"/> - 0
+                                        </div>
+                                        <div t-foreach="line.goldverse_topup_ids" t-as="addon">
+                                            + <span t-esc="addon.name"/> - 0
+                                        </div>
+                                        <div t-if="line.goldverse_priority != 'normal'">
+                                            + <span t-esc="priority_labels.get(line.goldverse_priority, line.goldverse_priority)"/> Service - <span t-esc="'{:,.0f}'.format(line.goldverse_priority_charge or 0.0)"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <table class="gv-totals">
+                        <tr>
+                            <td><strong>SubTotal</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_untaxed or 0.0)"/></td>
+                        </tr>
+                        <tr t-if="sum(doc.line_ids.mapped('goldverse_discount_amount'))">
+                            <td><strong>Invoice Discount</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(sum(doc.line_ids.mapped('goldverse_discount_amount')) or 0.0)"/></td>
+                        </tr>
+                        <tr t-if="doc.delivery_charge">
+                            <td><strong>Delivery</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.delivery_charge or 0.0)"/></td>
+                        </tr>
+                        <tr t-if="doc.amount_tax">
+                            <td><strong>Tax</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_tax or 0.0)"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>NetTotal</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.amount_total or 0.0)"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Credit</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.advance_paid or 0.0)"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Balance</strong></td>
+                            <td class="gv-num"><span t-esc="'{:,.0f}'.format(doc.balance_amount or 0.0)"/></td>
+                        </tr>
+                    </table>
+
+                    <div class="gv-summary">
+                        Total Items: <span t-esc="len(doc.line_ids)"/>
+                        Total QTY: <span t-esc="'{:,.0f}'.format(sum(doc.line_ids.mapped('quantity')) or 0.0)"/><br/>
+                        Express service +25%, Urgent service +40%<br/>
+                        Happy to Serve You Best!
+                    </div>
+
+                    <div class="gv-terms">
+                        <div class="gv-terms-title">Terms &amp; Conditions (Summary)</div>
+                        <div>1. Lost receipt: original customer CNIC is required; otherwise item may be held for safety.</div>
+                        <div>2. No guarantee for damage to artificial/low-quality materials or color bleeding during cleaning.</div>
+                        <div>3. Stain removal is best effort and not guaranteed.</div>
+                        <div>4. Hard treatment may damage weak fabrics; processing is at customer's responsibility.</div>
+                        <div>5. Check and remove all personal items before handover; company is not liable after booking.</div>
+                        <div>6. Collect within 15-30 days; unclaimed items after 4 months are not refundable.</div>
+                        <div>7. Delays/losses due to external events are outside company control.</div>
+                    </div>
+                </div>
+            </t>
         </xpath>
     </template>
 </odoo>
