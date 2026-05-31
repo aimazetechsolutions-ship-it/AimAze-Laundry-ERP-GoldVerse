@@ -128,6 +128,161 @@ class InteractiveAccountReport(models.AbstractModel):
         return columns, lines
 
     @api.model
+    def _aged_partner_report(self, options):
+        account_types, report_name = self._goldverse_aged_account_types(options)
+        date_to = fields.Date.from_string(options["date_to"])
+        period_length = max(options["period_length"], 1)
+        currency = self.env.company.currency_id
+        periods = {
+            "4": f"1-{period_length}",
+            "3": f"{period_length + 1}-{period_length * 2}",
+            "2": f"{period_length * 2 + 1}-{period_length * 3}",
+            "1": f"{period_length * 3 + 1}-{period_length * 4}",
+            "0": _("Older"),
+        }
+        columns = [
+            {"key": "name", "label": "", "type": "text"},
+            {"key": "invoice_date", "label": _("Invoice Date"), "type": "text"},
+            {"key": "direction", "label": _("At Date"), "type": "number"},
+            {"key": "4", "label": periods["4"], "type": "number"},
+            {"key": "3", "label": periods["3"], "type": "number"},
+            {"key": "2", "label": periods["2"], "type": "number"},
+            {"key": "1", "label": periods["1"], "type": "number"},
+            {"key": "0", "label": periods["0"], "type": "number"},
+            {"key": "total", "label": _("Total"), "type": "number"},
+        ]
+        bucket_keys = ("direction", "4", "3", "2", "1", "0", "total")
+        totals = {key: 0.0 for key in bucket_keys}
+        partners = {}
+        move_states = ["posted"] if options["target_move"] == "posted" else ["draft", "posted"]
+        domain = [
+            ("company_id", "=", self.env.company.id),
+            ("parent_state", "in", move_states),
+            ("account_id.account_type", "in", account_types),
+            ("date", "<=", date_to),
+        ]
+        move_lines = self.env["account.move.line"].sudo().search(
+            domain,
+            order="partner_id, date_maturity, date, id",
+        )
+        for line in move_lines:
+            amount = self._goldverse_aged_open_amount(line, date_to, currency)
+            if currency.is_zero(amount):
+                continue
+            partner_id = line.partner_id.id or False
+            partner_values = partners.setdefault(
+                partner_id,
+                {
+                    "partner_id": partner_id,
+                    "name": line.partner_id.display_name or _("Unknown Partner"),
+                    **{key: 0.0 for key in bucket_keys},
+                },
+            )
+            bucket = self._goldverse_aged_bucket(line.date_maturity or line.date, date_to, period_length)
+            partner_values[bucket] += amount
+            partner_values["total"] += amount
+            totals[bucket] += amount
+            totals["total"] += amount
+        total_values = {
+            "name": report_name,
+            "invoice_date": "",
+            **totals,
+        }
+        lines = [
+            {
+                "id": "aged_total",
+                "name": report_name,
+                "level": 1,
+                "type": "aged_summary",
+                "is_total": False,
+                "values": total_values,
+            }
+        ]
+        sorted_partners = sorted(partners.values(), key=lambda value: (value["name"] or "").casefold())
+        for index, partner_line in enumerate(sorted_partners):
+            values = {
+                "name": partner_line["name"],
+                "invoice_date": "",
+            }
+            values.update({key: partner_line[key] for key in bucket_keys})
+            action = False
+            if partner_line["partner_id"]:
+                action = {
+                    "type": "ir.actions.act_window",
+                    "name": partner_line["name"] or _("Partner Entries"),
+                    "res_model": "account.move.line",
+                    "view_mode": "list,form",
+                    "views": [(False, "list"), (False, "form")],
+                    "domain": self._move_line_domain(
+                        options,
+                        account_types=account_types,
+                        date_from=False,
+                    )
+                    + [("partner_id", "=", partner_line["partner_id"])],
+                    "context": {
+                        "search_default_group_by_move": 1,
+                        "default_company_id": self.env.company.id,
+                    },
+                }
+            lines.append(
+                {
+                    "id": f"aged_{index}",
+                    "name": values["name"],
+                    "level": 2,
+                    "type": "partner",
+                    "is_total": False,
+                    "action": action,
+                    "values": values,
+                }
+            )
+        return columns, lines
+
+    @api.model
+    def _goldverse_aged_account_types(self, options):
+        if options["result_selection"] == "customer":
+            return ["asset_receivable"], _("Aged Receivable")
+        if options["result_selection"] == "supplier":
+            return ["liability_payable"], _("Aged Payable")
+        return ["liability_payable", "asset_receivable"], _("Aged Partner Balance")
+
+    @api.model
+    def _goldverse_aged_bucket(self, maturity_date, date_to, period_length):
+        if maturity_date >= date_to:
+            return "direction"
+        days_overdue = (date_to - maturity_date).days
+        if days_overdue <= period_length:
+            return "4"
+        if days_overdue <= period_length * 2:
+            return "3"
+        if days_overdue <= period_length * 3:
+            return "2"
+        if days_overdue <= period_length * 4:
+            return "1"
+        return "0"
+
+    @api.model
+    def _goldverse_aged_open_amount(self, line, date_to, currency):
+        company_currency = line.company_id.currency_id
+        amount = company_currency._convert(line.balance, currency, line.company_id, date_to)
+        for partial in line.matched_debit_ids:
+            if partial.max_date <= date_to:
+                amount -= partial.company_id.currency_id._convert(
+                    partial.amount,
+                    currency,
+                    partial.company_id,
+                    date_to,
+                )
+        for partial in line.matched_credit_ids:
+            if partial.max_date <= date_to:
+                amount += partial.company_id.currency_id._convert(
+                    partial.amount,
+                    currency,
+                    partial.company_id,
+                    date_to,
+                )
+        return amount
+
+    @api.model
     def _journal_entry_action(self, move_id):
         return {
             "type": "ir.actions.act_window",

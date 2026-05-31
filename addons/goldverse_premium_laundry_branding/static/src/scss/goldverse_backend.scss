@@ -495,6 +495,51 @@
   white-space: nowrap;
 }
 
+.o_account_interactive_report {
+  .o_account_report_sheet.o_account_aged_sheet {
+    width: calc(100vw - 72px) !important;
+    max-width: none !important;
+    overflow-x: auto;
+  }
+
+  .o_account_aged_table {
+    width: 100%;
+    min-width: 1060px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .o_account_aged_table th,
+  .o_account_aged_table td {
+    padding: 6px 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .o_account_aged_table th:first-child,
+  .o_account_aged_table td:first-child {
+    width: 26%;
+  }
+
+  .o_account_aged_table th:nth-child(2),
+  .o_account_aged_table td:nth-child(2) {
+    width: 12%;
+  }
+
+  .o_account_aged_table th.o_account_report_number,
+  .o_account_aged_table td.o_account_report_number {
+    width: 8.85%;
+    text-align: right;
+  }
+
+  .o_account_aged_table thead th[colspan] {
+    text-align: center;
+  }
+}
+
 @media (max-width: 900px) {
   .o_account_report_sheet.goldverse-general-ledger-sheet {
     width: calc(100vw - 32px) !important;
@@ -502,5 +547,9 @@
 
   .goldverse-general-ledger-table {
     min-width: 980px;
+  }
+
+  .o_account_interactive_report .o_account_report_sheet.o_account_aged_sheet {
+    width: calc(100vw - 32px) !important;
   }
 }
