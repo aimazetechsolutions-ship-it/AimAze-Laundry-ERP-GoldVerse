@@ -99,10 +99,10 @@
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line_discount)"/></td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.price_subtotal or 0.0)"/></td>
                                 </tr>
-                                <tr t-if="line.goldverse_colour_id or line.color or line.goldverse_qc_option_ids or line.goldverse_topup_ids or line.goldverse_priority != 'normal'">
+                                <tr t-if="line.goldverse_colour_ids or line.goldverse_colour_id or line.color or line.goldverse_qc_option_ids or line.goldverse_topup_ids or line.goldverse_priority != 'normal'">
                                     <td colspan="5" class="gv-note">
-                                        <div t-if="line.goldverse_colour_id or line.color">
-                                            + <span t-esc="line.goldverse_colour_id.name or line.color"/> - 0
+                                        <div t-if="line.goldverse_colour_ids or line.goldverse_colour_id or line.color">
+                                            + <span t-esc="', '.join(line.goldverse_colour_ids.mapped('name')) or line.goldverse_colour_id.name or line.color"/> - 0
                                         </div>
                                         <div t-foreach="line.goldverse_qc_option_ids" t-as="qc">
                                             + <span t-esc="qc.name"/> - 0

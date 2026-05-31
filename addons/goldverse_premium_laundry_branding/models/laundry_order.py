@@ -193,9 +193,7 @@ class LaundryOrder(models.Model):
 
     @api.onchange("expected_delivery_datetime")
     def _onchange_goldverse_expected_delivery_datetime(self):
-        for order in self:
-            if order.expected_delivery_datetime:
-                order.expected_delivery_datetime = order._goldverse_force_six_pm(order.expected_delivery_datetime)
+        return
 
     @api.onchange("order_date")
     def _onchange_goldverse_order_date(self):
@@ -227,8 +225,6 @@ class LaundryOrder(models.Model):
             self._goldverse_validate_order_date_today_value(vals["order_date"])
         if "expected_delivery_datetime" not in vals:
             vals["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
-        elif vals.get("expected_delivery_datetime"):
-            vals["expected_delivery_datetime"] = self._goldverse_force_six_pm(vals["expected_delivery_datetime"])
         return vals
 
     def _goldverse_validate_required_order_values(self, vals):
@@ -292,9 +288,6 @@ class LaundryOrder(models.Model):
             else:
                 vals = dict(vals)
                 vals["order_date"] = self._goldverse_now_order_date()
-        if vals.get("expected_delivery_datetime"):
-            vals = dict(vals)
-            vals["expected_delivery_datetime"] = self._goldverse_force_six_pm(vals["expected_delivery_datetime"])
         result = super().write(vals)
         if not self.env.context.get("goldverse_skip_required_validation"):
             self._goldverse_validate_required_order_fields()

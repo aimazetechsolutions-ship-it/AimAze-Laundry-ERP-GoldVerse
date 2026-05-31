@@ -34,6 +34,13 @@ class LaundryOrderLine(models.Model):
         default="normal",
     )
     goldverse_colour_id = fields.Many2one("goldverse.laundry.colour", string="Colour")
+    goldverse_colour_ids = fields.Many2many(
+        "goldverse.laundry.colour",
+        "goldverse_laundry_order_line_colour_rel",
+        "line_id",
+        "colour_id",
+        string="Colour",
+    )
     goldverse_colour = fields.Selection(
         [
             ("white", "White"),
@@ -163,7 +170,14 @@ class LaundryOrderLine(models.Model):
     def _onchange_goldverse_colour_id(self):
         for line in self:
             if line.goldverse_colour_id:
+                line.goldverse_colour_ids = [(4, line.goldverse_colour_id.id)]
                 line.color = line.goldverse_colour_id.name
+
+    @api.onchange("goldverse_colour_ids")
+    def _onchange_goldverse_colour_ids(self):
+        for line in self:
+            if line.goldverse_colour_ids:
+                line.color = ", ".join(line.goldverse_colour_ids.mapped("name"))
 
     @api.onchange("goldverse_colour")
     def _onchange_goldverse_colour(self):
@@ -280,6 +294,7 @@ class LaundryOrderLine(models.Model):
             "goldverse_priority",
             "goldverse_subcategory_id",
             "goldverse_colour_id",
+            "goldverse_colour_ids",
             "goldverse_qc_option_id",
             "goldverse_qc_option_ids",
             "goldverse_topup_id",
@@ -314,6 +329,12 @@ class LaundryOrderLine(models.Model):
                 updates["goldverse_subcategory_id"] = line.service_id.goldverse_subcategory_id.id
             if line.goldverse_colour_id and line.color != line.goldverse_colour_id.name:
                 updates["color"] = line.goldverse_colour_id.name
+            if line.goldverse_colour_id and line.goldverse_colour_id not in line.goldverse_colour_ids:
+                updates["goldverse_colour_ids"] = [(4, line.goldverse_colour_id.id)]
+            if line.goldverse_colour_ids:
+                colour_names = ", ".join(line.goldverse_colour_ids.mapped("name"))
+                if line.color != colour_names:
+                    updates["color"] = colour_names
             if line.goldverse_qc_option_id and line.qc_status != line.goldverse_qc_option_id.base_qc_status:
                 updates["qc_status"] = line.goldverse_qc_option_id.base_qc_status
             if line.goldverse_qc_option_id and line.goldverse_qc_option_id not in line.goldverse_qc_option_ids:
