@@ -14,6 +14,7 @@ class LaundryOrder(models.Model):
             ("order_created", "Order Created"),
             ("warehouse_pending", "Warehouse Pending"),
             ("received_branch", "Received at Branch"),
+            ("pending_customer_delivery", "Pending Delivery to Customer"),
             ("collection", "Collection"),
             ("shift_to_plant", "Shift To Plant"),
             ("in_process", "In-Process at Plant"),
@@ -24,6 +25,7 @@ class LaundryOrder(models.Model):
             "order_created": "set default",
             "warehouse_pending": "set default",
             "received_branch": "set default",
+            "pending_customer_delivery": "set default",
             "collection": "set default",
             "shift_to_plant": "set default",
             "in_process": "set default",
@@ -221,7 +223,7 @@ class LaundryOrder(models.Model):
                 missing_names = ", ".join(unreceived_lines.mapped("display_name")[:5])
                 raise UserError(_("Receive all warehouse lines before marking the order received. Missing: %s") % missing_names)
         self.write({"warehouse_received_datetime": fields.Datetime.now()})
-        self._set_state("received_branch")
+        self._set_state("pending_customer_delivery")
 
     def action_stage_collection(self):
         self._set_state("collection")
@@ -249,9 +251,7 @@ class LaundryOrder(models.Model):
         old_process_states = ("sorting", "washing", "drying", "ironing", "qc", "packing")
         self.search([("state", "in", ("confirmed", "picked_up", "collection"))]).write({"state": "order_created"})
         self.search([("state", "in", ("received", "shift_to_plant"))]).write({"state": "warehouse_pending"})
-        self.search([("state", "=", "shift_to_outlet")]).write({"state": "received_branch"})
-        self.search([("state", "=", "ready")]).write({"state": "ready_for_delivery"})
-        self.search([("state", "=", "out_for_delivery")]).write({"state": "ready_for_delivery"})
+        self.search([("state", "in", ("received_branch", "shift_to_outlet", "ready", "out_for_delivery", "ready_for_delivery"))]).write({"state": "pending_customer_delivery"})
         self.search([("state", "in", old_process_states), ("invoice_id", "!=", False)]).write({"state": "invoiced"})
         self.search([("state", "in", old_process_states), ("invoice_id", "=", False)]).write({"state": "in_process"})
         return True
@@ -259,7 +259,7 @@ class LaundryOrder(models.Model):
     def _goldverse_normalize_expected_delivery_time(self):
         orders = (self or self.search([])).filtered(
             lambda order: order.expected_delivery_datetime
-            and order.state in ("draft", "order_created", "warehouse_pending", "received_branch")
+            and order.state in ("draft", "order_created", "warehouse_pending", "received_branch", "pending_customer_delivery")
         )
         for order in orders:
             order.with_context(goldverse_skip_required_validation=True).write({
@@ -282,6 +282,7 @@ class LaundryOrder(models.Model):
             "order_created",
             "warehouse_pending",
             "received_branch",
+            "pending_customer_delivery",
             "in_process",
             "ready_for_delivery",
             "delivered",

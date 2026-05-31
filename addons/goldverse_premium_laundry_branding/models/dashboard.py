@@ -77,7 +77,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             return self._goldverse_action(
                 _("Ready Orders"),
                 "aimaze.laundry.order",
-                order_base_domain + [("state", "in", ("ready", "ready_for_delivery"))],
+                order_base_domain + [("state", "in", ("ready", "ready_for_delivery", "pending_customer_delivery"))],
                 "list,kanban,form",
             )
         if card == "delivered_orders":

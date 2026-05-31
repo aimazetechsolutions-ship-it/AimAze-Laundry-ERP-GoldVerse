@@ -11,7 +11,7 @@
                     <button name="action_create_order" type="object" string="Create Order" class="oe_highlight alm-btn-success" invisible="state != 'draft'"/>
                     <button name="action_send_to_warehouse" type="object" string="Send to Warehouse" class="oe_highlight alm-btn-info" invisible="state != 'order_created'"/>
                     <button name="action_mark_received_branch" type="object" string="Mark Received at Branch" class="oe_highlight alm-btn-success" invisible="state != 'warehouse_pending'"/>
-                    <button name="action_mark_delivered" type="object" string="Mark Delivered" class="alm-btn-success" invisible="state != 'received_branch'"/>
+                    <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="state != 'pending_customer_delivery'"/>
                     <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting" invisible="state in ('draft','cancelled')"/>
                     <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment"/>
                     <button name="action_register_final_payment" type="object" string="Register Final Payment" class="alm-btn-payment"/>
@@ -24,7 +24,7 @@
                             class="alm-btn-danger"
                             invisible="state not in ('draft','confirmed','picked_up','received','order_created','collection','shift_to_plant')"
                             confirm="Are you sure you want to cancel this laundry order? This action will mark the order as cancelled."/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,order_created,warehouse_pending,received_branch,delivered,invoiced,paid"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,order_created,warehouse_pending,pending_customer_delivery,delivered,invoiced,paid"/>
                 </header>
             </xpath>
             <xpath expr="//field[@name='service_type']" position="attributes">
@@ -71,7 +71,7 @@
                 <button name="action_mark_received_branch" type="object" string="Mark Received" class="btn-primary" invisible="state != 'warehouse_pending'"/>
             </xpath>
             <xpath expr="//field[@name='state']" position="attributes">
-                <attribute name="decoration-info">state in ('order_created','received_branch','collection','shift_to_plant','in_process','shift_to_outlet','ready_for_delivery')</attribute>
+                <attribute name="decoration-info">state in ('order_created','received_branch','pending_customer_delivery','collection','shift_to_plant','in_process','shift_to_outlet','ready_for_delivery')</attribute>
                 <attribute name="decoration-warning">state == 'warehouse_pending'</attribute>
                 <attribute name="decoration-success">state in ('delivered','invoiced','paid')</attribute>
             </xpath>
@@ -112,6 +112,40 @@
         <field name="act_window_id" ref="action_goldverse_warehouse_pending_orders"/>
     </record>
 
+    <record id="view_laundry_order_customer_delivery_pending_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.customer.delivery.pending.list</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <list string="Pending Delivery to Customer" create="0">
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="partner_id"/>
+                <field name="mobile"/>
+                <field name="branch_id"/>
+                <field name="warehouse_received_datetime"/>
+                <field name="expected_delivery_datetime"/>
+                <field name="amount_total"/>
+                <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="btn-primary"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_goldverse_customer_delivery_pending_orders" model="ir.actions.act_window">
+        <field name="name">Pending Delivery to Customer</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,form,activity</field>
+        <field name="view_id" ref="view_laundry_order_customer_delivery_pending_list"/>
+        <field name="domain">[('state','=','pending_customer_delivery')]</field>
+        <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+    </record>
+
+    <record id="action_goldverse_customer_delivery_pending_orders_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_laundry_order_customer_delivery_pending_list"/>
+        <field name="act_window_id" ref="action_goldverse_customer_delivery_pending_orders"/>
+    </record>
+
     <record id="view_laundry_order_warehouse_movement_list" model="ir.ui.view">
         <field name="name">aimaze.laundry.order.warehouse.movement.list</field>
         <field name="model">aimaze.laundry.order</field>
@@ -123,7 +157,7 @@
                 <field name="branch_id"/>
                 <field name="warehouse_collected_datetime"/>
                 <field name="warehouse_received_datetime"/>
-                <field name="state" widget="badge" decoration-warning="state == 'warehouse_pending'" decoration-info="state == 'received_branch'" decoration-success="state in ('delivered','invoiced','paid')"/>
+                <field name="state" widget="badge" decoration-warning="state == 'warehouse_pending'" decoration-info="state in ('received_branch','pending_customer_delivery')" decoration-success="state in ('delivered','invoiced','paid')"/>
                 <field name="expected_delivery_datetime"/>
             </list>
         </field>
@@ -169,4 +203,9 @@
               parent="aimaze_laundry_management.menu_laundry_orders_root"
               action="action_goldverse_warehouse_line_movement_report"
               sequence="30"/>
+    <menuitem id="menu_goldverse_customer_delivery_pending_orders"
+              name="Pending Delivery to Customer"
+              parent="aimaze_laundry_management.menu_laundry_orders_root"
+              action="action_goldverse_customer_delivery_pending_orders"
+              sequence="25"/>
 </odoo>
