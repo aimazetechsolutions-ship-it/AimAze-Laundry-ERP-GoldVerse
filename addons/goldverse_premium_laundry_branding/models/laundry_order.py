@@ -63,6 +63,35 @@ class LaundryOrder(models.Model):
             sequence.sudo().date_range_ids.write({"number_next_actual": 1})
         return True
 
+    @api.model
+    def _goldverse_normalize_document_ref_prefixes(self):
+        def quote_identifier(identifier):
+            return '"%s"' % identifier.replace('"', '""')
+
+        refs_to_normalize = {
+            "aimaze.laundry.order": ("name", "barcode"),
+            "account.move": ("name", "ref", "payment_reference", "invoice_origin"),
+            "account.move.line": ("name", "ref"),
+            "account.payment": ("name", "payment_reference"),
+        }
+        for model_name, field_names in refs_to_normalize.items():
+            model = self.env[model_name].sudo()
+            table = model._table
+            for field_name in field_names:
+                field = model._fields.get(field_name)
+                if not field or not field.store or not field.column_type:
+                    continue
+                query = """
+                    UPDATE {table}
+                       SET {field} = replace(replace({field}, %s, %s), %s, %s)
+                     WHERE {field} LIKE %s OR {field} LIKE %s
+                """.format(
+                    table=quote_identifier(table),
+                    field=quote_identifier(field_name),
+                )
+                self.env.cr.execute(query, ("GVP/", "GPL/", "GOP/", "GPL/", "GVP/%", "GOP/%"))
+        return True
+
     def _goldverse_default_expected_delivery_datetime(self):
         user_tz = pytz.timezone(self.env.context.get("tz") or self.env.user.tz or "UTC")
         today = fields.Date.context_today(self)

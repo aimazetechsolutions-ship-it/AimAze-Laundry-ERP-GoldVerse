@@ -7,6 +7,7 @@
         <value model="aimaze.laundry.order" search="[]"/>
     </function>
     <function model="aimaze.laundry.order" name="_goldverse_configure_order_sequence"/>
+    <function model="aimaze.laundry.order" name="_goldverse_normalize_document_ref_prefixes"/>
     <function model="account.move" name="_goldverse_configure_invoice_sequence"/>
     <function model="res.users" name="_goldverse_assign_admin_all_laundry_branches"/>
 </odoo>
