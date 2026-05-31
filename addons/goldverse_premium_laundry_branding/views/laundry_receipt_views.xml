@@ -28,7 +28,7 @@
                     .gv-label { font-weight: 800; }
                     .gv-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 9px; }
                     .gv-table th { border-bottom: 1px solid #000; text-align: left; padding: 2px 1px; }
-                    .gv-table thead th { text-align: center !important; font-weight: 800; }
+                    .gv-table thead th { text-align: center !important; font-weight: 800; white-space: normal; line-height: 1.05; word-break: normal; overflow-wrap: anywhere; }
                     .gv-table td { padding: 4px 1px; vertical-align: top; }
                     .gv-num { text-align: right; white-space: nowrap; }
                     .gv-note { padding-left: 6px; font-size: 8px; }
@@ -37,6 +37,7 @@
                     .gv-summary { margin-top: 9px; text-align: center; font-size: 9px; font-weight: 700; }
                     .gv-terms { margin-top: 6px; font-size: 7px; line-height: 1.05; }
                     .gv-terms-title { text-align: center; font-weight: 800; text-decoration: underline; }
+                    .gv-closing { margin-top: 16px; text-align: center; font-size: 9px; font-weight: 800; }
                 </style>
                 <div class="page gv-slip">
                     <t t-set="source_labels" t-value="dict(doc._fields['source'].selection)"/>
@@ -48,11 +49,11 @@
                             GoldVerse Premium<br/>
                             Laundry (<span t-esc="doc.branch_id.code or 'EME'"/>)
                         </div>
+                        <div class="gv-muted">Elite Threads, Elite Care...</div>
                         <div class="gv-muted">
                             <span t-esc="doc.branch_id.address or '15-D Commercial DHA (EME Phase XII), Lahore'"/><br/>
                             Phone <span t-esc="doc.branch_id.phone or '+92 300 1111 897'"/>
                         </div>
-                        <div class="gv-muted">Elite Threads, Elite Care...</div>
                     </div>
 
                     <div class="gv-info gv-top-info">
@@ -149,8 +150,7 @@
                     <div class="gv-summary">
                         Total Items: <span t-esc="len(doc.line_ids)"/>
                         Total QTY: <span t-esc="'{:,.0f}'.format(sum(doc.line_ids.mapped('quantity')) or 0.0)"/><br/>
-                        Express service +25%, Urgent service +40%<br/>
-                        Happy to Serve You Best!
+                        Express service +25%, Urgent service +40%
                     </div>
 
                     <div class="gv-terms">
@@ -168,6 +168,8 @@
                         <div>11. GoldVerse does not operate on Sundays and public holidays.</div>
                         <div>12. Customer confirms and agrees to these terms by accepting this order slip.</div>
                     </div>
+
+                    <div class="gv-closing">Happy to Serve You Best!</div>
                 </div>
             </t>
         </xpath>
