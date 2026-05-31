@@ -25,6 +25,7 @@
         "views/partner_views.xml",
         "views/role_access_manager_views.xml",
         "views/goldverse_config_views.xml",
+        "views/report_export_templates.xml",
         "views/dashboard_views.xml",
         "views/order_line_views.xml",
         "views/order_flow_views.xml",

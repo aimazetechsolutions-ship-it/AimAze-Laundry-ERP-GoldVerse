@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_goldverse_interactive_account_report" model="report.paperformat">
+        <field name="name">GoldVerse Accounting Report Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_interactive_account_pdf" model="ir.actions.report">
+        <field name="name">GoldVerse Accounting Report</field>
+        <field name="model">res.company</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">goldverse_premium_laundry_branding.gv_account_pdf</field>
+        <field name="report_file">goldverse_premium_laundry_branding.gv_account_pdf</field>
+        <field name="paperformat_id" ref="goldverse_premium_laundry_branding.paperformat_goldverse_interactive_account_report"/>
+        <field name="attachment_use" eval="False"/>
+    </record>
+
+    <template id="gv_account_pdf">
+        <t t-call="web.html_container">
+            <div class="goldverse-report-page">
+                <style>
+                    .goldverse-report-page {
+                        color: #10243a;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 9px;
+                        line-height: 1.25;
+                    }
+                    .gv-report-header {
+                        border: 1px solid #d9e2ec;
+                        border-radius: 4px;
+                        overflow: hidden;
+                        margin-bottom: 10px;
+                    }
+                    .gv-title-row {
+                        background: #714b67;
+                        color: #ffffff;
+                        padding: 10px 14px;
+                    }
+                    .gv-title {
+                        font-size: 19px;
+                        font-weight: 700;
+                        letter-spacing: 0;
+                    }
+                    .gv-brand {
+                        color: #d8f7fb;
+                        font-size: 9px;
+                        font-weight: 700;
+                        margin-top: 2px;
+                    }
+                    .gv-meta-row {
+                        display: table;
+                        width: 100%;
+                        padding: 8px 12px;
+                        box-sizing: border-box;
+                        background: #fbfcfe;
+                    }
+                    .gv-meta-left,
+                    .gv-meta-right {
+                        display: table-cell;
+                        width: 50%;
+                        vertical-align: top;
+                    }
+                    .gv-meta-right {
+                        text-align: right;
+                    }
+                    .gv-company {
+                        font-size: 12px;
+                        font-weight: 700;
+                    }
+                    .gv-muted {
+                        color: #5c6f84;
+                    }
+                    .gv-filter-wrap {
+                        margin-top: 6px;
+                    }
+                    .gv-filter {
+                        display: inline-block;
+                        border: 1px solid #cfe8ee;
+                        border-radius: 3px;
+                        color: #0a6974;
+                        background: #eefbfc;
+                        padding: 3px 6px;
+                        margin: 2px 3px 0 0;
+                        font-size: 8px;
+                        font-weight: 700;
+                    }
+                    table.gv-report-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        table-layout: fixed;
+                    }
+                    .gv-report-table th {
+                        background: #10243a;
+                        color: #ffffff;
+                        border: 1px solid #10243a;
+                        font-size: 8px;
+                        font-weight: 700;
+                        padding: 5px 5px;
+                        text-align: left;
+                        vertical-align: middle;
+                    }
+                    .gv-report-table td {
+                        border: 1px solid #d9e2ec;
+                        padding: 4px 5px;
+                        vertical-align: top;
+                        word-wrap: break-word;
+                    }
+                    .gv-report-table tbody tr:nth-child(even) td {
+                        background: #fbfcfe;
+                    }
+                    .gv-report-table tr.gv-total-row td {
+                        background: #eef3f7;
+                        font-weight: 700;
+                    }
+                    .gv-report-table .gv-main-cell {
+                        width: 28%;
+                    }
+                    .gv-report-table .gv-number-cell,
+                    .gv-report-table .gv-number-header {
+                        text-align: right;
+                        white-space: nowrap;
+                    }
+                    .gv-cell-indent {
+                        display: inline-block;
+                    }
+                    .gv-footer {
+                        margin-top: 8px;
+                        padding-top: 5px;
+                        border-top: 1px solid #d9e2ec;
+                        color: #5c6f84;
+                        font-size: 8px;
+                        text-align: right;
+                    }
+                </style>
+
+                <div class="gv-report-header">
+                    <div class="gv-title-row">
+                        <div class="gv-title"><t t-esc="payload.get('title')"/></div>
+                        <div class="gv-brand">AimAze Laundry ERP | GoldVerse Premium Laundry</div>
+                    </div>
+                    <div class="gv-meta-row">
+                        <div class="gv-meta-left">
+                            <div class="gv-company"><t t-esc="payload.get('company')"/></div>
+                            <div class="gv-muted"><t t-esc="payload.get('period_label')"/></div>
+                            <div class="gv-filter-wrap">
+                                <span t-foreach="payload.get('filters', [])" t-as="filter_text" class="gv-filter">
+                                    <t t-esc="filter_text"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="gv-meta-right">
+                            <div><strong>Generated</strong></div>
+                            <div class="gv-muted"><t t-esc="payload.get('generated_at')"/></div>
+                            <div style="margin-top: 4px;"><strong>Currency</strong> <span class="gv-muted"><t t-esc="payload.get('currency_label')"/></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="gv-report-table">
+                    <thead>
+                        <tr>
+                            <th t-foreach="payload.get('export_columns', [])"
+                                t-as="column"
+                                t-att-class="'gv-number-header' if column.get('type') == 'number' else 'gv-main-cell' if column.get('key') in ('name', 'move') else ''">
+                                <t t-esc="column.get('label') or payload.get('title')"/>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-if="not payload.get('export_lines')">
+                            <td t-att-colspan="len(payload.get('export_columns', [])) or 1">No records for the selected filters.</td>
+                        </tr>
+                        <tr t-foreach="payload.get('export_lines', [])"
+                            t-as="line"
+                            t-att-class="'gv-total-row' if line.get('is_total') else ''">
+                            <td t-foreach="line.get('cells', [])"
+                                t-as="cell"
+                                t-att-class="'gv-number-cell' if cell.get('number') else 'gv-main-cell' if cell.get('key') in ('name', 'move') else ''">
+                                <span t-if="cell.get('indent')" class="gv-cell-indent" t-att-style="'width: %spx;' % cell.get('indent')"></span>
+                                <t t-esc="cell.get('display')"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="gv-footer">Generated by AimAze Laundry ERP for GoldVerse Premium Laundry</div>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -2,6 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { registry } from "@web/core/registry";
+import { download } from "@web/core/network/download";
 
 const InteractiveAccountReport = registry.category("actions").get("base_accounting_kit.interactive_account_report");
 
@@ -200,6 +201,16 @@ if (InteractiveAccountReport && InteractiveAccountReport.prototype.__goldverseAc
 
         formatLedgerAmount(value) {
             return `${this.formatAmount(value)} ${this.report.currency_label}`;
+        },
+
+        async exportXlsx() {
+            await download({
+                url: "/goldverse/interactive_report/xlsx",
+                data: {
+                    report_key: this.reportKey,
+                    options: JSON.stringify(this.state.options),
+                },
+            });
         },
 
         async openGoldverseJournalItems(line, ev) {
