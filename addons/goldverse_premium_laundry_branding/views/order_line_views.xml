@@ -52,11 +52,29 @@
                             <field name="warehouse_sent_datetime"/>
                             <field name="warehouse_received_datetime"/>
                             <field name="warehouse_received" widget="boolean_toggle"/>
-                            <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received"/>
+                            <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received" confirm="Are you sure you want to mark this line as received back from warehouse?"/>
                         </list>
                     </field>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_line_warehouse_receiving_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.line.warehouse.receiving.list</field>
+        <field name="model">aimaze.laundry.order.line</field>
+        <field name="arch" type="xml">
+            <list string="Receive Order Lines" create="0" edit="0">
+                <field name="order_id"/>
+                <field name="name" string="Line"/>
+                <field name="service_id" string="Service Item" options="{'no_create': True, 'no_create_edit': True}"/>
+                <field name="goldverse_colour_ids" string="Colour" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
+                <field name="quantity" string="Qty"/>
+                <field name="warehouse_sent_datetime"/>
+                <field name="warehouse_received_datetime"/>
+                <field name="warehouse_received" widget="boolean_toggle"/>
+                <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received" confirm="Are you sure you want to mark this line as received back from warehouse?"/>
+            </list>
         </field>
     </record>
 
@@ -74,7 +92,7 @@
                 <field name="warehouse_sent_datetime"/>
                 <field name="warehouse_received_datetime"/>
                 <field name="warehouse_received" widget="boolean_toggle"/>
-                <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received"/>
+                <button name="action_mark_warehouse_received" type="object" string="Receive Line" class="btn-primary" invisible="warehouse_received" confirm="Are you sure you want to mark this line as received back from warehouse?"/>
             </list>
         </field>
     </record>

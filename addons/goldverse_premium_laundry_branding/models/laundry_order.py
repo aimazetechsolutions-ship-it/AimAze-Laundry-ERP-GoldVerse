@@ -401,13 +401,37 @@ class LaundryOrder(models.Model):
         self._set_state("warehouse_pending")
 
     def action_mark_received_branch(self):
+        now = fields.Datetime.now()
         for order in self:
+            if order.state != "warehouse_pending":
+                raise UserError(_("Only warehouse pending orders can be marked as received at branch."))
+            if not order.line_ids:
+                raise UserError(_("No order lines are available to receive."))
             unreceived_lines = order.line_ids.filtered(lambda line: not line.warehouse_received_datetime)
-            if unreceived_lines:
-                missing_names = ", ".join(unreceived_lines.mapped("display_name")[:5])
-                raise UserError(_("Receive all warehouse lines before marking the order received. Missing: %s") % missing_names)
-        self.write({"warehouse_received_datetime": fields.Datetime.now()})
-        self._set_state("pending_customer_delivery")
+            unreceived_lines.write({"warehouse_received_datetime": now})
+            unsent_lines = order.line_ids.filtered(lambda line: not line.warehouse_sent_datetime)
+            unsent_lines.write({"warehouse_sent_datetime": order.warehouse_collected_datetime or now})
+            order.write({"warehouse_received_datetime": now})
+            order._set_state("pending_customer_delivery")
+        return True
+
+    def action_open_warehouse_receiving_lines(self):
+        self.ensure_one()
+        if self.state != "warehouse_pending":
+            raise UserError(_("Line-wise receiving is available only for warehouse pending orders."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Receive Order Lines"),
+            "res_model": "aimaze.laundry.order.line",
+            "view_mode": "list,form",
+            "views": [(self.env.ref("goldverse_premium_laundry_branding.view_laundry_order_line_warehouse_receiving_list").id, "list"), (False, "form")],
+            "domain": [("order_id", "=", self.id)],
+            "context": {
+                "default_order_id": self.id,
+                "create": False,
+            },
+            "target": "current",
+        }
 
     def action_stage_collection(self):
         self._set_state("collection")

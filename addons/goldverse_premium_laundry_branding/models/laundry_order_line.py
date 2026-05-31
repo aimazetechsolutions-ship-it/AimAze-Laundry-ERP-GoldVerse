@@ -123,10 +123,15 @@ class LaundryOrderLine(models.Model):
             line.warehouse_received = bool(line.warehouse_received_datetime)
 
     def action_mark_warehouse_received(self):
+        now = fields.Datetime.now()
         for line in self:
             if not line.warehouse_sent_datetime:
-                line.warehouse_sent_datetime = fields.Datetime.now()
-            line.warehouse_received_datetime = fields.Datetime.now()
+                line.warehouse_sent_datetime = line.order_id.warehouse_collected_datetime or now
+            line.warehouse_received_datetime = now
+        for order in self.mapped("order_id").filtered(lambda item: item.state == "warehouse_pending"):
+            if order.line_ids and all(order.line_ids.mapped("warehouse_received_datetime")):
+                order.write({"warehouse_received_datetime": now})
+                order._set_state("pending_customer_delivery")
         return True
 
     def _goldverse_service_detail(self):
