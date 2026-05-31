@@ -6,6 +6,7 @@ from odoo import api, fields, models
 class LaundryOrderLine(models.Model):
     _inherit = "aimaze.laundry.order.line"
 
+    quantity = fields.Float(default=1.0, digits=(16, 0))
     goldverse_category_id = fields.Many2one("aimaze.laundry.service.category", string="Category")
     goldverse_subcategory_id = fields.Many2one("goldverse.laundry.subcategory", string="Sub Category")
     goldverse_subcategory = fields.Selection(
@@ -114,6 +115,16 @@ class LaundryOrderLine(models.Model):
                 line.warehouse_sent_datetime = fields.Datetime.now()
             line.warehouse_received_datetime = fields.Datetime.now()
         return True
+
+    def _goldverse_service_detail(self):
+        self.ensure_one()
+        service = self.service_id
+        parts = [
+            self.goldverse_category_id.display_name or service.category_id.display_name,
+            self.goldverse_subcategory_id.display_name or service.goldverse_subcategory_id.display_name,
+            service.name,
+        ]
+        return " / ".join(part for part in parts if part)
 
     @api.onchange("goldverse_category_id")
     def _onchange_goldverse_category_id(self):
@@ -309,9 +320,27 @@ class LaundryOrderLine(models.Model):
                     updates["qc_status"] = qc_status
             if line.goldverse_colour:
                 updates["color"] = dict(line._fields["goldverse_colour"].selection).get(line.goldverse_colour)
+            service_detail = line._goldverse_service_detail() if line.service_id else False
+            if service_detail and line.description != service_detail:
+                updates["description"] = service_detail
             discount_percent = line._goldverse_discount_percent()
             if abs((line.discount or 0.0) - discount_percent) > 0.0001:
                 updates["discount"] = discount_percent
             if updates:
                 super(LaundryOrderLine, line).write(updates)
+        return True
+
+    @api.model
+    def _goldverse_sync_all_line_service_details(self):
+        lines = self.sudo().search([("service_id", "!=", False)])
+        lines._goldverse_sync_display_fields()
+        for order in lines.mapped("order_id").filtered("invoice_id"):
+            normal_invoice_lines = order.invoice_id.invoice_line_ids.filtered(
+                lambda line: line.display_type not in ("line_section", "line_note")
+                and line.name not in ("Delivery Charges", "Laundry Discount")
+            )
+            for order_line, invoice_line in zip(order.line_ids, normal_invoice_lines):
+                service_detail = order_line._goldverse_service_detail() if order_line.service_id else False
+                if service_detail:
+                    invoice_line.sudo().write({"name": service_detail})
         return True

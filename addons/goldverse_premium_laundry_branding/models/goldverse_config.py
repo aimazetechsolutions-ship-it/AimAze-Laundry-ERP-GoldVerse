@@ -59,6 +59,28 @@ class LaundryService(models.Model):
     goldverse_net_price = fields.Monetary(string="Net Price", currency_field="currency_id")
     goldverse_search_text = fields.Char(compute="_compute_goldverse_search_text", store=True)
 
+    @api.depends("name", "category_id.name", "goldverse_subcategory_id.name")
+    def _compute_display_name(self):
+        for service in self:
+            service.display_name = service._goldverse_service_detail()
+
+    def _goldverse_service_detail(self):
+        self.ensure_one()
+        return " / ".join(
+            filter(
+                None,
+                [
+                    service_name
+                    for service_name in (
+                        self.category_id.display_name,
+                        self.goldverse_subcategory_id.display_name,
+                        self.name,
+                    )
+                    if service_name
+                ],
+            )
+        ) or self.name
+
     @api.onchange("goldverse_base_price", "goldverse_discount_percent")
     def _onchange_goldverse_price_master_percent(self):
         for service in self:

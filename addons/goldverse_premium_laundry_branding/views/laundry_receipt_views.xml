@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_laundry_order_receipt_goldverse_compact" inherit_id="aimaze_laundry_management.report_laundry_order_receipt">
+        <xpath expr="//div[hasclass('aimaze-report-page')]" position="attributes">
+            <attribute name="style">font-size:10px; line-height:1.25; color:#102a43;</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('aimaze-report-header')]" position="attributes">
+            <attribute name="style">border-bottom:2px solid #2bbbd3; padding-bottom:8px; margin-bottom:10px;</attribute>
+        </xpath>
+        <xpath expr="//h2[hasclass('aimaze-report-title')]" position="attributes">
+            <attribute name="style">color:#12456f; font-size:18px; font-weight:800; margin:0;</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('aimaze-report-table')]" position="replace">
+            <table class="table table-sm mt8 aimaze-report-table" style="font-size:10px; margin-top:8px; border-collapse:collapse;">
+                <thead>
+                    <tr style="border-bottom:1px solid #102a43;">
+                        <th style="width:68%;">Service Item</th>
+                        <th class="text-end" style="width:10%;">Qty</th>
+                        <th class="text-end" style="width:22%;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="doc.line_ids" t-as="line" style="border-bottom:1px solid #d8e4ed;">
+                        <td style="padding:4px 2px;">
+                            <span t-esc="line._goldverse_service_detail()"/>
+                        </td>
+                        <td class="text-end" style="padding:4px 2px;">
+                            <span t-esc="'{:,.0f}'.format(line.quantity or 0.0)"/>
+                        </td>
+                        <td class="text-end" style="padding:4px 2px;">
+                            <span t-field="line.price_subtotal"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+        <xpath expr="//div[hasclass('row')][.//span[@t-field='doc.amount_untaxed']]" position="attributes">
+            <attribute name="style">margin-top:8px; font-size:10px;</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('row')][.//span[@t-field='doc.amount_untaxed']]//table" position="attributes">
+            <attribute name="class">table table-sm</attribute>
+            <attribute name="style">border:1px solid #d8e4ed; font-size:10px; margin-bottom:0;</attribute>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="aimaze.laundry.order.line" name="_goldverse_sync_all_line_service_details"/>
+</odoo>
