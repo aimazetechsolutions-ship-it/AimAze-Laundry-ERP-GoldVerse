@@ -9,11 +9,12 @@
             <xpath expr="//form/header" position="replace">
                 <header>
                     <field name="payment_status" invisible="1"/>
+                    <field name="goldverse_delivery_status" invisible="1"/>
                     <button name="action_create_order" type="object" string="Create Order" class="oe_highlight alm-btn-success" invisible="state != 'draft'"/>
                     <button name="action_send_to_warehouse" type="object" string="Send to Warehouse" class="oe_highlight alm-btn-info" invisible="not (state == 'order_created' or (state == 'invoiced' and not warehouse_collected_datetime))" confirm="Are you sure you want to send this order to warehouse? This will mark all order lines as sent to warehouse and create/post the invoice if needed."/>
                     <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="oe_highlight alm-btn-info" invisible="state != 'warehouse_pending'" confirm="Open line-wise receiving for this warehouse pending order?"/>
                     <button name="action_mark_received_branch" type="object" string="Mark Full Order Received" class="oe_highlight alm-btn-success" invisible="state != 'warehouse_pending'" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
-                    <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="state != 'pending_customer_delivery'" confirm="Are you sure you want to mark this order as delivered? If payment is still pending, you will be asked to receive payment now or continue delivery without payment."/>
+                    <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="not (state == 'pending_customer_delivery' or (state == 'paid' and goldverse_delivery_status == 'undelivered'))" confirm="Are you sure you want to mark this order as delivered? If payment is still pending, you will be asked to receive payment now or continue delivery without payment."/>
                     <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting" invisible="state in ('draft','cancelled') or invoice_id"/>
                     <button name="action_view_invoice" type="object" string="View Invoice" class="alm-btn-accounting" invisible="not invoice_id"/>
                     <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment" invisible="payment_status == 'paid' or state == 'paid'"/>
@@ -85,10 +86,9 @@
                 <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="btn-secondary" invisible="state != 'warehouse_pending'" confirm="Open line-wise receiving for this warehouse pending order?"/>
                 <button name="action_mark_received_branch" type="object" string="Mark Full Received" class="btn-primary" invisible="state != 'warehouse_pending'" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
             </xpath>
-            <xpath expr="//field[@name='state']" position="attributes">
-                <attribute name="decoration-info">state in ('order_created','received_branch','pending_customer_delivery','collection','shift_to_plant','in_process','shift_to_outlet','ready_for_delivery')</attribute>
-                <attribute name="decoration-warning">state == 'warehouse_pending'</attribute>
-                <attribute name="decoration-success">state in ('delivered','invoiced','paid')</attribute>
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" invisible="1"/>
+                <field name="goldverse_delivery_status" string="State" optional="show" widget="badge" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
             </xpath>
         </field>
     </record>
@@ -200,7 +200,7 @@
         <field name="res_model">aimaze.laundry.order</field>
         <field name="view_mode">list,form,activity</field>
         <field name="view_id" ref="view_laundry_order_customer_delivery_pending_list"/>
-        <field name="domain">[('state','=','pending_customer_delivery')]</field>
+        <field name="domain">['|', ('state','=','pending_customer_delivery'), '&amp;', ('state','=','paid'), ('goldverse_delivered_to_customer','=',False)]</field>
         <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
     </record>
 
@@ -222,7 +222,7 @@
                 <field name="branch_id"/>
                 <field name="warehouse_collected_datetime"/>
                 <field name="warehouse_received_datetime"/>
-                <field name="state" widget="badge" decoration-warning="state == 'warehouse_pending'" decoration-info="state in ('received_branch','pending_customer_delivery')" decoration-success="state in ('delivered','invoiced','paid')"/>
+                <field name="goldverse_delivery_status" string="State" widget="badge" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
                 <field name="expected_delivery_datetime"/>
             </list>
         </field>

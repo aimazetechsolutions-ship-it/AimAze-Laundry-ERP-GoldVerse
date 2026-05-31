@@ -78,6 +78,18 @@ class LaundryOrder(models.Model):
     expected_delivery_datetime = fields.Datetime(string="Delivery Date & Time", default=lambda self: self._goldverse_default_expected_delivery_datetime())
     warehouse_collected_datetime = fields.Datetime(string="Warehouse Collected On", readonly=True, copy=False, tracking=True)
     warehouse_received_datetime = fields.Datetime(string="Received Back From Warehouse On", readonly=True, copy=False, tracking=True)
+    goldverse_delivered_to_customer = fields.Boolean(string="Delivered to Customer", readonly=True, copy=False, tracking=True)
+    goldverse_delivery_status = fields.Selection(
+        [("undelivered", "Undelivered"), ("delivered", "Delivered")],
+        string="State",
+        compute="_compute_goldverse_delivery_status",
+        store=True,
+    )
+
+    @api.depends("state", "goldverse_delivered_to_customer")
+    def _compute_goldverse_delivery_status(self):
+        for order in self:
+            order.goldverse_delivery_status = "delivered" if order.goldverse_delivered_to_customer or order.state == "delivered" else "undelivered"
 
     @api.model
     def _goldverse_configure_order_sequence(self):
@@ -518,13 +530,18 @@ class LaundryOrder(models.Model):
     def action_mark_delivered(self):
         if self.env.context.get("goldverse_force_mark_delivered"):
             orders = self.with_context(goldverse_allow_locked_order_write=True)
+            paid_state_orders = orders.filtered(lambda order: order.state == "paid")
             result = super(LaundryOrder, orders).action_mark_delivered()
+            orders.write({"goldverse_delivered_to_customer": True})
             paid_orders = orders.filtered(lambda order: order.balance_amount <= 0.01 and order.payment_status == "paid")
-            if paid_orders:
-                paid_orders._set_state("paid")
+            paid_state_or_paid_orders = paid_state_orders | paid_orders
+            if paid_state_or_paid_orders:
+                paid_state_or_paid_orders._set_state("paid")
             return result
         self.ensure_one()
-        if self.state != "pending_customer_delivery":
+        if self.state == "paid" and self.goldverse_delivered_to_customer:
+            raise UserError(_("This order is already delivered and paid."))
+        if self.state not in ("pending_customer_delivery", "paid"):
             return super().action_mark_delivered()
         pending_balance = self._goldverse_pending_delivery_balance()
         if pending_balance and pending_balance > 0.01:
@@ -541,9 +558,12 @@ class LaundryOrder(models.Model):
                     "default_amount_due": pending_balance,
                 },
             }
-        result = super().action_mark_delivered()
-        if self.balance_amount <= 0.01 and self.payment_status == "paid":
-            self._set_state("paid")
+        was_paid_state = self.state == "paid"
+        order = self.with_context(goldverse_allow_locked_order_write=True)
+        result = super(LaundryOrder, order).action_mark_delivered()
+        order.write({"goldverse_delivered_to_customer": True})
+        if was_paid_state or (order.balance_amount <= 0.01 and order.payment_status == "paid"):
+            order._set_state("paid")
         return result
 
     def action_cancel(self):
@@ -565,6 +585,10 @@ class LaundryOrder(models.Model):
         ]).write({"state": "order_created"})
         self.search([("state", "in", old_process_states), ("invoice_id", "!=", False)]).write({"state": "invoiced"})
         self.search([("state", "in", old_process_states), ("invoice_id", "=", False)]).write({"state": "in_process"})
+        self.search([
+            ("state", "=", "delivered"),
+            ("goldverse_delivered_to_customer", "=", False),
+        ]).with_context(goldverse_allow_locked_order_write=True).write({"goldverse_delivered_to_customer": True})
         return True
 
     def _goldverse_normalize_expected_delivery_time(self):
