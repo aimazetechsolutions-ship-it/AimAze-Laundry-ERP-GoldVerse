@@ -18,7 +18,12 @@
                     <button name="action_use_wallet" type="object" string="Use Wallet" class="alm-btn-payment"/>
                     <button name="action_print_receipt" type="object" string="Print Receipt"/>
                     <button name="action_print_garment_tags" type="object" string="Print Garment Tags"/>
-                    <button name="action_cancel" type="object" string="Cancel Order" class="alm-btn-danger" invisible="state not in ('draft','confirmed','picked_up','received','order_created','collection','shift_to_plant')"/>
+                    <button name="action_cancel"
+                            type="object"
+                            string="Cancel Order"
+                            class="alm-btn-danger"
+                            invisible="state not in ('draft','confirmed','picked_up','received','order_created','collection','shift_to_plant')"
+                            confirm="Are you sure you want to cancel this laundry order? This action will mark the order as cancelled."/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,order_created,warehouse_pending,received_branch,delivered,invoiced,paid"/>
                 </header>
             </xpath>
