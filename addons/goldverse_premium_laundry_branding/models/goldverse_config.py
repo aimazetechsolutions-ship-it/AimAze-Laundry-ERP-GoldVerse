@@ -59,6 +59,16 @@ class LaundryService(models.Model):
     goldverse_net_price = fields.Monetary(string="Net Price", currency_field="currency_id")
     goldverse_search_text = fields.Char(compute="_compute_goldverse_search_text", store=True)
 
+    def _goldverse_next_master_price_code(self):
+        services = self.sudo().with_context(active_test=False).search([("code", "like", "GPL-MPL-%")])
+        max_number = 0
+        for service in services:
+            code = service.code or ""
+            suffix = code.rsplit("-", 1)[-1]
+            if suffix.isdigit():
+                max_number = max(max_number, int(suffix))
+        return "GPL-MPL-%03d" % (max_number + 1)
+
     @api.depends("name", "category_id.name", "goldverse_subcategory_id.name")
     def _compute_display_name(self):
         for service in self:
@@ -184,6 +194,8 @@ class LaundryService(models.Model):
         self.list_price = computed["list_price"]
 
     def _goldverse_prepare_service_values(self, vals):
+        if not vals.get("code"):
+            vals["code"] = self._goldverse_next_master_price_code()
         price_fields = {
             "goldverse_base_price",
             "goldverse_discount_percent",
