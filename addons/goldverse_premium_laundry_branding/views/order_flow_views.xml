@@ -90,6 +90,33 @@
         </field>
     </record>
 
+    <record id="aimaze_laundry_management.action_laundry_order" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,pivot,graph,activity</field>
+        <field name="view_id" ref="aimaze_laundry_management.view_laundry_order_list"/>
+        <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+    </record>
+
+    <record id="action_laundry_order_main_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="aimaze_laundry_management.view_laundry_order_list"/>
+        <field name="act_window_id" ref="aimaze_laundry_management.action_laundry_order"/>
+    </record>
+
+    <record id="action_laundry_order_main_kanban_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="aimaze_laundry_management.view_laundry_order_kanban"/>
+        <field name="act_window_id" ref="aimaze_laundry_management.action_laundry_order"/>
+    </record>
+
+    <record id="action_laundry_order_main_form_view" model="ir.actions.act_window.view">
+        <field name="sequence">3</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="aimaze_laundry_management.view_laundry_order_form"/>
+        <field name="act_window_id" ref="aimaze_laundry_management.action_laundry_order"/>
+    </record>
+
     <record id="view_laundry_order_warehouse_pending_list" model="ir.ui.view">
         <field name="name">aimaze.laundry.order.warehouse.pending.list</field>
         <field name="model">aimaze.laundry.order</field>
