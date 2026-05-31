@@ -183,6 +183,21 @@ class LaundryOrder(models.Model):
         self._goldverse_validate_required_order_fields()
         self._set_state("order_created")
 
+    def _set_state(self, state):
+        result = super()._set_state(state)
+        self.filtered("invoice_id").write({"invoice_status": "invoiced"})
+        return result
+
+    def _goldverse_create_and_post_invoice(self):
+        for order in self:
+            if order.invoice_id and order.invoice_id.state == "cancel":
+                raise UserError(_("The linked invoice for %s is cancelled. Reset or remove it before sending to warehouse.") % order.display_name)
+            if not order.invoice_id:
+                order.action_create_invoice()
+            if order.invoice_id.state == "draft":
+                order.invoice_id.action_post()
+        return True
+
     def action_send_to_warehouse(self):
         missing_lines = self.filtered(lambda order: not order.line_ids)
         if missing_lines:
@@ -196,6 +211,7 @@ class LaundryOrder(models.Model):
             "warehouse_sent_datetime": now,
             "warehouse_received_datetime": False,
         })
+        self._goldverse_create_and_post_invoice()
         self._set_state("warehouse_pending")
 
     def action_mark_received_branch(self):
