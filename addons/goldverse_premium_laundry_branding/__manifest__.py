@@ -15,6 +15,7 @@
     "data": [
         "security/customer_care_security.xml",
         "security/ir.model.access.csv",
+        "data/admin_access.xml",
         "data/pakistan_defaults.xml",
         "data/goldverse_dropdown_data.xml",
         "data/goldverse_qc_addon_data.xml",

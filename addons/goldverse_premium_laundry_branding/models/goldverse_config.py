@@ -5,11 +5,47 @@ class ResUsers(models.Model):
     _inherit = "res.users"
 
     @api.model
+    def _goldverse_admin_group_xmlids(self):
+        return [
+            "base.group_system",
+            "aimaze_laundry_management.group_laundry_admin",
+            "aimaze_laundry_management.group_accountant",
+            "account.group_account_invoice",
+            "account.group_account_user",
+            "account.group_account_manager",
+            "base_accounting_kit.group_account_chief",
+        ]
+
+    @api.model
     def _goldverse_assign_admin_all_laundry_branches(self):
         admin = self.sudo().search([("login", "=", "admin")], limit=1) or self.env.ref("base.user_admin", raise_if_not_found=False)
         branches = self.env["aimaze.laundry.branch"].sudo().search([])
         if admin and branches:
             admin.write({"laundry_branch_ids": [(6, 0, branches.ids)]})
+        return True
+
+    @api.model
+    def _goldverse_grant_administrator_full_access(self):
+        groups = self.env["res.groups"].sudo()
+        for xmlid in self._goldverse_admin_group_xmlids():
+            group = self.env.ref(xmlid, raise_if_not_found=False)
+            if group:
+                groups |= group.sudo()
+
+        system_group = self.env.ref("base.group_system", raise_if_not_found=False)
+        if system_group and groups:
+            system_group.sudo().write({"implied_ids": [(4, group.id) for group in groups if group != system_group]})
+
+        admin = self.env.ref("base.user_admin", raise_if_not_found=False) or self.sudo().search([("login", "=", "admin")], limit=1)
+        if admin and groups:
+            admin.sudo().write({"group_ids": [(4, group.id) for group in groups]})
+
+        branches = self.env["aimaze.laundry.branch"].sudo().search([])
+        if branches and system_group:
+            system_users = system_group.sudo().all_user_ids
+            if admin:
+                system_users |= admin.sudo()
+            system_users.write({"laundry_branch_ids": [(6, 0, branches.ids)]})
         return True
 
 
