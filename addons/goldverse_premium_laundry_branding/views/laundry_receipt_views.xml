@@ -27,6 +27,7 @@
                     .gv-label { font-weight: 800; }
                     .gv-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 9px; }
                     .gv-table th { border-bottom: 1px solid #000; text-align: left; padding: 2px 1px; }
+                    .gv-table thead th { text-align: center !important; font-weight: 800; }
                     .gv-table td { padding: 2px 1px; vertical-align: top; }
                     .gv-num { text-align: right; white-space: nowrap; }
                     .gv-note { padding-left: 6px; font-size: 8px; }
