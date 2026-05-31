@@ -10,6 +10,7 @@
         "aimaze_laundry_management",
         "base_accounting_kit",
         "l10n_pk",
+        "mail",
         "web",
     ],
     "data": [
@@ -36,6 +37,7 @@
     "assets": {
         "web.assets_backend": [
             "goldverse_premium_laundry_branding/static/src/js/goldverse_account_report_drilldown.js",
+            "goldverse_premium_laundry_branding/static/src/js/goldverse_pwa_install_prompt.js",
             "goldverse_premium_laundry_branding/static/src/xml/goldverse_account_report_drilldown.xml",
             "goldverse_premium_laundry_branding/static/src/scss/goldverse_backend.scss",
         ],
