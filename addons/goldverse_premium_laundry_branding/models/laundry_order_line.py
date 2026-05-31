@@ -406,7 +406,7 @@ class LaundryOrderLine(models.Model):
 
     @api.model
     def _goldverse_sync_all_line_service_details(self):
-        lines = self.sudo().search([("service_id", "!=", False)])
+        lines = self.sudo().with_context(goldverse_allow_locked_order_write=True).search([("service_id", "!=", False)])
         lines._goldverse_sync_display_fields()
         lines._goldverse_refresh_amount_fields()
         for order in lines.mapped("order_id").filtered("invoice_id"):
