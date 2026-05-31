@@ -79,7 +79,16 @@ class LaundryOrder(models.Model):
         return fields.Datetime.to_string(local_six_pm.astimezone(pytz.UTC).replace(tzinfo=None))
 
     def _goldverse_default_responsible_employee(self):
-        return self.env["hr.employee"].search([("user_id", "=", self.env.user.id)], limit=1)
+        Employee = self.env["hr.employee"].sudo()
+        employee = Employee.search([("user_id", "=", self.env.user.id)], limit=1)
+        if employee:
+            return employee
+        return Employee.create({
+            "name": self.env.user.name,
+            "user_id": self.env.user.id,
+            "company_id": self.env.company.id,
+            "work_email": self.env.user.email or self.env.user.login,
+        })
 
     @api.onchange("partner_id")
     def _onchange_partner_id(self):
