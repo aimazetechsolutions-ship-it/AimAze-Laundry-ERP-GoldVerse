@@ -104,6 +104,19 @@ class LaundryOrder(models.Model):
             if order.expected_delivery_datetime:
                 order.expected_delivery_datetime = order._goldverse_force_six_pm(order.expected_delivery_datetime)
 
+    @api.model
+    def default_get(self, fields_list):
+        values = super().default_get(fields_list)
+        if "expected_delivery_datetime" in fields_list:
+            values["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
+        values.setdefault("priority", "normal")
+        values.setdefault("user_id", self.env.user.id)
+        if "responsible_id" in fields_list and not values.get("responsible_id"):
+            employee = self._goldverse_default_responsible_employee()
+            if employee:
+                values["responsible_id"] = employee.id
+        return values
+
     def _goldverse_prepare_required_order_values(self, vals):
         if "expected_delivery_datetime" not in vals:
             vals["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
@@ -158,8 +171,12 @@ class LaundryOrder(models.Model):
         return orders
 
     def write(self, vals):
+        if vals.get("expected_delivery_datetime"):
+            vals = dict(vals)
+            vals["expected_delivery_datetime"] = self._goldverse_force_six_pm(vals["expected_delivery_datetime"])
         result = super().write(vals)
-        self._goldverse_validate_required_order_fields()
+        if not self.env.context.get("goldverse_skip_required_validation"):
+            self._goldverse_validate_required_order_fields()
         return result
 
     def action_create_order(self):
@@ -221,6 +238,17 @@ class LaundryOrder(models.Model):
         self.search([("state", "=", "out_for_delivery")]).write({"state": "ready_for_delivery"})
         self.search([("state", "in", old_process_states), ("invoice_id", "!=", False)]).write({"state": "invoiced"})
         self.search([("state", "in", old_process_states), ("invoice_id", "=", False)]).write({"state": "in_process"})
+        return True
+
+    def _goldverse_normalize_expected_delivery_time(self):
+        orders = (self or self.search([])).filtered(
+            lambda order: order.expected_delivery_datetime
+            and order.state in ("draft", "order_created", "warehouse_pending", "received_branch")
+        )
+        for order in orders:
+            order.with_context(goldverse_skip_required_validation=True).write({
+                "expected_delivery_datetime": order._goldverse_force_six_pm(order.expected_delivery_datetime),
+            })
         return True
 
     def _phase2_sync_garment_stage(self, order_state):
