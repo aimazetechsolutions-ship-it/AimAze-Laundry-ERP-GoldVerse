@@ -89,7 +89,7 @@ class LaundryOrder(models.Model):
                     table=quote_identifier(table),
                     field=quote_identifier(field_name),
                 )
-                self.env.cr.execute(query, ("GVP/", "GPL/", "GOP/", "GPL/", "GVP/%", "GOP/%"))
+                self.env.cr.execute(query, ("GVP/", "GPL/", "GOP/", "GPL/", "%GVP/%", "%GOP/%"))
         return True
 
     def _goldverse_default_expected_delivery_datetime(self):
