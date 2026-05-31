@@ -383,6 +383,7 @@ class LaundryOrderLine(models.Model):
     def _goldverse_sync_all_line_service_details(self):
         lines = self.sudo().search([("service_id", "!=", False)])
         lines._goldverse_sync_display_fields()
+        lines._goldverse_refresh_amount_fields()
         for order in lines.mapped("order_id").filtered("invoice_id"):
             normal_invoice_lines = order.invoice_id.invoice_line_ids.filtered(
                 lambda line: line.display_type not in ("line_section", "line_note")
