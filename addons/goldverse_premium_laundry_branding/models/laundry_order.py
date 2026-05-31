@@ -6,6 +6,9 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 
+GOLDVERSE_DELIVERY_TZ = "Asia/Karachi"
+
+
 class LaundryOrder(models.Model):
     _inherit = "aimaze.laundry.order"
 
@@ -101,21 +104,24 @@ class LaundryOrder(models.Model):
                 self.env.cr.execute(query, ("GVP/", "GPL/", "GOP/", "GPL/", "%GVP/%", "%GOP/%"))
         return True
 
+    def _goldverse_delivery_timezone(self):
+        return pytz.timezone(GOLDVERSE_DELIVERY_TZ)
+
     def _goldverse_default_expected_delivery_datetime(self):
-        user_tz = pytz.timezone(self.env.context.get("tz") or self.env.user.tz or "UTC")
-        today = fields.Date.context_today(self)
-        local_deadline = user_tz.localize(datetime.combine(today, time(18, 0)))
+        delivery_tz = self._goldverse_delivery_timezone()
+        today = datetime.now(delivery_tz).date()
+        local_deadline = delivery_tz.localize(datetime.combine(today, time(18, 0)))
         return fields.Datetime.to_string(local_deadline.astimezone(pytz.UTC).replace(tzinfo=None))
 
     def _goldverse_force_six_pm(self, value):
         if not value:
             return value
-        user_tz = pytz.timezone(self.env.context.get("tz") or self.env.user.tz or "UTC")
+        delivery_tz = self._goldverse_delivery_timezone()
         value_dt = fields.Datetime.to_datetime(value)
         if not value_dt.tzinfo:
             value_dt = pytz.UTC.localize(value_dt)
-        local_dt = value_dt.astimezone(user_tz)
-        local_six_pm = user_tz.localize(datetime.combine(local_dt.date(), time(18, 0)))
+        local_dt = value_dt.astimezone(delivery_tz)
+        local_six_pm = delivery_tz.localize(datetime.combine(local_dt.date(), time(18, 0)))
         return fields.Datetime.to_string(local_six_pm.astimezone(pytz.UTC).replace(tzinfo=None))
 
     def _goldverse_default_responsible_employee(self):
