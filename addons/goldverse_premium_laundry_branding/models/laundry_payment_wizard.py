@@ -22,7 +22,7 @@ class LaundryPaymentWizard(models.TransientModel):
             if wizard.journal_id and not wizard.journal_id.inbound_payment_method_line_ids:
                 method = wizard._goldverse_manual_inbound_method()
                 if method:
-                    self.env["account.payment.method.line"].create(
+                    self.env["account.payment.method.line"].sudo().create(
                         {
                             "name": method.name,
                             "payment_method_id": method.id,
@@ -47,4 +47,4 @@ class LaundryPaymentWizard(models.TransientModel):
 
     def action_register_payment(self):
         self._goldverse_ensure_inbound_method_line()
-        return super().action_register_payment()
+        return super(LaundryPaymentWizard, self.sudo()).action_register_payment()
