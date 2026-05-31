@@ -153,12 +153,14 @@ class LaundryOrderLine(models.Model):
                 line.goldverse_category_id = line.service_id.category_id
                 line.goldverse_subcategory_id = line.service_id.goldverse_subcategory_id
                 line.unit_price = line._goldverse_priority_unit_price()
+            line._goldverse_refresh_amount_fields()
 
     @api.onchange("goldverse_priority")
     def _onchange_goldverse_priority(self):
         for line in self:
             if line.service_id:
                 line.unit_price = line._goldverse_priority_unit_price()
+            line._goldverse_refresh_amount_fields()
 
     @api.onchange("goldverse_subcategory_id")
     def _onchange_goldverse_subcategory_id(self):
@@ -206,7 +208,12 @@ class LaundryOrderLine(models.Model):
     @api.onchange("goldverse_discount", "quantity", "unit_price")
     def _onchange_goldverse_discount(self):
         for line in self:
-            line.discount = line._goldverse_discount_percent()
+            line._goldverse_refresh_amount_fields()
+
+    @api.onchange("tax_ids")
+    def _onchange_goldverse_tax_ids(self):
+        for line in self:
+            line._goldverse_refresh_amount_fields()
 
     def _goldverse_priority_multiplier(self, priority=False):
         return {
@@ -245,6 +252,13 @@ class LaundryOrderLine(models.Model):
             return 0.0
         return max(0.0, min((value / base) * 100.0, 100.0))
 
+    def _goldverse_refresh_amount_fields(self):
+        for line in self:
+            line._compute_goldverse_price_breakdown()
+            line._compute_line_amount()
+            line._compute_goldverse_total_amount()
+        return True
+
     @api.depends("quantity", "unit_price", "goldverse_discount", "tax_ids")
     def _compute_line_amount(self):
         for line in self:
@@ -256,7 +270,14 @@ class LaundryOrderLine(models.Model):
         for line in self:
             line.goldverse_total_amount = line.price_subtotal + line.price_tax
 
-    @api.depends("service_id", "goldverse_priority", "quantity", "unit_price")
+    @api.depends(
+        "service_id",
+        "service_id.list_price",
+        "service_id.goldverse_base_price",
+        "goldverse_priority",
+        "quantity",
+        "unit_price",
+    )
     def _compute_goldverse_price_breakdown(self):
         for line in self:
             service = line.service_id
