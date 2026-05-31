@@ -72,7 +72,7 @@ class LaundryService(models.Model):
     @api.depends("name", "category_id.name", "goldverse_subcategory_id.name")
     def _compute_display_name(self):
         for service in self:
-            service.display_name = service._goldverse_service_detail()
+            service.display_name = service.name or service.code or ""
 
     def _goldverse_service_detail(self):
         self.ensure_one()
