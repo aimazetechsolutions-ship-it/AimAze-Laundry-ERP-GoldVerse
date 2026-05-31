@@ -321,14 +321,25 @@ class LaundryOrder(models.Model):
         self._goldverse_assign_order_number()
         self._set_state("order_created")
 
+    def _goldverse_validate_receipt_available(self):
+        for order in self:
+            if order.state == "draft" or not order.name or order.name == "New":
+                raise UserError(_("Receipt is available only after Create Order assigns an Order No."))
+        return True
+
     def action_view_receipt(self):
         self.ensure_one()
+        self._goldverse_validate_receipt_available()
         return {
             "type": "ir.actions.act_url",
             "name": _("Laundry Order Receipt"),
             "url": "/report/html/aimaze_laundry_management.report_laundry_order_receipt/%s" % self.id,
             "target": "new",
         }
+
+    def action_print_receipt(self):
+        self._goldverse_validate_receipt_available()
+        return super().action_print_receipt()
 
     def action_view_invoice(self):
         self.ensure_one()

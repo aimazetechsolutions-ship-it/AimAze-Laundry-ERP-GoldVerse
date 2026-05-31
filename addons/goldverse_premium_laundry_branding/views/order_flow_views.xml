@@ -17,8 +17,8 @@
                     <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment"/>
                     <button name="action_register_final_payment" type="object" string="Register Final Payment" class="alm-btn-payment"/>
                     <button name="action_use_wallet" type="object" string="Use Wallet" class="alm-btn-payment"/>
-                    <button name="action_view_receipt" type="object" string="View Receipt"/>
-                    <button name="action_print_receipt" type="object" string="Print Receipt"/>
+                    <button name="action_view_receipt" type="object" string="View Receipt" invisible="state == 'draft' or name in (False, 'New')"/>
+                    <button name="action_print_receipt" type="object" string="Print Receipt" invisible="state == 'draft' or name in (False, 'New')"/>
                     <button name="action_cancel"
                             type="object"
                             string="Cancel Order"
