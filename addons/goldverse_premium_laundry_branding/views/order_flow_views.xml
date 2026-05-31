@@ -73,6 +73,9 @@
                 <field name="warehouse_collected_datetime" readonly="1"/>
                 <field name="warehouse_received_datetime" readonly="1"/>
             </xpath>
+            <xpath expr="//field[@name='expected_delivery_datetime']" position="after">
+                <field name="goldverse_actual_delivery_datetime" readonly="1"/>
+            </xpath>
         </field>
     </record>
 
@@ -82,13 +85,55 @@
         <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_list"/>
         <field name="priority">99</field>
         <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="class">goldverse-laundry-order-list</attribute>
+            </xpath>
             <xpath expr="//field[@name='name']" position="after">
                 <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="btn-secondary" invisible="state != 'warehouse_pending'" confirm="Open line-wise receiving for this warehouse pending order?"/>
                 <button name="action_mark_received_branch" type="object" string="Mark Full Received" class="btn-primary" invisible="state != 'warehouse_pending'" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
             </xpath>
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="width">125px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="width">130px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="width">115px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='service_type']" position="attributes">
+                <attribute name="width">110px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='branch_id']" position="attributes">
+                <attribute name="width">110px</attribute>
+            </xpath>
             <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" invisible="1"/>
-                <field name="goldverse_delivery_status" string="State" optional="show" widget="badge" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
+                <field name="goldverse_delivery_status" string="State" optional="show" widget="badge" width="95px" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
+            </xpath>
+            <xpath expr="//field[@name='priority']" position="attributes">
+                <attribute name="width">95px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_date']" position="attributes">
+                <attribute name="width">130px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='expected_delivery_datetime']" position="attributes">
+                <attribute name="width">155px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='expected_delivery_datetime']" position="after">
+                <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time" optional="show" width="175px"/>
+            </xpath>
+            <xpath expr="//field[@name='total_qty']" position="attributes">
+                <attribute name="width">85px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='amount_total']" position="attributes">
+                <attribute name="width">110px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='balance_amount']" position="attributes">
+                <attribute name="width">110px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_status']" position="attributes">
+                <attribute name="width">115px</attribute>
             </xpath>
         </field>
     </record>
@@ -166,6 +211,7 @@
                 <field name="branch_id"/>
                 <field name="warehouse_received_datetime"/>
                 <field name="expected_delivery_datetime"/>
+                <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time"/>
                 <field name="amount_total"/>
                 <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="btn-primary" confirm="Are you sure you want to mark this order as delivered? If payment is still pending, you will be asked to receive payment now or continue delivery without payment."/>
             </list>
@@ -224,6 +270,7 @@
                 <field name="warehouse_received_datetime"/>
                 <field name="goldverse_delivery_status" string="State" widget="badge" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
                 <field name="expected_delivery_datetime"/>
+                <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time"/>
             </list>
         </field>
     </record>

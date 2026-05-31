@@ -79,6 +79,7 @@ class LaundryOrder(models.Model):
     warehouse_collected_datetime = fields.Datetime(string="Warehouse Collected On", readonly=True, copy=False, tracking=True)
     warehouse_received_datetime = fields.Datetime(string="Received Back From Warehouse On", readonly=True, copy=False, tracking=True)
     goldverse_delivered_to_customer = fields.Boolean(string="Delivered to Customer", readonly=True, copy=False, tracking=True)
+    goldverse_actual_delivery_datetime = fields.Datetime(string="Actual Delivery Date & Time", readonly=True, copy=False, tracking=True)
     goldverse_delivery_status = fields.Selection(
         [("undelivered", "Undelivered"), ("delivered", "Delivered")],
         string="State",
@@ -532,7 +533,9 @@ class LaundryOrder(models.Model):
             orders = self.with_context(goldverse_allow_locked_order_write=True)
             paid_state_orders = orders.filtered(lambda order: order.state == "paid")
             result = super(LaundryOrder, orders).action_mark_delivered()
+            now = fields.Datetime.now()
             orders.write({"goldverse_delivered_to_customer": True})
+            orders.filtered(lambda order: not order.goldverse_actual_delivery_datetime).write({"goldverse_actual_delivery_datetime": now})
             paid_orders = orders.filtered(lambda order: order.balance_amount <= 0.01 and order.payment_status == "paid")
             paid_state_or_paid_orders = paid_state_orders | paid_orders
             if paid_state_or_paid_orders:
@@ -562,6 +565,8 @@ class LaundryOrder(models.Model):
         order = self.with_context(goldverse_allow_locked_order_write=True)
         result = super(LaundryOrder, order).action_mark_delivered()
         order.write({"goldverse_delivered_to_customer": True})
+        if not order.goldverse_actual_delivery_datetime:
+            order.write({"goldverse_actual_delivery_datetime": fields.Datetime.now()})
         if was_paid_state or (order.balance_amount <= 0.01 and order.payment_status == "paid"):
             order._set_state("paid")
         return result
