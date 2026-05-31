@@ -13,9 +13,11 @@
                     <button name="action_mark_received_branch" type="object" string="Mark Received at Branch" class="oe_highlight alm-btn-success" invisible="state != 'warehouse_pending'"/>
                     <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="state != 'pending_customer_delivery'"/>
                     <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting" invisible="state in ('draft','cancelled')"/>
+                    <button name="action_view_invoice" type="object" string="View Invoice" class="alm-btn-accounting" invisible="not invoice_id"/>
                     <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment"/>
                     <button name="action_register_final_payment" type="object" string="Register Final Payment" class="alm-btn-payment"/>
                     <button name="action_use_wallet" type="object" string="Use Wallet" class="alm-btn-payment"/>
+                    <button name="action_view_receipt" type="object" string="View Receipt"/>
                     <button name="action_print_receipt" type="object" string="Print Receipt"/>
                     <button name="action_cancel"
                             type="object"

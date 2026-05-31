@@ -214,6 +214,28 @@ class LaundryOrder(models.Model):
         self._goldverse_validate_required_order_fields()
         self._set_state("order_created")
 
+    def action_view_receipt(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "name": _("Laundry Order Receipt"),
+            "url": "/report/html/aimaze_laundry_management.report_laundry_order_receipt/%s" % self.id,
+            "target": "new",
+        }
+
+    def action_view_invoice(self):
+        self.ensure_one()
+        if not self.invoice_id:
+            raise UserError(_("No invoice is linked with this laundry order yet."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Invoice"),
+            "res_model": "account.move",
+            "res_id": self.invoice_id.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
     def _set_state(self, state):
         result = super()._set_state(state)
         self.filtered("invoice_id").write({"invoice_status": "invoiced"})
