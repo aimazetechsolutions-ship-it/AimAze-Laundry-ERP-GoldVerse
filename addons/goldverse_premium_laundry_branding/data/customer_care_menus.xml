@@ -2,7 +2,6 @@
 <odoo>
     <record id="account.menu_finance" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
-            ref('account.group_account_invoice'),
             ref('account.group_account_user'),
             ref('account.group_account_manager'),
             ref('base_accounting_kit.group_account_chief'),

@@ -4,7 +4,10 @@
         <field name="name">Customer Care Executive</field>
         <field name="privilege_id" ref="aimaze_laundry_management.privilege_aimaze_laundry"/>
         <field name="sequence">25</field>
-        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="implied_ids" eval="[
+            (4, ref('base.group_user')),
+            (4, ref('account.group_account_invoice'))
+        ]"/>
         <field name="menu_access" eval="[
             (4, ref('mail.menu_root_discuss')),
             (4, ref('aimaze_laundry_management.menu_laundry_orders_root')),
