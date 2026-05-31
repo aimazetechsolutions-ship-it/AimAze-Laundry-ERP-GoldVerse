@@ -12,7 +12,7 @@
                     <button name="action_send_to_warehouse" type="object" string="Send to Warehouse" class="oe_highlight alm-btn-info" invisible="not (state == 'order_created' or (state == 'invoiced' and not warehouse_collected_datetime))" confirm="Are you sure you want to send this order to warehouse? This will mark all order lines as sent to warehouse and create/post the invoice if needed."/>
                     <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="oe_highlight alm-btn-info" invisible="state != 'warehouse_pending'" confirm="Open line-wise receiving for this warehouse pending order?"/>
                     <button name="action_mark_received_branch" type="object" string="Mark Full Order Received" class="oe_highlight alm-btn-success" invisible="state != 'warehouse_pending'" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
-                    <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="state != 'pending_customer_delivery'"/>
+                    <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="state != 'pending_customer_delivery'" confirm="Are you sure you want to mark this order as delivered? If payment is still pending, you will be asked to receive payment now or continue delivery without payment."/>
                     <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting" invisible="state in ('draft','cancelled') or invoice_id"/>
                     <button name="action_view_invoice" type="object" string="View Invoice" class="alm-btn-accounting" invisible="not invoice_id"/>
                     <button name="action_register_advance_payment" type="object" string="Register Advance Payment" class="alm-btn-payment"/>
@@ -166,8 +166,31 @@
                 <field name="warehouse_received_datetime"/>
                 <field name="expected_delivery_datetime"/>
                 <field name="amount_total"/>
-                <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="btn-primary"/>
+                <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="btn-primary" confirm="Are you sure you want to mark this order as delivered? If payment is still pending, you will be asked to receive payment now or continue delivery without payment."/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_goldverse_delivery_payment_confirm_wizard" model="ir.ui.view">
+        <field name="name">goldverse.delivery.payment.confirm.wizard.form</field>
+        <field name="model">goldverse.delivery.payment.confirm.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Delivery Payment Confirmation">
+                <group>
+                    <field name="order_id"/>
+                    <field name="partner_id"/>
+                    <field name="amount_due"/>
+                    <field name="currency_id" invisible="1"/>
+                </group>
+                <p>
+                    Customer payment is still pending. You can receive payment now, or confirm delivery without payment if payment will be received later.
+                </p>
+                <footer>
+                    <button name="action_receive_payment" type="object" string="Receive Payment Now" class="btn-primary"/>
+                    <button name="action_deliver_without_payment" type="object" string="Deliver Without Payment" class="btn-secondary" confirm="Are you sure you want to deliver this order while payment is still pending?"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
         </field>
     </record>
 

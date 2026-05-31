@@ -448,6 +448,40 @@ class LaundryOrder(models.Model):
     def action_stage_ready_for_delivery(self):
         self._set_state("ready_for_delivery")
 
+    def _goldverse_pending_delivery_balance(self):
+        self.ensure_one()
+        return self.net_balance_amount if "net_balance_amount" in self._fields else self.balance_amount
+
+    def action_mark_delivered(self):
+        if self.env.context.get("goldverse_force_mark_delivered"):
+            result = super().action_mark_delivered()
+            paid_orders = self.filtered(lambda order: order.balance_amount <= 0.01 and order.payment_status == "paid")
+            if paid_orders:
+                paid_orders._set_state("paid")
+            return result
+        self.ensure_one()
+        if self.state != "pending_customer_delivery":
+            return super().action_mark_delivered()
+        pending_balance = self._goldverse_pending_delivery_balance()
+        if pending_balance and pending_balance > 0.01:
+            view = self.env.ref("goldverse_premium_laundry_branding.view_goldverse_delivery_payment_confirm_wizard", raise_if_not_found=False)
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Delivery Payment Confirmation"),
+                "res_model": "goldverse.delivery.payment.confirm.wizard",
+                "view_mode": "form",
+                "views": [(view.id, "form")] if view else [(False, "form")],
+                "target": "new",
+                "context": {
+                    "default_order_id": self.id,
+                    "default_amount_due": pending_balance,
+                },
+            }
+        result = super().action_mark_delivered()
+        if self.balance_amount <= 0.01 and self.payment_status == "paid":
+            self._set_state("paid")
+        return result
+
     def action_cancel(self):
         cancellable_states = ("draft", "confirmed", "picked_up", "received", "order_created", "collection", "shift_to_plant")
         blocked = self.filtered(lambda order: order.state not in cancellable_states)
@@ -509,3 +543,24 @@ class LaundryOrder(models.Model):
             order.stage_color = "danger" if order.is_delayed else "info"
             order.portal_status = labels.get(order.state, order.state)
             order.operation_progress = stage_order.index(order.state) / (len(stage_order) - 1) * 100.0
+
+
+class GoldverseDeliveryPaymentConfirmWizard(models.TransientModel):
+    _name = "goldverse.delivery.payment.confirm.wizard"
+    _description = "GoldVerse Delivery Payment Confirmation"
+
+    order_id = fields.Many2one("aimaze.laundry.order", required=True, readonly=True)
+    partner_id = fields.Many2one(related="order_id.partner_id", readonly=True)
+    currency_id = fields.Many2one(related="order_id.currency_id", readonly=True)
+    amount_due = fields.Monetary(string="Pending Payment", currency_field="currency_id", readonly=True)
+
+    def action_receive_payment(self):
+        self.ensure_one()
+        action = self.order_id._payment_wizard(default_amount=self.amount_due or self.order_id.balance_amount, is_advance=False)
+        action["context"] = dict(action.get("context", {}), default_goldverse_deliver_after_payment=True)
+        return action
+
+    def action_deliver_without_payment(self):
+        self.ensure_one()
+        self.order_id.with_context(goldverse_force_mark_delivered=True).action_mark_delivered()
+        return {"type": "ir.actions.client", "tag": "reload"}

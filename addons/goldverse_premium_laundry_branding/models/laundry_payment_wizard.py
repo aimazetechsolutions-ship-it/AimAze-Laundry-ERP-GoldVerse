@@ -1,8 +1,10 @@
-from odoo import api, models
+from odoo import api, fields, models
 
 
 class LaundryPaymentWizard(models.TransientModel):
     _inherit = "aimaze.laundry.payment.wizard"
+
+    goldverse_deliver_after_payment = fields.Boolean(default=lambda self: self.env.context.get("default_goldverse_deliver_after_payment"))
 
     def _goldverse_manual_inbound_method(self):
         return self.env["account.payment.method"].search([("code", "=", "manual"), ("payment_type", "=", "inbound")], limit=1)
@@ -46,5 +48,14 @@ class LaundryPaymentWizard(models.TransientModel):
                 wizard.journal_id = wizard.payment_method_id.journal_id
 
     def action_register_payment(self):
+        deliver_after_payment = any(self.mapped("goldverse_deliver_after_payment"))
+        orders = self.mapped("order_id")
         self._goldverse_ensure_inbound_method_line()
-        return super(LaundryPaymentWizard, self.sudo()).action_register_payment()
+        result = super(LaundryPaymentWizard, self.sudo()).action_register_payment()
+        if deliver_after_payment:
+            for order in orders:
+                order.invalidate_recordset(["balance_amount", "payment_status", "state"])
+                if order.balance_amount <= 0.01:
+                    order.with_context(goldverse_force_mark_delivered=True).action_mark_delivered()
+            return {"type": "ir.actions.client", "tag": "reload"}
+        return result
