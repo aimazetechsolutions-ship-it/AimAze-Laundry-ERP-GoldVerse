@@ -7,6 +7,7 @@ from odoo.exceptions import UserError, ValidationError
 
 
 GOLDVERSE_DELIVERY_TZ = "Asia/Karachi"
+GOLDVERSE_DRAFT_ORDER_MARKER = "__GOLDVERSE_DRAFT__"
 
 
 class LaundryOrder(models.Model):
@@ -259,6 +260,21 @@ class LaundryOrder(models.Model):
             if missing:
                 raise ValidationError(_("Please fill mandatory fields: %s.") % ", ".join(missing))
 
+    def _goldverse_assign_order_number(self):
+        sequence = self.env["ir.sequence"].sudo().search([("code", "=", "aimaze.laundry.order")], limit=1)
+        for order in self:
+            if order.name in (False, "New", GOLDVERSE_DRAFT_ORDER_MARKER):
+                order_number = sequence.next_by_id() if sequence else self.env["ir.sequence"].next_by_code("aimaze.laundry.order") or "New"
+                order.with_context(goldverse_skip_required_validation=True).write(
+                    {
+                        "name": order_number,
+                        "barcode": order_number,
+                    }
+                )
+            elif not order.barcode or order.barcode in ("New", GOLDVERSE_DRAFT_ORDER_MARKER):
+                order.with_context(goldverse_skip_required_validation=True).write({"barcode": order.name})
+        return True
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -270,11 +286,18 @@ class LaundryOrder(models.Model):
                 if employee:
                     vals["responsible_id"] = employee.id
             self._goldverse_validate_required_order_values(vals)
+            if vals.get("name", "New") == "New":
+                vals["name"] = GOLDVERSE_DRAFT_ORDER_MARKER
+                vals["barcode"] = False
         orders = super().create(vals_list)
-        sequence = self.env["ir.sequence"].sudo().search([("code", "=", "aimaze.laundry.order")], limit=1)
-        for order in orders.filtered(lambda item: item.name == "New"):
-            order.name = sequence.next_by_id() if sequence else self.env["ir.sequence"].next_by_code("aimaze.laundry.order") or "New"
-            order.barcode = order.name
+        draft_orders = orders.filtered(lambda item: item.name == GOLDVERSE_DRAFT_ORDER_MARKER)
+        if draft_orders:
+            draft_orders.with_context(goldverse_skip_required_validation=True).write(
+                {
+                    "name": "New",
+                    "barcode": False,
+                }
+            )
         orders._goldverse_validate_required_order_fields()
         return orders
 
@@ -295,6 +318,7 @@ class LaundryOrder(models.Model):
 
     def action_create_order(self):
         self._goldverse_validate_required_order_fields()
+        self._goldverse_assign_order_number()
         self._set_state("order_created")
 
     def action_view_receipt(self):

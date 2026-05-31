@@ -94,7 +94,7 @@ class LaundryService(models.Model):
     @api.onchange("goldverse_base_price", "goldverse_discount_percent")
     def _onchange_goldverse_price_master_percent(self):
         for service in self:
-            service._goldverse_sync_price_fields("percent")
+            service._goldverse_sync_price_fields("amount")
 
     @api.onchange("goldverse_discount_amount")
     def _onchange_goldverse_price_master_amount(self):
@@ -155,19 +155,14 @@ class LaundryService(models.Model):
 
     def _goldverse_compute_price_values(self, values, source="percent"):
         base_price = values.get("goldverse_base_price") or 0.0
-        discount_percent = values.get("goldverse_discount_percent") or 0.0
         discount_amount = values.get("goldverse_discount_amount") or 0.0
         net_price = values.get("goldverse_net_price")
 
-        if source == "amount":
-            discount_percent = (discount_amount / base_price) * 100.0 if base_price else 0.0
-        elif source == "net":
+        if source == "net":
             discount_amount = max(base_price - (net_price or 0.0), 0.0)
-            discount_percent = (discount_amount / base_price) * 100.0 if base_price else 0.0
-        else:
-            discount_amount = base_price * discount_percent / 100.0
 
-        net_price = max(base_price - discount_amount, 0.0)
+        net_price = round(max(base_price - discount_amount, 0.0), 0)
+        discount_percent = (discount_amount / base_price) * 100.0 if base_price else 0.0
         return {
             "goldverse_discount_percent": discount_percent,
             "goldverse_discount_amount": discount_amount,
@@ -208,9 +203,7 @@ class LaundryService(models.Model):
             values.update(vals)
             if "goldverse_net_price" not in vals and "list_price" in vals:
                 values["goldverse_net_price"] = vals["list_price"]
-            source = "percent"
-            if "goldverse_discount_amount" in vals and "goldverse_discount_percent" not in vals:
-                source = "amount"
+            source = "amount"
             if {"goldverse_net_price", "list_price"} & set(vals) and not {"goldverse_discount_percent", "goldverse_discount_amount"} & set(vals):
                 source = "net"
             vals.update(self._goldverse_compute_price_values(values, source))

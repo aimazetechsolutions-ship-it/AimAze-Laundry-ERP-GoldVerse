@@ -15,7 +15,6 @@
             </xpath>
             <xpath expr="//field[@name='list_price']" position="before">
                 <field name="goldverse_base_price" string="Base Price" optional="show"/>
-                <field name="goldverse_discount_percent" string="Discount (%)" optional="show"/>
                 <field name="goldverse_discount_amount" string="Disc (Rs.)" optional="show"/>
             </xpath>
             <xpath expr="//field[@name='list_price']" position="attributes">
@@ -34,7 +33,6 @@
             </xpath>
             <xpath expr="//field[@name='list_price']" position="before">
                 <field name="goldverse_base_price" string="Base Price"/>
-                <field name="goldverse_discount_percent" string="Discount (%)"/>
                 <field name="goldverse_discount_amount" string="Disc (Rs.)"/>
             </xpath>
             <xpath expr="//field[@name='list_price']" position="attributes">
@@ -60,7 +58,6 @@
                 <field name="income_account_id" string="Income Head"/>
                 <field name="pricing_method" string="Pricing Method"/>
                 <field name="goldverse_base_price" string="Base Price"/>
-                <field name="goldverse_discount_percent" string="Discount (%)"/>
                 <field name="goldverse_discount_amount" string="Disc (Rs.)"/>
                 <field name="list_price" string="Net Price"/>
                 <filter name="tax_applicable" string="Tax Applicable" domain="[('tax_applicable', '=', True)]"/>
@@ -89,7 +86,6 @@
                 <field name="category_id" string="Category" optional="show"/>
                 <field name="goldverse_subcategory_id" string="Sub Category" optional="show"/>
                 <field name="goldverse_base_price" string="Base Price" optional="show"/>
-                <field name="goldverse_discount_percent" string="Discount (%)" optional="show"/>
                 <field name="goldverse_discount_amount" string="Disc (Rs.)" optional="show"/>
                 <field name="goldverse_net_price" string="Net Price" optional="show"/>
                 <field name="list_price" string="Order Price" optional="hide" readonly="1"/>
@@ -116,7 +112,6 @@
                         </group>
                         <group>
                             <field name="goldverse_base_price" string="Base Price"/>
-                            <field name="goldverse_discount_percent" string="Discount (%)"/>
                             <field name="goldverse_discount_amount" string="Disc (Rs.)"/>
                             <field name="goldverse_net_price" string="Net Price"/>
                             <field name="list_price" string="Order Price" readonly="1"/>
