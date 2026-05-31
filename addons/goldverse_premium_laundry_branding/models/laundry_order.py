@@ -341,6 +341,21 @@ class LaundryOrder(models.Model):
         self._goldverse_validate_receipt_available()
         return super().action_print_receipt()
 
+    def action_create_invoice(self):
+        workflow_states = {
+            order.id: order.state
+            for order in self
+            if order.state in ("order_created", "warehouse_pending", "pending_customer_delivery")
+        }
+        action = super().action_create_invoice()
+        for order in self.filtered(lambda item: item.id in workflow_states and item.invoice_id):
+            if order.state == "invoiced":
+                order.with_context(goldverse_skip_required_validation=True).write({
+                    "state": workflow_states[order.id],
+                    "invoice_status": "invoiced",
+                })
+        return action
+
     def action_view_invoice(self):
         self.ensure_one()
         if not self.invoice_id:
@@ -421,6 +436,11 @@ class LaundryOrder(models.Model):
         self.search([("state", "in", ("confirmed", "picked_up", "collection"))]).write({"state": "order_created"})
         self.search([("state", "in", ("received", "shift_to_plant"))]).write({"state": "warehouse_pending"})
         self.search([("state", "in", ("received_branch", "shift_to_outlet", "ready", "out_for_delivery", "ready_for_delivery"))]).write({"state": "pending_customer_delivery"})
+        self.search([
+            ("state", "=", "invoiced"),
+            ("invoice_id", "!=", False),
+            ("warehouse_collected_datetime", "=", False),
+        ]).write({"state": "order_created"})
         self.search([("state", "in", old_process_states), ("invoice_id", "!=", False)]).write({"state": "invoiced"})
         self.search([("state", "in", old_process_states), ("invoice_id", "=", False)]).write({"state": "in_process"})
         return True
