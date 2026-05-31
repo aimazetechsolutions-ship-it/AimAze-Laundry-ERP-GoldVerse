@@ -37,7 +37,7 @@
                     .gv-summary { margin-top: 9px; text-align: center; font-size: 9px; font-weight: 700; }
                     .gv-terms { margin-top: 6px; font-size: 7px; line-height: 1.05; text-align: left; }
                     .gv-terms div { text-align: left; }
-                    .gv-terms-title { text-align: center; font-weight: 800; text-decoration: underline; }
+                    .gv-terms-title { text-align: center !important; font-weight: 800; text-decoration: underline; margin-bottom: 3px; }
                     .gv-closing { margin-top: 16px; text-align: center; font-size: 9px; font-weight: 800; }
                 </style>
                 <div class="page gv-slip">
@@ -59,7 +59,7 @@
                     </div>
 
                     <div class="gv-info gv-top-info">
-                        <div><span class="gv-label">Manager:</span> <span t-esc="doc.user_id.name or doc.create_uid.name or ''"/></div>
+                        <div><span class="gv-label">Booked By:</span> <span t-esc="doc.user_id.name or doc.create_uid.name or ''"/></div>
                         <div><span class="gv-label">Order No.:</span> <span t-esc="doc.name or ''"/></div>
                         <div><span class="gv-label">Order Date:</span> <span t-field="doc.order_date" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
                         <div><span class="gv-label">Delivery Date:</span> <span t-field="doc.expected_delivery_datetime" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
