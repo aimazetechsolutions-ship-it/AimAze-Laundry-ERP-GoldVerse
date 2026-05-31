@@ -46,10 +46,10 @@ const accountIdsFromLine = (line) => {
     return [...new Set(ids.filter(Boolean))];
 };
 
-if (InteractiveAccountReport && InteractiveAccountReport.prototype.__goldverseAccountDrilldownPatchVersion !== 2) {
+if (InteractiveAccountReport && InteractiveAccountReport.prototype.__goldverseAccountDrilldownPatchVersion !== 3) {
     patch(InteractiveAccountReport.prototype, {
         __goldverseAccountDrilldownPatch: true,
-        __goldverseAccountDrilldownPatchVersion: 2,
+        __goldverseAccountDrilldownPatchVersion: 3,
 
         setup() {
             super.setup(...arguments);
@@ -104,18 +104,6 @@ if (InteractiveAccountReport && InteractiveAccountReport.prototype.__goldverseAc
             }
             this.state.goldverseMoveMenuId = this.state.goldverseMoveMenuId === line.id ? null : line.id;
             this.state.goldverseLineMenuId = null;
-        },
-
-        async activateLine(line) {
-            if (line.unfoldable) {
-                this.toggleLine(line);
-                return;
-            }
-            if (line.action) {
-                this.toggleGoldverseLineMenu(line);
-                return;
-            }
-            return super.activateLine(...arguments);
         },
 
         get visibleLines() {

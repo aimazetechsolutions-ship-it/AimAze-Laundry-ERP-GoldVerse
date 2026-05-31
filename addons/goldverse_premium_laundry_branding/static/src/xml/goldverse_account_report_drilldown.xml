@@ -87,50 +87,5 @@
                 </t>
             </section>
         </xpath>
-        <xpath expr="//td[contains(@class, 'o_account_trial_name_cell')]/button[contains(@class, 'o_account_report_line_button')]" position="replace">
-            <div t-if="line.action" class="goldverse-report-line-actions">
-                <button
-                    type="button"
-                    class="o_account_report_line_button"
-                    t-on-click="(ev) => this.toggleGoldverseLineMenu(line, ev)"
-                    title="Open line actions"
-                >
-                    <span><t t-esc="line.values.name"/></span>
-                    <i class="fa fa-ellipsis-v o_account_report_drill_icon"/>
-                </button>
-                <div t-if="state.goldverseLineMenuId === line.id" class="goldverse-report-line-menu" t-on-click="(ev) => ev.stopPropagation()">
-                    <button
-                        type="button"
-                        class="dropdown-item"
-                        t-on-click="(ev) => this.openGoldverseGeneralLedger(line, ev)"
-                    >
-                        General Ledger
-                    </button>
-                </div>
-            </div>
-        </xpath>
-        <xpath expr="//button[@t-elif='line.action' and contains(@class, 'o_account_report_line_button')]" position="replace">
-            <div t-elif="line.action" class="goldverse-report-line-actions">
-                <button
-                    type="button"
-                    class="o_account_report_line_button"
-                    t-on-click="(ev) => this.toggleGoldverseLineMenu(line, ev)"
-                    title="Open line actions"
-                >
-                    <span><t t-esc="formatCell(line, column)"/></span>
-                    <span class="o_account_report_reviewed">Reviewed</span>
-                    <i class="fa fa-ellipsis-v o_account_report_drill_icon"/>
-                </button>
-                <div t-if="state.goldverseLineMenuId === line.id" class="goldverse-report-line-menu" t-on-click="(ev) => ev.stopPropagation()">
-                    <button
-                        type="button"
-                        class="dropdown-item"
-                        t-on-click="(ev) => this.openGoldverseGeneralLedger(line, ev)"
-                    >
-                        General Ledger
-                    </button>
-                </div>
-            </div>
-        </xpath>
     </t>
 </templates>
