@@ -38,7 +38,7 @@ class LaundryOrder(models.Model):
     priority = fields.Selection(default="normal")
     user_id = fields.Many2one("res.users", string="Salesperson", default=lambda self: self.env.user)
     responsible_id = fields.Many2one("hr.employee", string="Responsible Staff", default=lambda self: self._goldverse_default_responsible_employee())
-    expected_delivery_datetime = fields.Datetime(default=lambda self: self._goldverse_default_expected_delivery_datetime())
+    expected_delivery_datetime = fields.Datetime(string="Delivery Date & Time", default=lambda self: self._goldverse_default_expected_delivery_datetime())
     warehouse_collected_datetime = fields.Datetime(string="Warehouse Collected On", readonly=True, copy=False, tracking=True)
     warehouse_received_datetime = fields.Datetime(string="Received Back From Warehouse On", readonly=True, copy=False, tracking=True)
 
@@ -161,7 +161,7 @@ class LaundryOrder(models.Model):
             "mobile": _("Mobile"),
             "customer_type": _("Customer Type"),
             "source": _("Source"),
-            "expected_delivery_datetime": _("Expected Delivery"),
+            "expected_delivery_datetime": _("Delivery Date & Time"),
         }
         values = self.default_get(list(labels))
         values.update(vals)
@@ -175,7 +175,7 @@ class LaundryOrder(models.Model):
             "mobile": _("Mobile"),
             "customer_type": _("Customer Type"),
             "source": _("Source"),
-            "expected_delivery_datetime": _("Expected Delivery"),
+            "expected_delivery_datetime": _("Delivery Date & Time"),
         }
         for order in self:
             missing = [label for field_name, label in labels.items() if not order[field_name]]
