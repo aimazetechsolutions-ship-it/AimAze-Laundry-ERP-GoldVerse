@@ -107,6 +107,32 @@ class LaundryOrder(models.Model):
     def _goldverse_delivery_timezone(self):
         return pytz.timezone(GOLDVERSE_DELIVERY_TZ)
 
+    def _goldverse_today_bounds_utc(self):
+        delivery_tz = self._goldverse_delivery_timezone()
+        today = datetime.now(delivery_tz).date()
+        local_start = delivery_tz.localize(datetime.combine(today, time.min))
+        local_end = delivery_tz.localize(datetime.combine(today, time.max))
+        return (
+            local_start.astimezone(pytz.UTC).replace(tzinfo=None),
+            local_end.astimezone(pytz.UTC).replace(tzinfo=None),
+        )
+
+    def _goldverse_is_today_order_date(self, value):
+        if not value:
+            return False
+        value_dt = fields.Datetime.to_datetime(value)
+        if not value_dt.tzinfo:
+            value_dt = pytz.UTC.localize(value_dt)
+        local_date = value_dt.astimezone(self._goldverse_delivery_timezone()).date()
+        return local_date == datetime.now(self._goldverse_delivery_timezone()).date()
+
+    def _goldverse_validate_order_date_today_value(self, value):
+        if not self._goldverse_is_today_order_date(value):
+            raise ValidationError(_("Order Date must be today's date. Past or future dates are not allowed."))
+
+    def _goldverse_now_order_date(self):
+        return fields.Datetime.now()
+
     def _goldverse_default_expected_delivery_datetime(self):
         delivery_tz = self._goldverse_delivery_timezone()
         today = datetime.now(delivery_tz).date()
@@ -171,9 +197,17 @@ class LaundryOrder(models.Model):
             if order.expected_delivery_datetime:
                 order.expected_delivery_datetime = order._goldverse_force_six_pm(order.expected_delivery_datetime)
 
+    @api.onchange("order_date")
+    def _onchange_goldverse_order_date(self):
+        for order in self:
+            if order.order_date and not order._goldverse_is_today_order_date(order.order_date):
+                order.order_date = order._goldverse_now_order_date()
+
     @api.model
     def default_get(self, fields_list):
         values = super().default_get(fields_list)
+        if "order_date" in fields_list:
+            values["order_date"] = self._goldverse_now_order_date()
         if "expected_delivery_datetime" in fields_list:
             values["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
         values.setdefault("priority", "normal")
@@ -187,6 +221,10 @@ class LaundryOrder(models.Model):
     def _goldverse_prepare_required_order_values(self, vals):
         if vals.get("customer_type") == "b2b":
             vals["source"] = "corporate_contract"
+        if not vals.get("order_date"):
+            vals["order_date"] = self._goldverse_now_order_date()
+        else:
+            self._goldverse_validate_order_date_today_value(vals["order_date"])
         if "expected_delivery_datetime" not in vals:
             vals["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
         elif vals.get("expected_delivery_datetime"):
@@ -248,6 +286,12 @@ class LaundryOrder(models.Model):
         if vals.get("customer_type") == "b2b":
             vals = dict(vals)
             vals["source"] = "corporate_contract"
+        if "order_date" in vals:
+            if vals.get("order_date"):
+                self._goldverse_validate_order_date_today_value(vals["order_date"])
+            else:
+                vals = dict(vals)
+                vals["order_date"] = self._goldverse_now_order_date()
         if vals.get("expected_delivery_datetime"):
             vals = dict(vals)
             vals["expected_delivery_datetime"] = self._goldverse_force_six_pm(vals["expected_delivery_datetime"])
