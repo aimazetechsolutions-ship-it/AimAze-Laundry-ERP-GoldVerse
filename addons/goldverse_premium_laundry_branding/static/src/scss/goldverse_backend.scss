@@ -1,3 +1,32 @@
+.o_form_view .o-mail-Form-chatter.o-aside,
+.o_form_view .o-mail-ChatterContainer.o-aside {
+  flex: 0 0 320px !important;
+  flex-grow: 0 !important;
+  width: 320px !important;
+  min-width: 300px;
+  max-width: 32vw;
+}
+
+@media (max-width: 1200px) {
+  .o_form_view .o-mail-Form-chatter.o-aside,
+  .o_form_view .o-mail-ChatterContainer.o-aside {
+    flex-basis: 300px !important;
+    width: 300px !important;
+    min-width: 280px;
+    max-width: 36vw;
+  }
+}
+
+@media (max-width: 992px) {
+  .o_form_view .o-mail-Form-chatter.o-aside,
+  .o_form_view .o-mail-ChatterContainer.o-aside {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
 .o_form_view .goldverse-total-box {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
