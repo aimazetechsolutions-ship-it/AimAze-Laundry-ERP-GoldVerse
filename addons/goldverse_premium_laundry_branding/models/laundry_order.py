@@ -52,7 +52,7 @@ class LaundryOrder(models.Model):
 
         sequence.sudo().write(
             {
-                "prefix": "GPL/EME/",
+                "prefix": "GPL/EME/%(y)s/",
                 "padding": 4,
                 "use_date_range": False,
                 "number_increment": 1,
