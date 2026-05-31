@@ -225,6 +225,15 @@ class LaundryOrderLine(models.Model):
         self.ensure_one()
         return (self.service_id.list_price or 0.0) * self._goldverse_priority_multiplier()
 
+    def _goldverse_ensure_unit_price(self):
+        for line in self:
+            if not line.service_id:
+                continue
+            expected_price = line._goldverse_priority_unit_price()
+            if abs((line.unit_price or 0.0) - expected_price) > 0.0001:
+                line.unit_price = expected_price
+        return True
+
     @api.model
     def _goldverse_apply_priority_price_vals(self, vals):
         if not vals.get("service_id"):
@@ -253,7 +262,8 @@ class LaundryOrderLine(models.Model):
         return max(0.0, min((value / base) * 100.0, 100.0))
 
     def _goldverse_refresh_amount_fields(self):
-        for line in self.with_context(goldverse_refreshing_amounts=True):
+        for line in self:
+            line._goldverse_ensure_unit_price()
             line._compute_goldverse_price_breakdown()
             line._compute_line_amount()
             line._compute_goldverse_total_amount()

@@ -16,6 +16,9 @@
                     <field name="goldverse_colour_ids" string="Colour" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="goldverse_qc_option_ids" string="QC" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="goldverse_topup_ids" string="Add On" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
+                    <field name="unit_price" column_invisible="1" force_save="1"/>
+                    <field name="discount" column_invisible="1" force_save="1"/>
+                    <field name="tax_ids" column_invisible="1" force_save="1"/>
                     <field name="quantity" string="Qty"/>
                     <field name="goldverse_base_price" string="Base Price" readonly="1"/>
                     <field name="goldverse_discount_amount" string="Discount" readonly="1"/>
