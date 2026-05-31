@@ -8,6 +8,30 @@ from odoo.exceptions import UserError, ValidationError
 
 GOLDVERSE_DELIVERY_TZ = "Asia/Karachi"
 GOLDVERSE_DRAFT_ORDER_MARKER = "__GOLDVERSE_DRAFT__"
+GOLDVERSE_LOCKED_ORDER_ALLOWED_WRITE_FIELDS = {
+    "access_token",
+    "access_url",
+    "activity_date_deadline",
+    "activity_exception_decoration",
+    "activity_exception_icon",
+    "activity_state",
+    "activity_summary",
+    "activity_type_icon",
+    "activity_type_id",
+    "activity_user_id",
+    "message_attachment_count",
+    "message_follower_ids",
+    "message_has_error",
+    "message_has_error_counter",
+    "message_has_sms_error",
+    "message_ids",
+    "message_is_follower",
+    "message_main_attachment_id",
+    "message_needaction",
+    "message_needaction_counter",
+    "message_partner_ids",
+    "my_activity_date_deadline",
+}
 
 
 class LaundryOrder(models.Model):
@@ -302,6 +326,7 @@ class LaundryOrder(models.Model):
         return orders
 
     def write(self, vals):
+        self._goldverse_check_locked_write(vals)
         if vals.get("customer_type") == "b2b":
             vals = dict(vals)
             vals["source"] = "corporate_contract"
@@ -315,6 +340,25 @@ class LaundryOrder(models.Model):
         if not self.env.context.get("goldverse_skip_required_validation"):
             self._goldverse_validate_required_order_fields()
         return result
+
+    def _goldverse_is_locked(self):
+        self.ensure_one()
+        return self.state == "paid" or (self.payment_status == "paid" and self.balance_amount <= 0.01)
+
+    def _goldverse_check_locked_write(self, vals):
+        if self.env.context.get("goldverse_allow_locked_order_write"):
+            return True
+        if not vals:
+            return True
+        locked = self.filtered(lambda order: order._goldverse_is_locked())
+        if not locked:
+            return True
+        if set(vals).issubset(GOLDVERSE_LOCKED_ORDER_ALLOWED_WRITE_FIELDS):
+            return True
+        if set(vals) == {"state"} and vals.get("state") == "paid":
+            return True
+        names = ", ".join(locked.mapped("display_name")[:5])
+        raise UserError(_("Paid laundry orders are locked and cannot be changed. Locked order(s): %s") % names)
 
     def action_create_order(self):
         self._goldverse_validate_required_order_fields()
@@ -340,6 +384,25 @@ class LaundryOrder(models.Model):
     def action_print_receipt(self):
         self._goldverse_validate_receipt_available()
         return super().action_print_receipt()
+
+    def _goldverse_check_payment_action_allowed(self):
+        locked = self.filtered(lambda order: order._goldverse_is_locked())
+        if locked:
+            names = ", ".join(locked.mapped("display_name")[:5])
+            raise UserError(_("This order is fully paid and locked. No further payment action is allowed for: %s") % names)
+        return True
+
+    def action_register_advance_payment(self):
+        self._goldverse_check_payment_action_allowed()
+        return super().action_register_advance_payment()
+
+    def action_register_final_payment(self):
+        self._goldverse_check_payment_action_allowed()
+        return super().action_register_final_payment()
+
+    def action_use_wallet(self):
+        self._goldverse_check_payment_action_allowed()
+        return super().action_use_wallet()
 
     def action_create_invoice(self):
         workflow_states = {
@@ -454,8 +517,9 @@ class LaundryOrder(models.Model):
 
     def action_mark_delivered(self):
         if self.env.context.get("goldverse_force_mark_delivered"):
-            result = super().action_mark_delivered()
-            paid_orders = self.filtered(lambda order: order.balance_amount <= 0.01 and order.payment_status == "paid")
+            orders = self.with_context(goldverse_allow_locked_order_write=True)
+            result = super(LaundryOrder, orders).action_mark_delivered()
+            paid_orders = orders.filtered(lambda order: order.balance_amount <= 0.01 and order.payment_status == "paid")
             if paid_orders:
                 paid_orders._set_state("paid")
             return result

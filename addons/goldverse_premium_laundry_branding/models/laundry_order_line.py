@@ -1,6 +1,7 @@
 import re
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 class LaundryOrderLine(models.Model):
@@ -315,6 +316,11 @@ class LaundryOrderLine(models.Model):
         return lines
 
     def write(self, vals):
+        if not self.env.context.get("goldverse_allow_locked_order_write"):
+            locked_lines = self.filtered(lambda line: line.order_id and line.order_id._goldverse_is_locked())
+            if locked_lines:
+                order_names = ", ".join(locked_lines.mapped("order_id.display_name")[:5])
+                raise UserError("Paid laundry orders are locked and their item lines cannot be changed. Locked order(s): %s" % order_names)
         if self.env.context.get("goldverse_refreshing_amounts"):
             return super().write(vals)
         if {"service_id", "goldverse_priority"} & set(vals) and "unit_price" not in vals:
