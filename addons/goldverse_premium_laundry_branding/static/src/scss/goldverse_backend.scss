@@ -538,6 +538,31 @@
   .o_account_aged_table thead th[colspan] {
     text-align: center;
   }
+
+  .o_account_aged_table .line_type_aged_total td {
+    border-top: 2px solid #cfd6df;
+    background: #f7f9fb;
+    font-weight: 800;
+  }
+
+  .goldverse-aged-amount-button {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #714b67;
+    font: inherit;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .goldverse-aged-amount-button:hover,
+  .goldverse-aged-amount-button:focus {
+    color: #4d3047;
+    text-decoration: underline;
+  }
 }
 
 @media (max-width: 900px) {

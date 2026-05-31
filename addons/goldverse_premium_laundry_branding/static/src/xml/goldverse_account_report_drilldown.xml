@@ -6,6 +6,69 @@
         <xpath expr="//div[contains(@class, 'o_account_report_filters')]/div[contains(@class, 'o_account_report_search')]" position="attributes">
             <attribute name="t-if">isTrialBalanceReport || showLedgerSearch</attribute>
         </xpath>
+        <xpath expr="//section[@t-if='isAgedPartnerReport']" position="replace">
+            <section t-if="isAgedPartnerReport" class="o_account_report_sheet o_account_aged_sheet">
+                <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
+                <t t-else="">
+                    <table class="o_account_aged_table goldverse-aged-table">
+                        <thead>
+                            <tr class="o_account_aged_asof_row">
+                                <th colspan="2"></th>
+                                <th t-att-colspan="agedHeaderColspan" class="o_account_aged_asof_cell">
+                                    As of <t t-esc="formatDateLabel(options.date_to || options.anchor_date)"/>
+                                </th>
+                            </tr>
+                            <tr class="o_account_aged_header_row">
+                                <th></th>
+                                <th t-foreach="report.columns.slice(1)"
+                                    t-as="column"
+                                    t-key="column.key"
+                                    t-att-class="column.type === 'number' ? 'o_account_report_number' : ''">
+                                    <i class="fa fa-sort o_account_aged_sort"/>
+                                    <t t-esc="column.label"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-if="!hasLines">
+                                <td colspan="9" class="o_account_report_empty">No records for the selected filters.</td>
+                            </tr>
+                            <tr t-foreach="visibleLines" t-as="line" t-key="line.id" t-att-class="lineClass(line)">
+                                <td class="o_account_aged_name_cell">
+                                    <button
+                                        t-if="line.action &amp;&amp; line.type !== 'aged_total'"
+                                        type="button"
+                                        class="o_account_report_line_button"
+                                        t-on-click="() => this.activateLine(line)"
+                                    >
+                                        <span><t t-esc="formatCell(line, report.columns[0])"/></span>
+                                    </button>
+                                    <strong t-elif="line.type === 'aged_total'"><t t-esc="formatCell(line, report.columns[0])"/></strong>
+                                    <span t-else=""><t t-esc="formatCell(line, report.columns[0])"/></span>
+                                </td>
+                                <td
+                                    t-foreach="report.columns.slice(1)"
+                                    t-as="column"
+                                    t-key="column.key"
+                                    t-att-class="cellClass(column, line)"
+                                >
+                                    <button
+                                        t-if="isGoldverseAgedAmountClickable(line, column)"
+                                        type="button"
+                                        class="goldverse-aged-amount-button"
+                                        t-on-click="(ev) => this.openGoldverseAgedLedger(line, ev)"
+                                    >
+                                        <t t-esc="formatCell(line, column)"/>
+                                    </button>
+                                    <strong t-elif="line.type === 'aged_total'"><t t-esc="formatCell(line, column)"/></strong>
+                                    <t t-else="" t-esc="formatCell(line, column)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </section>
+        </xpath>
         <xpath expr="//section[@t-else='']" position="before">
             <section t-elif="isGeneralLedgerReport" class="o_account_report_sheet goldverse-general-ledger-sheet">
                 <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>

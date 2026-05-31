@@ -183,21 +183,7 @@ class InteractiveAccountReport(models.AbstractModel):
             partner_values["total"] += amount
             totals[bucket] += amount
             totals["total"] += amount
-        total_values = {
-            "name": report_name,
-            "invoice_date": "",
-            **totals,
-        }
-        lines = [
-            {
-                "id": "aged_total",
-                "name": report_name,
-                "level": 1,
-                "type": "aged_summary",
-                "is_total": False,
-                "values": total_values,
-            }
-        ]
+        lines = []
         sorted_partners = sorted(
             (
                 partner_line
@@ -214,23 +200,12 @@ class InteractiveAccountReport(models.AbstractModel):
             values.update({key: partner_line[key] for key in bucket_keys})
             action = False
             if partner_line["partner_id"]:
-                action = {
-                    "type": "ir.actions.act_window",
-                    "name": partner_line["name"] or _("Partner Entries"),
-                    "res_model": "account.move.line",
-                    "view_mode": "list,form",
-                    "views": [(False, "list"), (False, "form")],
-                    "domain": self._move_line_domain(
-                        options,
-                        account_types=account_types,
-                        date_from=False,
-                    )
-                    + [("partner_id", "=", partner_line["partner_id"])],
-                    "context": {
-                        "search_default_group_by_move": 1,
-                        "default_company_id": self.env.company.id,
-                    },
-                }
+                action = self._goldverse_aged_ledger_action(
+                    partner_line["name"] or _("Partner Ledger"),
+                    options,
+                    account_types,
+                    partner_id=partner_line["partner_id"],
+                )
             lines.append(
                 {
                     "id": f"aged_{index}",
@@ -242,7 +217,47 @@ class InteractiveAccountReport(models.AbstractModel):
                     "values": values,
                 }
             )
+        total_label = _("Total Receivable") if options["result_selection"] == "customer" else report_name
+        if options["result_selection"] == "supplier":
+            total_label = _("Total Payable")
+        lines.append(
+            {
+                "id": "aged_total",
+                "name": total_label,
+                "level": 1,
+                "type": "aged_total",
+                "is_total": True,
+                "action": self._goldverse_aged_ledger_action(total_label, options, account_types),
+                "values": {
+                    "name": total_label,
+                    "invoice_date": "",
+                    **totals,
+                },
+            }
+        )
         return columns, lines
+
+    @api.model
+    def _goldverse_aged_ledger_action(self, name, options, account_types, partner_id=False):
+        domain = self._move_line_domain(
+            options,
+            account_types=account_types,
+            date_from=False,
+        )
+        if partner_id:
+            domain.append(("partner_id", "=", partner_id))
+        return {
+            "type": "ir.actions.act_window",
+            "name": name,
+            "res_model": "account.move.line",
+            "view_mode": "list,form",
+            "views": [(False, "list"), (False, "form")],
+            "domain": domain,
+            "context": {
+                "search_default_group_by_move": 1,
+                "default_company_id": self.env.company.id,
+            },
+        }
 
     @api.model
     def _goldverse_aged_account_types(self, options):

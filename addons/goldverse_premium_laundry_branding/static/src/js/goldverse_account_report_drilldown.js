@@ -223,6 +223,23 @@ if (InteractiveAccountReport && InteractiveAccountReport.prototype.__goldverseAc
             }
         },
 
+        isGoldverseAgedAmountClickable(line, column) {
+            if (!this.isAgedPartnerReport || !line?.action || column?.type !== "number") {
+                return false;
+            }
+            return Math.abs(Number((line.values || {})[column.key] || 0)) >= 0.005;
+        },
+
+        async openGoldverseAgedLedger(line, ev) {
+            if (ev) {
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+            if (line.action) {
+                await this.action.doAction(line.action);
+            }
+        },
+
         async openGoldverseGeneralLedger(line, ev) {
             if (ev) {
                 ev.stopPropagation();
