@@ -26,6 +26,12 @@ class LaundryOrderLine(models.Model):
         ],
         string="Sub Category",
     )
+    goldverse_priority = fields.Selection(
+        [("normal", "Normal"), ("express", "Express"), ("urgent", "Urgent")],
+        string="Priority",
+        required=True,
+        default="normal",
+    )
     goldverse_colour_id = fields.Many2one("goldverse.laundry.colour", string="Colour")
     goldverse_colour = fields.Selection(
         [
@@ -104,6 +110,13 @@ class LaundryOrderLine(models.Model):
             if line.service_id:
                 line.goldverse_category_id = line.service_id.category_id
                 line.goldverse_subcategory_id = line.service_id.goldverse_subcategory_id
+                line.unit_price = line._goldverse_priority_unit_price()
+
+    @api.onchange("goldverse_priority")
+    def _onchange_goldverse_priority(self):
+        for line in self:
+            if line.service_id:
+                line.unit_price = line._goldverse_priority_unit_price()
 
     @api.onchange("goldverse_subcategory_id")
     def _onchange_goldverse_subcategory_id(self):
@@ -146,6 +159,27 @@ class LaundryOrderLine(models.Model):
         for line in self:
             line.discount = line._goldverse_discount_percent()
 
+    def _goldverse_priority_multiplier(self, priority=False):
+        return {
+            "express": 1.25,
+            "urgent": 1.40,
+        }.get(priority or self.goldverse_priority, 1.0)
+
+    def _goldverse_priority_unit_price(self):
+        self.ensure_one()
+        return (self.service_id.list_price or 0.0) * self._goldverse_priority_multiplier()
+
+    @api.model
+    def _goldverse_apply_priority_price_vals(self, vals):
+        if not vals.get("service_id"):
+            return vals
+        if "unit_price" in vals and "goldverse_priority" not in vals:
+            return vals
+        service = self.env["aimaze.laundry.service"].browse(vals["service_id"])
+        priority = vals.get("goldverse_priority") or "normal"
+        vals["unit_price"] = (service.list_price or 0.0) * self._goldverse_priority_multiplier(priority)
+        return vals
+
     def _goldverse_discount_percent(self):
         self.ensure_one()
         base = (self.quantity or 0.0) * (self.unit_price or 0.0)
@@ -175,14 +209,28 @@ class LaundryOrderLine(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        for vals in vals_list:
+            vals.setdefault("goldverse_priority", "normal")
+            self._goldverse_apply_priority_price_vals(vals)
         lines = super().create(vals_list)
         lines._goldverse_sync_display_fields()
         return lines
 
     def write(self, vals):
+        if {"service_id", "goldverse_priority"} & set(vals) and "unit_price" not in vals:
+            for line in self:
+                service_id = vals.get("service_id") or line.service_id.id
+                if not service_id:
+                    continue
+                service = self.env["aimaze.laundry.service"].browse(service_id)
+                priority = vals.get("goldverse_priority") or line.goldverse_priority or "normal"
+                super(LaundryOrderLine, line).write({
+                    "unit_price": (service.list_price or 0.0) * line._goldverse_priority_multiplier(priority)
+                })
         result = super().write(vals)
         if {
             "service_id",
+            "goldverse_priority",
             "goldverse_subcategory_id",
             "goldverse_colour_id",
             "goldverse_qc_option_id",

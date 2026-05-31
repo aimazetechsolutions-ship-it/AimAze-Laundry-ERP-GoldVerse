@@ -22,6 +22,7 @@
         "data/menu_cleanup.xml",
         "data/customer_care_menus.xml",
         "views/login_branding_views.xml",
+        "views/partner_views.xml",
         "views/role_access_manager_views.xml",
         "views/goldverse_config_views.xml",
         "views/dashboard_views.xml",

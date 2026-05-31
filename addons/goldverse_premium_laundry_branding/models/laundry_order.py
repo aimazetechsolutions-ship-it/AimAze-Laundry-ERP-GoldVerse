@@ -33,7 +33,9 @@ class LaundryOrder(models.Model):
     )
     customer_type = fields.Selection(default=False, required=True)
     source = fields.Selection(default=False, required=True)
-    priority = fields.Selection(default=False, required=True)
+    priority = fields.Selection(default="normal")
+    user_id = fields.Many2one("res.users", string="Salesperson", default=lambda self: self.env.user)
+    responsible_id = fields.Many2one("hr.employee", string="Responsible Staff", default=lambda self: self._goldverse_default_responsible_employee())
     expected_delivery_datetime = fields.Datetime(default=lambda self: self._goldverse_default_expected_delivery_datetime())
     warehouse_collected_datetime = fields.Datetime(string="Warehouse Collected On", readonly=True, copy=False, tracking=True)
     warehouse_received_datetime = fields.Datetime(string="Received Back From Warehouse On", readonly=True, copy=False, tracking=True)
@@ -60,7 +62,7 @@ class LaundryOrder(models.Model):
         return True
 
     def _goldverse_default_expected_delivery_datetime(self):
-        user_tz = pytz.timezone("Asia/Dubai")
+        user_tz = pytz.timezone(self.env.context.get("tz") or self.env.user.tz or "UTC")
         today = fields.Date.context_today(self)
         local_deadline = user_tz.localize(datetime.combine(today, time(18, 0)))
         return fields.Datetime.to_string(local_deadline.astimezone(pytz.UTC).replace(tzinfo=None))
@@ -68,13 +70,24 @@ class LaundryOrder(models.Model):
     def _goldverse_force_six_pm(self, value):
         if not value:
             return value
-        user_tz = pytz.timezone("Asia/Dubai")
+        user_tz = pytz.timezone(self.env.context.get("tz") or self.env.user.tz or "UTC")
         value_dt = fields.Datetime.to_datetime(value)
         if not value_dt.tzinfo:
             value_dt = pytz.UTC.localize(value_dt)
         local_dt = value_dt.astimezone(user_tz)
         local_six_pm = user_tz.localize(datetime.combine(local_dt.date(), time(18, 0)))
         return fields.Datetime.to_string(local_six_pm.astimezone(pytz.UTC).replace(tzinfo=None))
+
+    def _goldverse_default_responsible_employee(self):
+        return self.env["hr.employee"].search([("user_id", "=", self.env.user.id)], limit=1)
+
+    @api.onchange("partner_id")
+    def _onchange_partner_id(self):
+        super()._onchange_partner_id()
+        for order in self:
+            if order.partner_id:
+                order.mobile = order.partner_id.mobile or order.partner_id.phone
+                order.email = order.partner_id.email
 
     @api.onchange("expected_delivery_datetime")
     def _onchange_goldverse_expected_delivery_datetime(self):
@@ -95,7 +108,6 @@ class LaundryOrder(models.Model):
             "mobile": _("Mobile"),
             "customer_type": _("Customer Type"),
             "source": _("Source"),
-            "priority": _("Priority"),
             "expected_delivery_datetime": _("Expected Delivery"),
         }
         values = self.default_get(list(labels))
@@ -110,7 +122,6 @@ class LaundryOrder(models.Model):
             "mobile": _("Mobile"),
             "customer_type": _("Customer Type"),
             "source": _("Source"),
-            "priority": _("Priority"),
             "expected_delivery_datetime": _("Expected Delivery"),
         }
         for order in self:
@@ -122,6 +133,12 @@ class LaundryOrder(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             self._goldverse_prepare_required_order_values(vals)
+            vals.setdefault("priority", "normal")
+            vals.setdefault("user_id", self.env.user.id)
+            if not vals.get("responsible_id"):
+                employee = self._goldverse_default_responsible_employee()
+                if employee:
+                    vals["responsible_id"] = employee.id
             self._goldverse_validate_required_order_values(vals)
         orders = super().create(vals_list)
         sequence = self.env["ir.sequence"].sudo().search([("code", "=", "aimaze.laundry.order")], limit=1)
