@@ -50,9 +50,9 @@ class LaundryOrder(models.Model):
 
         sequence.sudo().write(
             {
-                "prefix": "GVP/EME/%(y)s/%(month)s/%(day)s/",
-                "padding": 5,
-                "use_date_range": True,
+                "prefix": "GPL/EME/",
+                "padding": 4,
+                "use_date_range": False,
                 "number_increment": 1,
             }
         )
