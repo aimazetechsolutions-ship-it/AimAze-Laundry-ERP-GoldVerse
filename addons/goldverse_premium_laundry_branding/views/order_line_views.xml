@@ -18,7 +18,7 @@
                     <field name="goldverse_topup_ids" string="Add On" widget="many2many_tags"/>
                     <field name="quantity" string="Qty"/>
                     <field name="goldverse_base_price" string="Base Price" readonly="1"/>
-                    <field name="goldverse_discount" string="Discount"/>
+                    <field name="goldverse_discount_amount" string="Discount" readonly="1"/>
                     <field name="goldverse_net_price" string="Net Price" readonly="1"/>
                     <field name="goldverse_priority_charge" string="Priority Chgs" readonly="1"/>
                     <field name="price_subtotal" string="Total Excl. Tax" readonly="1"/>

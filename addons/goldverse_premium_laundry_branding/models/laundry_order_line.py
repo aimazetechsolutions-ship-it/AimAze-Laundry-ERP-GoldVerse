@@ -88,6 +88,12 @@ class LaundryOrderLine(models.Model):
         store=True,
         currency_field="currency_id",
     )
+    goldverse_discount_amount = fields.Monetary(
+        string="Discount",
+        compute="_compute_goldverse_price_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
     goldverse_priority_charge = fields.Monetary(
         string="Priority Chgs",
         compute="_compute_goldverse_price_breakdown",
@@ -244,6 +250,7 @@ class LaundryOrderLine(models.Model):
             base_price = service.goldverse_base_price if service and service.goldverse_base_price else net_price
             priority_unit_charge = max((line.unit_price or 0.0) - net_price, 0.0)
             line.goldverse_base_price = base_price
+            line.goldverse_discount_amount = max(base_price - net_price, 0.0) * (line.quantity or 0.0)
             line.goldverse_net_price = net_price
             line.goldverse_priority_charge = priority_unit_charge * (line.quantity or 0.0)
 
