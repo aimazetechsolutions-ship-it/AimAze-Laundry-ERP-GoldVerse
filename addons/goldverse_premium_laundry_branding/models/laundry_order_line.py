@@ -253,7 +253,7 @@ class LaundryOrderLine(models.Model):
         return max(0.0, min((value / base) * 100.0, 100.0))
 
     def _goldverse_refresh_amount_fields(self):
-        for line in self:
+        for line in self.with_context(goldverse_refreshing_amounts=True):
             line._compute_goldverse_price_breakdown()
             line._compute_line_amount()
             line._compute_goldverse_total_amount()
@@ -296,9 +296,12 @@ class LaundryOrderLine(models.Model):
             self._goldverse_apply_priority_price_vals(vals)
         lines = super().create(vals_list)
         lines._goldverse_sync_display_fields()
+        lines._goldverse_refresh_amount_fields()
         return lines
 
     def write(self, vals):
+        if self.env.context.get("goldverse_refreshing_amounts"):
+            return super().write(vals)
         if {"service_id", "goldverse_priority"} & set(vals) and "unit_price" not in vals:
             for line in self:
                 service_id = vals.get("service_id") or line.service_id.id
@@ -327,6 +330,7 @@ class LaundryOrderLine(models.Model):
             "unit_price",
         } & set(vals):
             self._goldverse_sync_display_fields()
+            self._goldverse_refresh_amount_fields()
         return result
 
     def _goldverse_set_qc_status_from_options(self):
