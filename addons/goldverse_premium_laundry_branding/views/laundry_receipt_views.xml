@@ -35,7 +35,7 @@
                     .gv-totals { width: 100%; border-collapse: collapse; border-top: 1px solid #000; margin-top: 5px; font-size: 9px; }
                     .gv-totals td { padding: 2px 1px; }
                     .gv-summary { margin-top: 9px; text-align: center; font-size: 9px; font-weight: 700; }
-                    .gv-terms { margin-top: 6px; font-size: 7px; line-height: 1.05; text-align: left; }
+                    .gv-terms { margin-top: 6px; font-size: 10px; line-height: 1.18; text-align: left; }
                     .gv-terms div { text-align: left; }
                     .gv-terms-title { text-align: center !important; font-weight: 800; text-decoration: underline; margin-bottom: 3px; }
                     .gv-closing { margin-top: 16px; text-align: center; font-size: 9px; font-weight: 800; }
