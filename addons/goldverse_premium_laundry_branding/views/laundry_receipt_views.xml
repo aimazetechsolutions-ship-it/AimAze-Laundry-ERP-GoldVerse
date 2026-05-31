@@ -57,7 +57,7 @@
                         <div><span class="gv-label">Manager:</span> <span t-esc="doc.user_id.name or doc.create_uid.name or ''"/></div>
                         <div><span class="gv-label">Order Date:</span> <span t-field="doc.order_date" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
                         <div><span class="gv-label">Delivery Date:</span> <span t-field="doc.expected_delivery_datetime" t-options="{'format': 'dd/MM/yyyy hh:mm a'}"/></div>
-                        <div><span class="gv-label">Invoice #:</span> <span t-esc="doc.invoice_id.name if doc.invoice_id else ''"/></div>
+                        <div><span class="gv-label">Order No.:</span> <span t-esc="doc.name or ''"/></div>
                         <div><span class="gv-label">Type:</span> <span t-esc="source_labels.get(doc.source, doc.source or '')"/></div>
                     </div>
 
