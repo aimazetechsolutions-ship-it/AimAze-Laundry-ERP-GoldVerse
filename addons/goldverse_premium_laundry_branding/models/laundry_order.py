@@ -9,6 +9,7 @@ from odoo.exceptions import UserError, ValidationError
 class LaundryOrder(models.Model):
     _inherit = "aimaze.laundry.order"
 
+    name = fields.Char(string="Order No.")
     state = fields.Selection(
         selection_add=[
             ("order_created", "Order Created"),
