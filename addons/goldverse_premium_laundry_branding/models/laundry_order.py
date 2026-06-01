@@ -594,6 +594,26 @@ class LaundryOrder(models.Model):
             ("state", "=", "delivered"),
             ("goldverse_delivered_to_customer", "=", False),
         ]).with_context(goldverse_allow_locked_order_write=True).write({"goldverse_delivered_to_customer": True})
+        self._goldverse_backfill_actual_delivery_datetime()
+        return True
+
+    def _goldverse_backfill_actual_delivery_datetime(self):
+        Scan = self.env["aimaze.laundry.barcode.scan"].sudo()
+        orders = self.sudo().search([
+            ("goldverse_actual_delivery_datetime", "=", False),
+            "|",
+            ("goldverse_delivered_to_customer", "=", True),
+            ("state", "=", "delivered"),
+        ])
+        for order in orders:
+            scan = Scan.search([
+                ("order_id", "=", order.id),
+                ("stage", "=", "delivered"),
+            ], order="scan_date desc, id desc", limit=1)
+            actual_datetime = scan.scan_date or order.write_date or fields.Datetime.now()
+            order.with_context(goldverse_allow_locked_order_write=True).write({
+                "goldverse_actual_delivery_datetime": actual_datetime,
+            })
         return True
 
     def _goldverse_normalize_expected_delivery_time(self):

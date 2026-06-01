@@ -44,7 +44,9 @@
 
   .o_list_table th[data-name="partner_id"],
   .o_list_table td[name="partner_id"] {
+    width: 1%;
     min-width: 110px;
+    white-space: nowrap;
   }
 }
 
