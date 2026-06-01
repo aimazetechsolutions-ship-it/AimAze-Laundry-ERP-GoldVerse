@@ -27,6 +27,27 @@
   }
 }
 
+.goldverse-laundry-order-list {
+  .o_list_table th[data-name] {
+    cursor: grab;
+  }
+
+  .o_list_table th[data-name]:active,
+  .o_list_table th.goldverse-column-dragging {
+    cursor: grabbing;
+  }
+
+  .o_list_table th.goldverse-column-drop-target {
+    box-shadow: inset 3px 0 0 #25b7c9;
+    background: rgba(37, 183, 201, 0.08);
+  }
+
+  .o_list_table th[data-name="partner_id"],
+  .o_list_table td[name="partner_id"] {
+    min-width: 110px;
+  }
+}
+
 .o_form_view .goldverse-total-box {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
