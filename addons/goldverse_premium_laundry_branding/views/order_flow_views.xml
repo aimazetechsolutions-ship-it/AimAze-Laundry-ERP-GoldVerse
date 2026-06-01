@@ -10,10 +10,15 @@
                 <header>
                     <field name="payment_status" invisible="1"/>
                     <field name="goldverse_delivery_status" invisible="1"/>
+                    <field name="goldverse_can_send_full_warehouse" invisible="1"/>
+                    <field name="goldverse_can_send_lines_warehouse" invisible="1"/>
+                    <field name="goldverse_can_receive_lines_warehouse" invisible="1"/>
+                    <field name="goldverse_can_full_receive_warehouse" invisible="1"/>
                     <button name="action_create_order" type="object" string="Create Order" class="oe_highlight alm-btn-success" invisible="state != 'draft'"/>
-                    <button name="action_send_to_warehouse" type="object" string="Send to Warehouse" class="oe_highlight alm-btn-info" invisible="not (state == 'order_created' or (state == 'invoiced' and not warehouse_collected_datetime))" confirm="Are you sure you want to send this order to warehouse? This will mark all order lines as sent to warehouse and create/post the invoice if needed."/>
-                    <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="oe_highlight alm-btn-info" invisible="state != 'warehouse_pending'" confirm="Open line-wise receiving for this warehouse pending order?"/>
-                    <button name="action_mark_received_branch" type="object" string="Mark Full Order Received" class="oe_highlight alm-btn-success" invisible="state != 'warehouse_pending'" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
+                    <button name="action_send_to_warehouse" type="object" string="Send Full to Warehouse" class="oe_highlight alm-btn-info" invisible="not goldverse_can_send_full_warehouse" confirm="Are you sure you want to send the full order to warehouse? This will mark all order lines as sent to warehouse and create/post the invoice if needed."/>
+                    <button name="action_open_warehouse_sending_lines" type="object" string="Send Lines" class="oe_highlight alm-btn-info" invisible="not goldverse_can_send_lines_warehouse" confirm="Open line-wise sending for this order?"/>
+                    <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="oe_highlight alm-btn-info" invisible="not goldverse_can_receive_lines_warehouse" confirm="Open line-wise receiving for this warehouse pending order?"/>
+                    <button name="action_mark_received_branch" type="object" string="Mark Full Order Received" class="oe_highlight alm-btn-success" invisible="not goldverse_can_full_receive_warehouse" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
                     <button name="action_mark_delivered" type="object" string="Mark Delivered / Complete" class="oe_highlight alm-btn-success" invisible="not (state == 'pending_customer_delivery' or (state == 'paid' and goldverse_delivery_status == 'undelivered'))" confirm="Are you sure you want to mark this order as delivered? If payment is still pending, you will be asked to receive payment now or continue delivery without payment."/>
                     <button name="action_create_invoice" type="object" string="Create Invoice" class="alm-btn-accounting" invisible="state in ('draft','cancelled') or invoice_id"/>
                     <button name="action_view_invoice" type="object" string="View Invoice" class="alm-btn-accounting" invisible="not invoice_id"/>
@@ -89,8 +94,14 @@
                 <attribute name="class">goldverse-laundry-order-list</attribute>
             </xpath>
             <xpath expr="//field[@name='name']" position="after">
-                <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="btn-secondary" invisible="state != 'warehouse_pending'" confirm="Open line-wise receiving for this warehouse pending order?"/>
-                <button name="action_mark_received_branch" type="object" string="Mark Full Received" class="btn-primary" invisible="state != 'warehouse_pending'" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
+                <field name="goldverse_can_send_full_warehouse" column_invisible="1"/>
+                <field name="goldverse_can_send_lines_warehouse" column_invisible="1"/>
+                <field name="goldverse_can_receive_lines_warehouse" column_invisible="1"/>
+                <field name="goldverse_can_full_receive_warehouse" column_invisible="1"/>
+                <button name="action_send_to_warehouse" type="object" string="Send Full to Warehouse" class="btn-primary" invisible="not goldverse_can_send_full_warehouse" confirm="Are you sure you want to send the full order to warehouse? This will mark all order lines as sent to warehouse and create/post the invoice if needed."/>
+                <button name="action_open_warehouse_sending_lines" type="object" string="Send Lines" class="btn-secondary" invisible="not goldverse_can_send_lines_warehouse" confirm="Open line-wise sending for this order?"/>
+                <button name="action_open_warehouse_receiving_lines" type="object" string="Receive Lines" class="btn-secondary" invisible="not goldverse_can_receive_lines_warehouse" confirm="Open line-wise receiving for this warehouse pending order?"/>
+                <button name="action_mark_received_branch" type="object" string="Mark Full Received" class="btn-primary" invisible="not goldverse_can_full_receive_warehouse" confirm="Are you sure you want to mark the full order as received back at branch? This will mark all order lines as received from warehouse."/>
             </xpath>
             <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" column_invisible="1"/>

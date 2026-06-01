@@ -86,11 +86,47 @@ class LaundryOrder(models.Model):
         compute="_compute_goldverse_delivery_status",
         store=True,
     )
+    goldverse_has_sent_lines = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    goldverse_has_unsent_lines = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    goldverse_has_receivable_lines = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    goldverse_can_send_full_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    goldverse_can_send_lines_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    goldverse_can_receive_lines_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    goldverse_can_full_receive_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
 
     @api.depends("state", "goldverse_delivered_to_customer")
     def _compute_goldverse_delivery_status(self):
         for order in self:
             order.goldverse_delivery_status = "delivered" if order.goldverse_delivered_to_customer or order.state == "delivered" else "undelivered"
+
+    @api.depends(
+        "state",
+        "line_ids.warehouse_sent_datetime",
+        "line_ids.warehouse_received_datetime",
+    )
+    def _compute_goldverse_warehouse_line_flags(self):
+        for order in self:
+            lines = order.line_ids
+            has_lines = bool(lines)
+            has_sent = any(lines.mapped("warehouse_sent_datetime"))
+            has_unsent = any(not line.warehouse_sent_datetime for line in lines)
+            has_receivable = any(line.warehouse_sent_datetime and not line.warehouse_received_datetime for line in lines)
+            send_state = order.state in ("order_created", "invoiced", "warehouse_pending")
+            initial_send_state = order.state in ("order_created", "invoiced")
+
+            order.goldverse_has_sent_lines = has_sent
+            order.goldverse_has_unsent_lines = has_unsent
+            order.goldverse_has_receivable_lines = has_receivable
+            order.goldverse_can_send_full_warehouse = has_lines and has_unsent and not has_sent and initial_send_state
+            order.goldverse_can_send_lines_warehouse = has_lines and has_unsent and send_state
+            order.goldverse_can_receive_lines_warehouse = order.state == "warehouse_pending" and has_receivable
+            order.goldverse_can_full_receive_warehouse = (
+                order.state == "warehouse_pending"
+                and has_lines
+                and has_sent
+                and not has_unsent
+                and has_receivable
+            )
 
     @api.model
     def _goldverse_configure_order_sequence(self):
@@ -460,10 +496,19 @@ class LaundryOrder(models.Model):
                 order.invoice_id.action_post()
         return True
 
-    def action_send_to_warehouse(self):
+    def _goldverse_validate_send_to_warehouse(self):
         missing_lines = self.filtered(lambda order: not order.line_ids)
         if missing_lines:
             raise UserError(_("Add order lines before sending an order to warehouse."))
+        invalid_orders = self.filtered(lambda order: order.state not in ("order_created", "invoiced", "warehouse_pending"))
+        if invalid_orders:
+            raise UserError(_("Only created or invoiced orders can be sent to warehouse."))
+        return True
+
+    def action_send_to_warehouse(self):
+        self._goldverse_validate_send_to_warehouse()
+        if self.filtered(lambda order: any(order.line_ids.mapped("warehouse_sent_datetime"))):
+            raise UserError(_("Some lines are already sent to warehouse. Use Send Lines for remaining unsent lines."))
         now = fields.Datetime.now()
         self.write({
             "warehouse_collected_datetime": now,
@@ -483,25 +528,47 @@ class LaundryOrder(models.Model):
                 raise UserError(_("Only warehouse pending orders can be marked as received at branch."))
             if not order.line_ids:
                 raise UserError(_("No order lines are available to receive."))
+            if order.line_ids.filtered(lambda line: not line.warehouse_sent_datetime):
+                raise UserError(_("Full receive is available only after all order lines are sent to warehouse. Use Receive Lines for partially sent lines."))
             unreceived_lines = order.line_ids.filtered(lambda line: not line.warehouse_received_datetime)
             unreceived_lines.write({"warehouse_received_datetime": now})
-            unsent_lines = order.line_ids.filtered(lambda line: not line.warehouse_sent_datetime)
-            unsent_lines.write({"warehouse_sent_datetime": order.warehouse_collected_datetime or now})
             order.write({"warehouse_received_datetime": now})
             order._set_state("pending_customer_delivery")
         return True
+
+    def action_open_warehouse_sending_lines(self):
+        self.ensure_one()
+        if self.state not in ("order_created", "invoiced", "warehouse_pending"):
+            raise UserError(_("Line-wise sending is available only after the order is created."))
+        if not self.line_ids.filtered(lambda line: not line.warehouse_sent_datetime):
+            raise UserError(_("All order lines are already sent to warehouse."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Send Order Lines"),
+            "res_model": "aimaze.laundry.order.line",
+            "view_mode": "list,form",
+            "views": [(self.env.ref("goldverse_premium_laundry_branding.view_laundry_order_line_warehouse_sending_list").id, "list"), (False, "form")],
+            "domain": [("order_id", "=", self.id), ("warehouse_sent_datetime", "=", False)],
+            "context": {
+                "default_order_id": self.id,
+                "create": False,
+            },
+            "target": "current",
+        }
 
     def action_open_warehouse_receiving_lines(self):
         self.ensure_one()
         if self.state != "warehouse_pending":
             raise UserError(_("Line-wise receiving is available only for warehouse pending orders."))
+        if not self.line_ids.filtered(lambda line: line.warehouse_sent_datetime and not line.warehouse_received_datetime):
+            raise UserError(_("There are no sent lines waiting to be received from warehouse."))
         return {
             "type": "ir.actions.act_window",
             "name": _("Receive Order Lines"),
             "res_model": "aimaze.laundry.order.line",
             "view_mode": "list,form",
             "views": [(self.env.ref("goldverse_premium_laundry_branding.view_laundry_order_line_warehouse_receiving_list").id, "list"), (False, "form")],
-            "domain": [("order_id", "=", self.id)],
+            "domain": [("order_id", "=", self.id), ("warehouse_sent_datetime", "!=", False)],
             "context": {
                 "default_order_id": self.id,
                 "create": False,

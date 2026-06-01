@@ -1,6 +1,6 @@
 import re
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -116,21 +116,51 @@ class LaundryOrderLine(models.Model):
     )
     warehouse_sent_datetime = fields.Datetime(string="Sent to Warehouse On", readonly=True, copy=False)
     warehouse_received_datetime = fields.Datetime(string="Received Back On", readonly=True, copy=False)
+    warehouse_sent = fields.Boolean(string="Sent to Warehouse", compute="_compute_warehouse_sent", store=True)
     warehouse_received = fields.Boolean(string="Received Back", compute="_compute_warehouse_received", store=True)
+
+    @api.depends("warehouse_sent_datetime")
+    def _compute_warehouse_sent(self):
+        for line in self:
+            line.warehouse_sent = bool(line.warehouse_sent_datetime)
 
     @api.depends("warehouse_received_datetime")
     def _compute_warehouse_received(self):
         for line in self:
             line.warehouse_received = bool(line.warehouse_received_datetime)
 
+    def action_mark_warehouse_sent(self):
+        now = fields.Datetime.now()
+        for order in self.mapped("order_id"):
+            order._goldverse_validate_send_to_warehouse()
+            target_lines = self.filtered(lambda line: line.order_id == order and not line.warehouse_sent_datetime)
+            if not target_lines:
+                continue
+            order._goldverse_create_and_post_invoice()
+            if not order.warehouse_collected_datetime:
+                order.write({
+                    "warehouse_collected_datetime": now,
+                    "warehouse_received_datetime": False,
+                })
+            target_lines.write({
+                "warehouse_sent_datetime": now,
+                "warehouse_received_datetime": False,
+            })
+            order._set_state("warehouse_pending")
+        return True
+
     def action_mark_warehouse_received(self):
         now = fields.Datetime.now()
         for line in self:
             if not line.warehouse_sent_datetime:
-                line.warehouse_sent_datetime = line.order_id.warehouse_collected_datetime or now
+                raise UserError(_("Send this line to warehouse before receiving it back at branch."))
             line.warehouse_received_datetime = now
         for order in self.mapped("order_id").filtered(lambda item: item.state == "warehouse_pending"):
-            if order.line_ids and all(order.line_ids.mapped("warehouse_received_datetime")):
+            if (
+                order.line_ids
+                and all(order.line_ids.mapped("warehouse_sent_datetime"))
+                and all(order.line_ids.mapped("warehouse_received_datetime"))
+            ):
                 order.write({"warehouse_received_datetime": now})
                 order._set_state("pending_customer_delivery")
         return True
