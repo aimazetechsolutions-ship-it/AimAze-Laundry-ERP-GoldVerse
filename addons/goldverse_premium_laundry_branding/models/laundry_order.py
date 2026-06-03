@@ -519,17 +519,18 @@ class LaundryOrder(models.Model):
         self._goldverse_validate_send_to_warehouse()
         if self.filtered(lambda order: any(order.line_ids.mapped("warehouse_sent_datetime"))):
             raise UserError(_("Some lines are already sent to warehouse. Use Send Lines for remaining unsent lines."))
+        orders = self.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)
         now = fields.Datetime.now()
-        self.write({
+        orders.write({
             "warehouse_collected_datetime": now,
             "warehouse_received_datetime": False,
         })
-        self.mapped("line_ids").write({
+        orders.mapped("line_ids").with_context(goldverse_allow_locked_order_write=True).write({
             "warehouse_sent_datetime": now,
             "warehouse_received_datetime": False,
         })
-        self._goldverse_create_and_post_invoice()
-        self._set_state("warehouse_pending")
+        orders._goldverse_create_and_post_invoice()
+        orders._set_state("warehouse_pending")
 
     def action_mark_received_branch(self):
         now = fields.Datetime.now()
@@ -541,9 +542,10 @@ class LaundryOrder(models.Model):
             if order.line_ids.filtered(lambda line: not line.warehouse_sent_datetime):
                 raise UserError(_("Full receive is available only after all order lines are sent to warehouse. Use Receive Lines for partially sent lines."))
             unreceived_lines = order.line_ids.filtered(lambda line: not line.warehouse_received_datetime)
-            unreceived_lines.write({"warehouse_received_datetime": now})
-            order.write({"warehouse_received_datetime": now})
-            order._set_state("pending_customer_delivery")
+            unreceived_lines.with_context(goldverse_allow_locked_order_write=True).write({"warehouse_received_datetime": now})
+            safe_order = order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)
+            safe_order.write({"warehouse_received_datetime": now})
+            safe_order._set_state("pending_customer_delivery")
         return True
 
     def action_open_warehouse_sending_lines(self):

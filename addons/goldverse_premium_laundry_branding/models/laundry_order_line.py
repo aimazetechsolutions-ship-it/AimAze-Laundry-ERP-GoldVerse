@@ -138,15 +138,15 @@ class LaundryOrderLine(models.Model):
                 continue
             order._goldverse_create_and_post_invoice()
             if not order.warehouse_collected_datetime:
-                order.write({
+                order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True).write({
                     "warehouse_collected_datetime": now,
                     "warehouse_received_datetime": False,
                 })
-            target_lines.write({
+            target_lines.with_context(goldverse_allow_locked_order_write=True).write({
                 "warehouse_sent_datetime": now,
                 "warehouse_received_datetime": False,
             })
-            order._set_state("warehouse_pending")
+            order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)._set_state("warehouse_pending")
         return True
 
     def action_mark_warehouse_received(self):
@@ -154,15 +154,16 @@ class LaundryOrderLine(models.Model):
         for line in self:
             if not line.warehouse_sent_datetime:
                 raise UserError(_("Send this line to warehouse before receiving it back at branch."))
-            line.warehouse_received_datetime = now
+            line.with_context(goldverse_allow_locked_order_write=True).write({"warehouse_received_datetime": now})
         for order in self.mapped("order_id").filtered(lambda item: item.state == "warehouse_pending"):
             if (
                 order.line_ids
                 and all(order.line_ids.mapped("warehouse_sent_datetime"))
                 and all(order.line_ids.mapped("warehouse_received_datetime"))
             ):
-                order.write({"warehouse_received_datetime": now})
-                order._set_state("pending_customer_delivery")
+                safe_order = order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)
+                safe_order.write({"warehouse_received_datetime": now})
+                safe_order._set_state("pending_customer_delivery")
         return True
 
     def _goldverse_service_detail(self):

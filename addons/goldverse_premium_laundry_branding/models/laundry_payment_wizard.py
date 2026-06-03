@@ -50,8 +50,14 @@ class LaundryPaymentWizard(models.TransientModel):
     def action_register_payment(self):
         deliver_after_payment = any(self.mapped("goldverse_deliver_after_payment"))
         orders = self.mapped("order_id")
+        previous_states = {order.id: order.state for order in orders}
         self._goldverse_ensure_inbound_method_line()
         result = super(LaundryPaymentWizard, self.sudo()).action_register_payment()
+        if not deliver_after_payment:
+            for order in orders:
+                previous_state = previous_states.get(order.id)
+                if previous_state and previous_state not in ("draft", "cancelled", "delivered", "paid"):
+                    order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True).write({"state": previous_state})
         if deliver_after_payment:
             for order in orders:
                 order.invalidate_recordset(["balance_amount", "payment_status", "state"])
