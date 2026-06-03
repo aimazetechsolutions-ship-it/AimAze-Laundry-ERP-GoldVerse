@@ -28,6 +28,11 @@
 }
 
 .goldverse-laundry-order-list {
+  --goldverse-send-blue: #1d6fdc;
+  --goldverse-send-blue-hover: #155bb8;
+  --goldverse-receive-green: #138a5b;
+  --goldverse-receive-green-hover: #0f704a;
+
   .o_list_table th[data-name] {
     cursor: grab;
   }
@@ -47,6 +52,92 @@
     width: 1%;
     min-width: 110px;
     white-space: nowrap;
+  }
+
+  .goldverse-warehouse-send-btn,
+  .goldverse-warehouse-send-line-btn,
+  button[name="action_send_to_warehouse"].goldverse-warehouse-send-btn,
+  button[name="action_open_warehouse_sending_lines"].goldverse-warehouse-send-line-btn {
+    border-color: var(--goldverse-send-blue) !important;
+    background: var(--goldverse-send-blue) !important;
+    color: #fff !important;
+    font-weight: 700;
+  }
+
+  .goldverse-warehouse-send-line-btn,
+  button[name="action_open_warehouse_sending_lines"].goldverse-warehouse-send-line-btn {
+    background: #e8f1ff !important;
+    color: #0f3f7b !important;
+  }
+
+  .goldverse-warehouse-send-btn:hover,
+  .goldverse-warehouse-send-line-btn:hover {
+    border-color: var(--goldverse-send-blue-hover) !important;
+    background: var(--goldverse-send-blue-hover) !important;
+    color: #fff !important;
+  }
+
+  .goldverse-warehouse-receive-btn,
+  .goldverse-warehouse-receive-line-btn,
+  button[name="action_mark_received_branch"].goldverse-warehouse-receive-btn,
+  button[name="action_open_warehouse_receiving_lines"].goldverse-warehouse-receive-line-btn {
+    border-color: var(--goldverse-receive-green) !important;
+    background: var(--goldverse-receive-green) !important;
+    color: #fff !important;
+    font-weight: 700;
+  }
+
+  .goldverse-warehouse-receive-line-btn,
+  button[name="action_open_warehouse_receiving_lines"].goldverse-warehouse-receive-line-btn {
+    background: #e8f6ef !important;
+    color: #0f5c3e !important;
+  }
+
+  .goldverse-warehouse-receive-btn:hover,
+  .goldverse-warehouse-receive-line-btn:hover {
+    border-color: var(--goldverse-receive-green-hover) !important;
+    background: var(--goldverse-receive-green-hover) !important;
+    color: #fff !important;
+  }
+}
+
+.o_form_view {
+  .goldverse-warehouse-send-btn,
+  .goldverse-warehouse-send-line-btn {
+    border-color: #1d6fdc !important;
+    background: #1d6fdc !important;
+    color: #fff !important;
+    font-weight: 700;
+  }
+
+  .goldverse-warehouse-send-line-btn {
+    background: #2b80ed !important;
+  }
+
+  .goldverse-warehouse-send-btn:hover,
+  .goldverse-warehouse-send-line-btn:hover {
+    border-color: #155bb8 !important;
+    background: #155bb8 !important;
+    color: #fff !important;
+  }
+
+  .goldverse-warehouse-receive-btn,
+  .goldverse-warehouse-receive-line-btn {
+    border-color: #138a5b !important;
+    background: #138a5b !important;
+    color: #fff !important;
+    font-weight: 700;
+  }
+
+  .goldverse-warehouse-receive-line-btn {
+    background: #1da06c !important;
+  }
+
+  .goldverse-warehouse-receive-btn:hover,
+  .goldverse-warehouse-receive-line-btn:hover {
+    border-color: #0f704a !important;
+    background: #0f704a !important;
+    color: #fff !important;
   }
 }
 
