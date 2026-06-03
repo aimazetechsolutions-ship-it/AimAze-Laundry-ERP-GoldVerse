@@ -420,6 +420,12 @@ class LaundryOrder(models.Model):
                 raise UserError(_("Receipt is available only after Create Order assigns an Order No."))
         return True
 
+    def _goldverse_validate_created_for_financial_action(self):
+        for order in self:
+            if order.state == "draft" or not order.name or order.name == "New":
+                raise UserError(_("Click Create Order first. Payments, wallet use, and invoices are available only after an Order No. is assigned."))
+        return True
+
     def action_view_receipt(self):
         self.ensure_one()
         self._goldverse_validate_receipt_available()
@@ -442,18 +448,22 @@ class LaundryOrder(models.Model):
         return True
 
     def action_register_advance_payment(self):
+        self._goldverse_validate_created_for_financial_action()
         self._goldverse_check_payment_action_allowed()
         return super().action_register_advance_payment()
 
     def action_register_final_payment(self):
+        self._goldverse_validate_created_for_financial_action()
         self._goldverse_check_payment_action_allowed()
         return super().action_register_final_payment()
 
     def action_use_wallet(self):
+        self._goldverse_validate_created_for_financial_action()
         self._goldverse_check_payment_action_allowed()
         return super().action_use_wallet()
 
     def action_create_invoice(self):
+        self._goldverse_validate_created_for_financial_action()
         workflow_states = {
             order.id: order.state
             for order in self
