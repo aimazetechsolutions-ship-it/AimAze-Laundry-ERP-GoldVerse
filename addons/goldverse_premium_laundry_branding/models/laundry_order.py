@@ -702,7 +702,7 @@ class LaundryOrder(models.Model):
             and order.state in ("draft", "order_created", "warehouse_pending", "received_branch", "pending_customer_delivery")
         )
         for order in orders:
-            order.with_context(goldverse_skip_required_validation=True).write({
+            order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True).write({
                 "expected_delivery_datetime": order._goldverse_force_six_pm(order.expected_delivery_datetime),
             })
         return True
