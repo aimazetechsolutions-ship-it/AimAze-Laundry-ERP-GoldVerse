@@ -469,10 +469,11 @@ class LaundryOrder(models.Model):
             for order in self
             if order.state in ("order_created", "warehouse_pending", "pending_customer_delivery")
         }
-        action = super().action_create_invoice()
-        for order in self.filtered(lambda item: item.id in workflow_states and item.invoice_id):
+        orders = self.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)
+        action = super(LaundryOrder, orders).action_create_invoice()
+        for order in orders.filtered(lambda item: item.id in workflow_states and item.invoice_id):
             if order.state == "invoiced":
-                order.with_context(goldverse_skip_required_validation=True).write({
+                order.write({
                     "state": workflow_states[order.id],
                     "invoice_status": "invoiced",
                 })
