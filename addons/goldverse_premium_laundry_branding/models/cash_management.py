@@ -1,5 +1,14 @@
+import base64
+from datetime import date
+from io import BytesIO
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+
+try:
+    import xlsxwriter
+except ImportError:  # pragma: no cover - Odoo server has xlsxwriter through accounting reports.
+    xlsxwriter = None
 
 
 class LaundryAccountConfig(models.Model):
@@ -27,8 +36,15 @@ class LaundryAccountConfig(models.Model):
         expense_types = ("expense", "expense_depreciation", "expense_direct_cost")
         for company in self.env["res.company"].sudo().search([]):
             config = self.sudo().get_config(company) or self.sudo().create({"company_id": company.id})
-            main_cash = Account.search([("code", "=", "1126002")], limit=1) or Account.search([("name", "ilike", "Cash Sales")], limit=1)
-            petty_cash = Account.search([("code", "=", "1126003")], limit=1) or Account.search([("name", "ilike", "Petty Cash")], limit=1)
+            company_account_domain = [("company_ids", "in", company.id)]
+            main_cash = (
+                Account.search(company_account_domain + [("code", "=", "216001")], limit=1)
+                or Account.search(company_account_domain + [("name", "ilike", "Cash Sales")], limit=1)
+            )
+            petty_cash = (
+                Account.search(company_account_domain + [("code", "=", "216002")], limit=1)
+                or Account.search(company_account_domain + [("name", "ilike", "Petty Cash")], limit=1)
+            )
             petty_journal = Journal.search([("company_id", "=", company.id), ("name", "ilike", "Petty Cash")], limit=1)
             cash_journal = (
                 petty_journal
@@ -46,7 +62,7 @@ class LaundryAccountConfig(models.Model):
             if updates:
                 config.write(updates)
 
-            expense_accounts = Account.search([("account_type", "in", expense_types)], order="code, name")
+            expense_accounts = Account.search(company_account_domain + [("account_type", "in", expense_types)], order="code, name")
             sequence = 10
             for account in expense_accounts:
                 if not ExpenseHead.search([("company_id", "=", company.id), ("account_id", "=", account.id)], limit=1):
@@ -262,3 +278,321 @@ class GoldVerseCashTransaction(models.Model):
             "view_mode": "form",
             "target": "current",
         }
+
+
+class GoldVerseCashReportWizard(models.TransientModel):
+    _name = "goldverse.cash.report.wizard"
+    _description = "GoldVerse Cash Summary Report"
+
+    date_filter = fields.Selection(
+        [
+            ("today", "Today"),
+            ("mtd", "MTD"),
+            ("ytd", "YTD"),
+            ("custom", "Custom"),
+        ],
+        default="today",
+        required=True,
+    )
+    date_from = fields.Date(required=True)
+    date_to = fields.Date(required=True)
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
+    branch_id = fields.Many2one("aimaze.laundry.branch", domain="[('company_id', '=', company_id)]")
+    currency_id = fields.Many2one("res.currency", related="company_id.currency_id", readonly=True)
+    opening_cash = fields.Monetary(currency_field="currency_id", readonly=True)
+    cash_received = fields.Monetary(currency_field="currency_id", readonly=True)
+    cash_paid = fields.Monetary(currency_field="currency_id", readonly=True)
+    closing_cash = fields.Monetary(currency_field="currency_id", readonly=True)
+    line_ids = fields.One2many("goldverse.cash.report.line", "wizard_id", readonly=True)
+
+    @api.model
+    def default_get(self, fields_list):
+        values = super().default_get(fields_list)
+        today = fields.Date.context_today(self)
+        values.setdefault("date_filter", "today")
+        values.setdefault("date_from", today)
+        values.setdefault("date_to", today)
+        return values
+
+    @api.model
+    def action_open_report(self):
+        wizard = self.create({})
+        wizard._apply_date_filter()
+        wizard._refresh_report()
+        return wizard._action_reload()
+
+    def _action_reload(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Cash Summary Report"),
+            "res_model": self._name,
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def _apply_date_filter(self):
+        self.ensure_one()
+        today = fields.Date.context_today(self)
+        if self.date_filter == "today":
+            self.date_from = today
+            self.date_to = today
+        elif self.date_filter == "mtd":
+            self.date_from = date(today.year, today.month, 1)
+            self.date_to = today
+        elif self.date_filter == "ytd":
+            self.date_from = date(today.year, 1, 1)
+            self.date_to = today
+
+    def _transaction_domain(self, before_range=False):
+        self.ensure_one()
+        domain = [
+            ("company_id", "=", self.company_id.id),
+            ("state", "=", "posted"),
+        ]
+        if self.branch_id:
+            domain.append(("branch_id", "=", self.branch_id.id))
+        if before_range:
+            domain.append(("date", "<", self.date_from))
+        else:
+            domain.extend([("date", ">=", self.date_from), ("date", "<=", self.date_to)])
+        return domain
+
+    def _refresh_report(self):
+        Transaction = self.env["goldverse.cash.transaction"].sudo()
+        Line = self.env["goldverse.cash.report.line"].sudo()
+        for wizard in self:
+            if wizard.date_from > wizard.date_to:
+                raise ValidationError(_("Date From cannot be later than Date To."))
+            wizard.line_ids.unlink()
+            opening_transactions = Transaction.search(wizard._transaction_domain(before_range=True))
+            period_transactions = Transaction.search(wizard._transaction_domain(), order="date, id")
+            opening = sum(opening_transactions.filtered(lambda rec: rec.transaction_type == "transfer").mapped("amount"))
+            opening -= sum(opening_transactions.filtered(lambda rec: rec.transaction_type == "expense").mapped("amount"))
+            received = sum(period_transactions.filtered(lambda rec: rec.transaction_type == "transfer").mapped("amount"))
+            paid = sum(period_transactions.filtered(lambda rec: rec.transaction_type == "expense").mapped("amount"))
+            balance = opening
+            line_commands = []
+            for transaction in period_transactions:
+                received_amount = transaction.amount if transaction.transaction_type == "transfer" else 0.0
+                paid_amount = transaction.amount if transaction.transaction_type == "expense" else 0.0
+                balance += received_amount - paid_amount
+                line_commands.append(
+                    (
+                        0,
+                        0,
+                        {
+                            "date": transaction.date,
+                            "transaction_id": transaction.id,
+                            "name": transaction.name,
+                            "transaction_type": transaction.transaction_type,
+                            "branch_id": transaction.branch_id.id,
+                            "user_id": transaction.user_id.id,
+                            "expense_head_id": transaction.expense_head_id.id,
+                            "description": transaction.description,
+                            "cash_received": received_amount,
+                            "cash_paid": paid_amount,
+                            "balance": balance,
+                            "currency_id": wizard.currency_id.id,
+                        },
+                    )
+                )
+            wizard.write(
+                {
+                    "opening_cash": opening,
+                    "cash_received": received,
+                    "cash_paid": paid,
+                    "closing_cash": opening + received - paid,
+                    "line_ids": line_commands,
+                }
+            )
+
+    def action_filter_today(self):
+        self.write({"date_filter": "today"})
+        self._apply_date_filter()
+        self._refresh_report()
+        return self._action_reload()
+
+    def action_filter_mtd(self):
+        self.write({"date_filter": "mtd"})
+        self._apply_date_filter()
+        self._refresh_report()
+        return self._action_reload()
+
+    def action_filter_ytd(self):
+        self.write({"date_filter": "ytd"})
+        self._apply_date_filter()
+        self._refresh_report()
+        return self._action_reload()
+
+    def action_apply_custom(self):
+        self.write({"date_filter": "custom"})
+        self._refresh_report()
+        return self._action_reload()
+
+    def _format_amount(self, amount):
+        self.ensure_one()
+        currency = self.currency_id or self.company_id.currency_id
+        return "%s %s" % ("{:,.2f}".format(amount or 0.0), currency.name or "")
+
+    def _period_label(self):
+        self.ensure_one()
+        return "%s to %s" % (
+            fields.Date.to_string(self.date_from),
+            fields.Date.to_string(self.date_to),
+        )
+
+    def _report_payload(self):
+        self.ensure_one()
+        self._refresh_report()
+        return {
+            "company": self.company_id.display_name,
+            "branch": self.branch_id.display_name if self.branch_id else _("All Branches"),
+            "date_filter": dict(self._fields["date_filter"].selection).get(self.date_filter),
+            "date_from": fields.Date.to_string(self.date_from),
+            "date_to": fields.Date.to_string(self.date_to),
+            "period_label": self._period_label(),
+            "currency": (self.currency_id or self.company_id.currency_id).name,
+            "opening_cash": self.opening_cash,
+            "cash_received": self.cash_received,
+            "cash_paid": self.cash_paid,
+            "closing_cash": self.closing_cash,
+            "opening_cash_text": self._format_amount(self.opening_cash),
+            "cash_received_text": self._format_amount(self.cash_received),
+            "cash_paid_text": self._format_amount(self.cash_paid),
+            "closing_cash_text": self._format_amount(self.closing_cash),
+            "lines": [
+                {
+                    "date": fields.Date.to_string(line.date),
+                    "reference": line.name or "",
+                    "type": dict(line._fields["transaction_type"].selection).get(line.transaction_type) or "",
+                    "branch": line.branch_id.display_name or "",
+                    "user": line.user_id.display_name or "",
+                    "expense_head": line.expense_head_id.display_name or "",
+                    "description": line.description or "",
+                    "cash_received": line.cash_received,
+                    "cash_paid": line.cash_paid,
+                    "balance": line.balance,
+                    "cash_received_text": self._format_amount(line.cash_received),
+                    "cash_paid_text": self._format_amount(line.cash_paid),
+                    "balance_text": self._format_amount(line.balance),
+                }
+                for line in self.line_ids
+            ],
+        }
+
+    def action_print_pdf(self):
+        self.ensure_one()
+        return self.env.ref("goldverse_premium_laundry_branding.action_report_goldverse_cash_summary_pdf").report_action(self)
+
+    def action_export_xlsx(self):
+        self.ensure_one()
+        if not xlsxwriter:
+            raise UserError(_("XLSX export library is not available on this Odoo server."))
+        payload = self._report_payload()
+        output = BytesIO()
+        workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+        sheet = workbook.add_worksheet("Cash Summary")
+        sheet.hide_gridlines(2)
+
+        title_fmt = workbook.add_format({"bold": True, "font_size": 16, "font_color": "white", "bg_color": "#714B67", "align": "center", "valign": "vcenter"})
+        subtitle_fmt = workbook.add_format({"bold": True, "font_size": 10, "font_color": "#10243A", "align": "center"})
+        label_fmt = workbook.add_format({"bold": True, "font_color": "#10243A", "bg_color": "#EAF2F6", "border": 1, "border_color": "#D9E2EC"})
+        value_fmt = workbook.add_format({"font_color": "#10243A", "border": 1, "border_color": "#D9E2EC"})
+        money_fmt = workbook.add_format({"num_format": '#,##0.00 "PKR"', "align": "right", "border": 1, "border_color": "#D9E2EC"})
+        money_total_fmt = workbook.add_format({"num_format": '#,##0.00 "PKR"', "bold": True, "align": "right", "bg_color": "#EAF2F6", "border": 1, "border_color": "#D9E2EC"})
+        header_fmt = workbook.add_format({"bold": True, "font_color": "white", "bg_color": "#10243A", "align": "center", "valign": "vcenter", "border": 1, "border_color": "#10243A", "text_wrap": True})
+        text_fmt = workbook.add_format({"border": 1, "border_color": "#D9E2EC", "valign": "top", "text_wrap": True})
+        date_fmt = workbook.add_format({"num_format": "yyyy-mm-dd", "border": 1, "border_color": "#D9E2EC", "align": "center"})
+        total_label_fmt = workbook.add_format({"bold": True, "font_color": "#10243A", "bg_color": "#D9E2EC", "border": 1, "border_color": "#C9D3DD"})
+
+        sheet.set_column("A:A", 12)
+        sheet.set_column("B:B", 16)
+        sheet.set_column("C:C", 15)
+        sheet.set_column("D:D", 16)
+        sheet.set_column("E:E", 18)
+        sheet.set_column("F:F", 24)
+        sheet.set_column("G:I", 15)
+        sheet.merge_range("A1:I1", "GoldVerse Cash Summary Report", title_fmt)
+        sheet.merge_range("A2:I2", "%s | %s | %s" % (payload["company"], payload["branch"], payload["period_label"]), subtitle_fmt)
+
+        summary_rows = [
+            ("Opening Cash", payload["opening_cash"]),
+            ("Cash Received", payload["cash_received"]),
+            ("Cash Paid", payload["cash_paid"]),
+            ("Closing Cash in Hand", payload["closing_cash"]),
+        ]
+        row = 3
+        for label, amount in summary_rows:
+            sheet.write(row, 0, label, label_fmt)
+            sheet.write_number(row, 1, amount or 0.0, money_total_fmt if label == "Closing Cash in Hand" else money_fmt)
+            row += 1
+
+        row += 1
+        headers = ["Date", "Reference", "Type", "Branch", "User", "Description", "Cash Received", "Cash Paid", "Closing Cash"]
+        for col, header in enumerate(headers):
+            sheet.write(row, col, header, header_fmt)
+        row += 1
+        for line in payload["lines"]:
+            sheet.write(row, 0, line["date"], date_fmt)
+            sheet.write(row, 1, line["reference"], text_fmt)
+            sheet.write(row, 2, line["type"], text_fmt)
+            sheet.write(row, 3, line["branch"], text_fmt)
+            sheet.write(row, 4, line["user"], text_fmt)
+            sheet.write(row, 5, line["description"], text_fmt)
+            sheet.write_number(row, 6, line["cash_received"] or 0.0, money_fmt)
+            sheet.write_number(row, 7, line["cash_paid"] or 0.0, money_fmt)
+            sheet.write_number(row, 8, line["balance"] or 0.0, money_fmt)
+            row += 1
+
+        sheet.merge_range(row, 0, row, 5, "Report Total", total_label_fmt)
+        sheet.write_number(row, 6, payload["cash_received"] or 0.0, money_total_fmt)
+        sheet.write_number(row, 7, payload["cash_paid"] or 0.0, money_total_fmt)
+        sheet.write_number(row, 8, payload["closing_cash"] or 0.0, money_total_fmt)
+        sheet.freeze_panes(9, 0)
+        workbook.close()
+        output.seek(0)
+
+        filename = "GoldVerse Cash Summary %s to %s.xlsx" % (payload["date_from"], payload["date_to"])
+        attachment = self.env["ir.attachment"].sudo().create(
+            {
+                "name": filename,
+                "type": "binary",
+                "datas": base64.b64encode(output.read()),
+                "res_model": self._name,
+                "res_id": self.id,
+                "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            }
+        )
+        return {
+            "type": "ir.actions.act_url",
+            "url": "/web/content/%s?download=true" % attachment.id,
+            "target": "self",
+        }
+
+
+class GoldVerseCashReportLine(models.TransientModel):
+    _name = "goldverse.cash.report.line"
+    _description = "GoldVerse Cash Summary Report Line"
+    _order = "date, id"
+
+    wizard_id = fields.Many2one("goldverse.cash.report.wizard", required=True, ondelete="cascade")
+    date = fields.Date(readonly=True)
+    transaction_id = fields.Many2one("goldverse.cash.transaction", readonly=True)
+    name = fields.Char(readonly=True)
+    transaction_type = fields.Selection(
+        [
+            ("transfer", "Cash Received"),
+            ("expense", "Cash Paid"),
+        ],
+        readonly=True,
+    )
+    branch_id = fields.Many2one("aimaze.laundry.branch", readonly=True)
+    user_id = fields.Many2one("res.users", readonly=True)
+    expense_head_id = fields.Many2one("goldverse.cash.expense.head", readonly=True)
+    description = fields.Char(readonly=True)
+    cash_received = fields.Monetary(currency_field="currency_id", readonly=True)
+    cash_paid = fields.Monetary(currency_field="currency_id", readonly=True)
+    balance = fields.Monetary(string="Closing Cash in Hand", currency_field="currency_id", readonly=True)
+    currency_id = fields.Many2one("res.currency", readonly=True)

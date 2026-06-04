@@ -141,6 +141,284 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <record id="view_goldverse_cash_report_wizard_form" model="ir.ui.view">
+        <field name="name">goldverse.cash.report.wizard.form</field>
+        <field name="model">goldverse.cash.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cash Summary Report" create="0" edit="1" delete="0">
+                <header>
+                    <button name="action_print_pdf" type="object" string="PDF" class="btn-primary"/>
+                    <button name="action_export_xlsx" type="object" string="XLSX" class="btn-secondary"/>
+                    <button name="action_filter_today" type="object" string="Today" class="btn-secondary"/>
+                    <button name="action_filter_mtd" type="object" string="MTD" class="btn-secondary"/>
+                    <button name="action_filter_ytd" type="object" string="YTD" class="btn-secondary"/>
+                    <button name="action_apply_custom" type="object" string="Apply Custom Dates" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Cash Summary Report</h1>
+                    </div>
+                    <group>
+                        <group string="Filters">
+                            <field name="date_filter"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="branch_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                        </group>
+                        <group string="Cash Position">
+                            <field name="opening_cash"/>
+                            <field name="cash_received"/>
+                            <field name="cash_paid"/>
+                            <field name="closing_cash"/>
+                        </group>
+                    </group>
+                    <group string="Movement Details">
+                        <field name="line_ids" nolabel="1">
+                            <list string="Cash Movement Details" create="0" edit="0" delete="0">
+                                <field name="date" optional="show"/>
+                                <field name="name" optional="show"/>
+                                <field name="transaction_id" optional="show"/>
+                                <field name="transaction_type" optional="show"/>
+                                <field name="branch_id" optional="show"/>
+                                <field name="user_id" optional="show"/>
+                                <field name="expense_head_id" optional="show"/>
+                                <field name="description" optional="show"/>
+                                <field name="cash_received" optional="show" sum="Cash Received"/>
+                                <field name="cash_paid" optional="show" sum="Cash Paid"/>
+                                <field name="balance" optional="show"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_goldverse_cash_report_open" model="ir.actions.server">
+        <field name="name">Cash Summary Report</field>
+        <field name="model_id" ref="model_goldverse_cash_report_wizard"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_report()</field>
+    </record>
+
+    <record id="paperformat_goldverse_cash_summary_report" model="report.paperformat">
+        <field name="name">GoldVerse Cash Summary Report</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_goldverse_cash_summary_pdf" model="ir.actions.report">
+        <field name="name">GoldVerse Cash Summary Report</field>
+        <field name="model">goldverse.cash.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">goldverse_premium_laundry_branding.report_goldverse_cash_summary_pdf</field>
+        <field name="report_file">goldverse_premium_laundry_branding.report_goldverse_cash_summary_pdf</field>
+        <field name="paperformat_id" ref="goldverse_premium_laundry_branding.paperformat_goldverse_cash_summary_report"/>
+        <field name="attachment_use" eval="False"/>
+    </record>
+
+    <template id="report_goldverse_cash_summary_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="payload" t-value="o._report_payload()"/>
+                <div class="goldverse-cash-report-page">
+                    <style>
+                        .goldverse-cash-report-page {
+                            color: #10243a;
+                            font-family: Arial, Helvetica, sans-serif;
+                            font-size: 10px;
+                            line-height: 1.25;
+                        }
+                        .gv-cash-header {
+                            border: 1px solid #d9e2ec;
+                            margin-bottom: 10px;
+                        }
+                        .gv-cash-title {
+                            background: #714b67;
+                            color: #ffffff;
+                            font-size: 20px;
+                            font-weight: 700;
+                            padding: 10px 12px;
+                            text-align: center;
+                        }
+                        .gv-cash-meta {
+                            display: table;
+                            width: 100%;
+                            background: #fbfcfe;
+                            padding: 8px 10px;
+                            box-sizing: border-box;
+                        }
+                        .gv-cash-meta-left,
+                        .gv-cash-meta-right {
+                            display: table-cell;
+                            width: 50%;
+                            vertical-align: top;
+                        }
+                        .gv-cash-meta-right {
+                            text-align: right;
+                        }
+                        .gv-cash-company {
+                            font-size: 13px;
+                            font-weight: 700;
+                        }
+                        .gv-cash-muted {
+                            color: #5c6f84;
+                        }
+                        .gv-summary-grid {
+                            display: table;
+                            width: 100%;
+                            margin: 8px 0 12px 0;
+                            border-collapse: separate;
+                            border-spacing: 6px 0;
+                        }
+                        .gv-summary-card {
+                            display: table-cell;
+                            width: 25%;
+                            border: 1px solid #d9e2ec;
+                            border-left: 4px solid #22b8cf;
+                            padding: 8px;
+                            background: #fbfcfe;
+                        }
+                        .gv-summary-card strong {
+                            display: block;
+                            color: #5c6f84;
+                            font-size: 9px;
+                            text-transform: uppercase;
+                        }
+                        .gv-summary-card span {
+                            display: block;
+                            color: #10243a;
+                            font-size: 13px;
+                            font-weight: 700;
+                            margin-top: 4px;
+                            text-align: right;
+                        }
+                        table.gv-cash-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                        }
+                        .gv-cash-table th {
+                            background: #10243a;
+                            color: #ffffff;
+                            border: 1px solid #10243a;
+                            font-size: 9px;
+                            font-weight: 700;
+                            padding: 5px;
+                            text-align: center;
+                            vertical-align: middle;
+                        }
+                        .gv-cash-table td {
+                            border: 1px solid #d9e2ec;
+                            padding: 4px 5px;
+                            vertical-align: top;
+                            word-wrap: break-word;
+                        }
+                        .gv-cash-table tbody tr:nth-child(even) td {
+                            background: #fbfcfe;
+                        }
+                        .gv-cash-table .gv-number {
+                            text-align: right;
+                            white-space: nowrap;
+                        }
+                        .gv-cash-table .gv-total td {
+                            background: #eaf2f6;
+                            font-weight: 700;
+                        }
+                        .gv-cash-footer {
+                            margin-top: 8px;
+                            color: #5c6f84;
+                            font-size: 8px;
+                            text-align: right;
+                        }
+                    </style>
+
+                    <div class="gv-cash-header">
+                        <div class="gv-cash-title">GoldVerse Cash Summary Report</div>
+                        <div class="gv-cash-meta">
+                            <div class="gv-cash-meta-left">
+                                <div class="gv-cash-company"><t t-esc="payload.get('company')"/></div>
+                                <div>Branch: <span class="gv-cash-muted"><t t-esc="payload.get('branch')"/></span></div>
+                                <div>Period: <span class="gv-cash-muted"><t t-esc="payload.get('period_label')"/></span></div>
+                            </div>
+                            <div class="gv-cash-meta-right">
+                                <div>Filter: <strong><t t-esc="payload.get('date_filter')"/></strong></div>
+                                <div>Currency: <strong><t t-esc="payload.get('currency')"/></strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gv-summary-grid">
+                        <div class="gv-summary-card">
+                            <strong>Opening Cash</strong>
+                            <span><t t-esc="payload.get('opening_cash_text')"/></span>
+                        </div>
+                        <div class="gv-summary-card">
+                            <strong>Cash Received</strong>
+                            <span><t t-esc="payload.get('cash_received_text')"/></span>
+                        </div>
+                        <div class="gv-summary-card">
+                            <strong>Cash Paid</strong>
+                            <span><t t-esc="payload.get('cash_paid_text')"/></span>
+                        </div>
+                        <div class="gv-summary-card">
+                            <strong>Closing Cash in Hand</strong>
+                            <span><t t-esc="payload.get('closing_cash_text')"/></span>
+                        </div>
+                    </div>
+
+                    <table class="gv-cash-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%;">Date</th>
+                                <th style="width: 12%;">Reference</th>
+                                <th style="width: 11%;">Type</th>
+                                <th style="width: 12%;">Branch</th>
+                                <th style="width: 12%;">User</th>
+                                <th style="width: 23%;">Description</th>
+                                <th style="width: 9%;">Cash Received</th>
+                                <th style="width: 8%;">Cash Paid</th>
+                                <th style="width: 10%;">Closing Cash</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-if="not payload.get('lines')">
+                                <td colspan="9" style="text-align: center;">No cash movement found for the selected filters.</td>
+                            </tr>
+                            <tr t-foreach="payload.get('lines')" t-as="line">
+                                <td><t t-esc="line.get('date')"/></td>
+                                <td><t t-esc="line.get('reference')"/></td>
+                                <td><t t-esc="line.get('type')"/></td>
+                                <td><t t-esc="line.get('branch')"/></td>
+                                <td><t t-esc="line.get('user')"/></td>
+                                <td><t t-esc="line.get('description')"/></td>
+                                <td class="gv-number"><t t-esc="line.get('cash_received_text')"/></td>
+                                <td class="gv-number"><t t-esc="line.get('cash_paid_text')"/></td>
+                                <td class="gv-number"><t t-esc="line.get('balance_text')"/></td>
+                            </tr>
+                            <tr class="gv-total">
+                                <td colspan="6">Report Total</td>
+                                <td class="gv-number"><t t-esc="payload.get('cash_received_text')"/></td>
+                                <td class="gv-number"><t t-esc="payload.get('cash_paid_text')"/></td>
+                                <td class="gv-number"><t t-esc="payload.get('closing_cash_text')"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="gv-cash-footer">Generated by AimAze Laundry ERP</div>
+                </div>
+            </t>
+        </t>
+    </template>
+
     <record id="view_laundry_account_config_form_goldverse_cash" model="ir.ui.view">
         <field name="name">aimaze.laundry.account.config.form.goldverse.cash</field>
         <field name="model">aimaze.laundry.account.config</field>
@@ -173,5 +451,6 @@
 
     <menuitem id="menu_goldverse_cash_root" name="Cash Management" sequence="45" web_icon="aimaze_laundry_management,static/description/icon.png"/>
     <menuitem id="menu_goldverse_cash_desk" name="Cash Desk" parent="menu_goldverse_cash_root" action="action_goldverse_cash_transaction" sequence="10"/>
+    <menuitem id="menu_goldverse_cash_report" name="Cash Summary Report" parent="menu_goldverse_cash_root" action="action_goldverse_cash_report_open" sequence="15"/>
     <menuitem id="menu_goldverse_cash_expense_heads" name="Expense Heads" parent="menu_goldverse_cash_root" action="action_goldverse_cash_expense_head" sequence="20" groups="base.group_system,aimaze_laundry_management.group_laundry_admin"/>
 </odoo>
