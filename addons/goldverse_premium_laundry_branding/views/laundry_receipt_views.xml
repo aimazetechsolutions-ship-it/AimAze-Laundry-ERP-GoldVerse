@@ -27,11 +27,11 @@
                     .gv-top-info { margin-top: 6px; }
                     .gv-label { font-weight: 800; }
                     .gv-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 9px; }
-                    .gv-table th { border-bottom: 1px solid #000; text-align: left; padding: 2px 1px; }
+                    .gv-table th { border: 1px solid #000; text-align: left; padding: 2px 1px; }
                     .gv-table thead th { text-align: center !important; font-weight: 800; white-space: normal; line-height: 1.05; word-break: normal; overflow-wrap: anywhere; }
-                    .gv-table td { padding: 4px 1px; vertical-align: top; }
+                    .gv-table td { border: 1px solid #000; padding: 4px 1px; vertical-align: top; }
                     .gv-num { text-align: right; white-space: nowrap; }
-                    .gv-note { padding-left: 6px; font-size: 8px; }
+                    .gv-line-notes { margin-top: 5px; padding-left: 1px; font-size: 8px; line-height: 1.15; }
                     .gv-totals { width: 100%; border-collapse: collapse; border-top: 1px solid #000; margin-top: 5px; font-size: 9px; }
                     .gv-totals td { padding: 2px 1px; }
                     .gv-summary { margin-top: 9px; text-align: center; font-size: 9px; font-weight: 700; }
@@ -93,27 +93,25 @@
                                 <tr>
                                     <td>
                                         <span t-esc="line._goldverse_service_detail()"/>
+                                        <div class="gv-line-notes" t-if="line.goldverse_colour_ids or line.goldverse_colour_id or line.color or line.goldverse_qc_option_ids or line.goldverse_topup_ids or line.goldverse_priority != 'normal'">
+                                            <div t-if="line.goldverse_colour_ids or line.goldverse_colour_id or line.color">
+                                                + <span t-esc="', '.join(line.goldverse_colour_ids.mapped('name')) or line.goldverse_colour_id.name or line.color"/> - 0
+                                            </div>
+                                            <div t-foreach="line.goldverse_qc_option_ids" t-as="qc">
+                                                + <span t-esc="qc.name"/> - 0
+                                            </div>
+                                            <div t-foreach="line.goldverse_topup_ids" t-as="addon">
+                                                + <span t-esc="addon.name"/> - 0
+                                            </div>
+                                            <div t-if="line.goldverse_priority != 'normal'">
+                                                + <span t-esc="priority_labels.get(line.goldverse_priority, line.goldverse_priority)"/> Service - <span t-esc="'{:,.0f}'.format(line.goldverse_priority_charge or 0.0)"/>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.quantity or 0.0)"/></td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line_gross)"/></td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line_discount)"/></td>
                                     <td class="gv-num"><span t-esc="'{:,.0f}'.format(line.price_subtotal or 0.0)"/></td>
-                                </tr>
-                                <tr t-if="line.goldverse_colour_ids or line.goldverse_colour_id or line.color or line.goldverse_qc_option_ids or line.goldverse_topup_ids or line.goldverse_priority != 'normal'">
-                                    <td colspan="5" class="gv-note">
-                                        <div t-if="line.goldverse_colour_ids or line.goldverse_colour_id or line.color">
-                                            + <span t-esc="', '.join(line.goldverse_colour_ids.mapped('name')) or line.goldverse_colour_id.name or line.color"/> - 0
-                                        </div>
-                                        <div t-foreach="line.goldverse_qc_option_ids" t-as="qc">
-                                            + <span t-esc="qc.name"/> - 0
-                                        </div>
-                                        <div t-foreach="line.goldverse_topup_ids" t-as="addon">
-                                            + <span t-esc="addon.name"/> - 0
-                                        </div>
-                                        <div t-if="line.goldverse_priority != 'normal'">
-                                            + <span t-esc="priority_labels.get(line.goldverse_priority, line.goldverse_priority)"/> Service - <span t-esc="'{:,.0f}'.format(line.goldverse_priority_charge or 0.0)"/>
-                                        </div>
-                                    </td>
                                 </tr>
                             </t>
                         </tbody>
