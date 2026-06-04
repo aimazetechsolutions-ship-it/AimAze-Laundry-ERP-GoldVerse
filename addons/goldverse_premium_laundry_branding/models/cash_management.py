@@ -30,13 +30,19 @@ class LaundryAccountConfig(models.Model):
             main_cash = Account.search([("code", "=", "1126002")], limit=1) or Account.search([("name", "ilike", "Cash Sales")], limit=1)
             petty_cash = Account.search([("code", "=", "1126003")], limit=1) or Account.search([("name", "ilike", "Petty Cash")], limit=1)
             petty_journal = Journal.search([("company_id", "=", company.id), ("name", "ilike", "Petty Cash")], limit=1)
+            cash_journal = (
+                petty_journal
+                or config.cash_journal_id
+                or Journal.search([("company_id", "=", company.id), ("type", "=", "cash")], limit=1)
+                or Journal.search([("company_id", "=", company.id), ("type", "=", "general")], limit=1)
+            )
             updates = {}
             if main_cash and not config.main_cash_account_id:
                 updates["main_cash_account_id"] = main_cash.id
             if petty_cash and not config.petty_cash_account_id:
                 updates["petty_cash_account_id"] = petty_cash.id
-            if petty_journal and not config.cash_transfer_journal_id:
-                updates["cash_transfer_journal_id"] = petty_journal.id
+            if cash_journal and not config.cash_transfer_journal_id:
+                updates["cash_transfer_journal_id"] = cash_journal.id
             if updates:
                 config.write(updates)
 
