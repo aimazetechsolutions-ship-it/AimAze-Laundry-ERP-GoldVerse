@@ -647,35 +647,50 @@
 
   .o_account_aged_table {
     width: 100%;
-    min-width: 980px;
+    min-width: 1180px;
     table-layout: fixed;
     border-collapse: collapse;
-    font-size: 12.5px;
+    font-size: 12px;
   }
 
   .o_account_aged_table th,
   .o_account_aged_table td {
-    padding: 6px 5px;
+    padding: 6px 4px;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
     white-space: nowrap;
   }
 
+  .o_account_aged_table col.goldverse-aged-col-name {
+    width: 27%;
+  }
+
+  .o_account_aged_table col.goldverse-aged-col-date {
+    width: 8%;
+  }
+
+  .o_account_aged_table col.goldverse-aged-col-amount {
+    width: 9.285%;
+  }
+
   .o_account_aged_table th:first-child,
   .o_account_aged_table td:first-child {
-    width: 34%;
+    width: 27%;
   }
 
   .o_account_aged_table th:nth-child(2),
   .o_account_aged_table td:nth-child(2) {
-    width: 10%;
+    width: 8%;
   }
 
   .o_account_aged_table th.o_account_report_number,
   .o_account_aged_table td.o_account_report_number {
-    width: 8%;
+    width: 9.285%;
     text-align: right;
+    overflow: visible;
+    text-overflow: clip;
+    font-variant-numeric: tabular-nums;
   }
 
   .o_account_aged_table thead th[colspan] {
@@ -698,6 +713,8 @@
     font-weight: 700;
     text-align: right;
     white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
     cursor: pointer;
   }
 
@@ -719,5 +736,9 @@
 
   .o_account_interactive_report .o_account_report_sheet.o_account_aged_sheet {
     width: calc(100vw - 32px) !important;
+  }
+
+  .o_account_interactive_report .o_account_aged_table {
+    min-width: 1120px;
   }
 }

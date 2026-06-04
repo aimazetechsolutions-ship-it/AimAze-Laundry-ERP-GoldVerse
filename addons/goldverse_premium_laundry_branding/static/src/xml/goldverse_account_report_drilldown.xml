@@ -11,6 +11,16 @@
                 <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
                 <t t-else="">
                     <table class="o_account_aged_table goldverse-aged-table">
+                        <colgroup>
+                            <col class="goldverse-aged-col-name"/>
+                            <col class="goldverse-aged-col-date"/>
+                            <col
+                                t-foreach="report.columns.slice(2)"
+                                t-as="column"
+                                t-key="'aged_amount_' + column.key"
+                                class="goldverse-aged-col-amount"
+                            />
+                        </colgroup>
                         <thead>
                             <tr class="o_account_aged_asof_row">
                                 <th colspan="2"></th>
