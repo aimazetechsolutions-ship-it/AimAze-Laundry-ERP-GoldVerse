@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_goldverse_cash_transaction_list" model="ir.ui.view">
+        <field name="name">goldverse.cash.transaction.list</field>
+        <field name="model">goldverse.cash.transaction</field>
+        <field name="arch" type="xml">
+            <list string="Cash Desk" decoration-success="state == 'posted'" decoration-muted="state == 'cancelled'">
+                <field name="date" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="transaction_type" optional="show"/>
+                <field name="branch_id" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="expense_head_id" optional="show"/>
+                <field name="description" optional="show"/>
+                <field name="amount" optional="show" sum="Total"/>
+                <field name="state" widget="badge" optional="show"/>
+                <field name="account_move_id" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_goldverse_cash_transaction_form" model="ir.ui.view">
+        <field name="name">goldverse.cash.transaction.form</field>
+        <field name="model">goldverse.cash.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Cash Desk">
+                <header>
+                    <button name="action_post" type="object" string="Post Entry" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'draft'"/>
+                    <button name="action_view_journal_entry" type="object" string="View Journal Entry" invisible="not account_move_id"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Cash Action">
+                            <field name="transaction_type" widget="radio" readonly="state != 'draft'"/>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="expense_head_id" invisible="transaction_type != 'expense'" required="transaction_type == 'expense'" readonly="state != 'draft'" options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="description" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Branch and User">
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="branch_id" readonly="state != 'draft'" options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="user_id" readonly="state != 'draft'" options="{'no_create': True, 'no_create_edit': True}"/>
+                        </group>
+                    </group>
+                    <group string="Live Cash Position">
+                        <field name="main_cash_balance" readonly="1"/>
+                        <field name="petty_cash_balance" readonly="1"/>
+                    </group>
+                    <group string="Receipt">
+                        <field name="receipt_attachment" filename="receipt_filename" readonly="state != 'draft'"/>
+                        <field name="receipt_filename" invisible="1"/>
+                    </group>
+                    <group string="Accounting">
+                        <field name="account_move_id" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_goldverse_cash_transaction_search" model="ir.ui.view">
+        <field name="name">goldverse.cash.transaction.search</field>
+        <field name="model">goldverse.cash.transaction</field>
+        <field name="arch" type="xml">
+            <search string="Cash Desk">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="transaction_type"/>
+                <field name="branch_id"/>
+                <field name="user_id"/>
+                <field name="expense_head_id"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
+                <filter name="transfer" string="Transfers" domain="[('transaction_type', '=', 'transfer')]"/>
+                <filter name="expense" string="Expenses" domain="[('transaction_type', '=', 'expense')]"/>
+                <separator/>
+                <filter name="group_type" string="Group by Type" context="{'group_by': 'transaction_type'}"/>
+                <filter name="group_branch" string="Group by Branch" context="{'group_by': 'branch_id'}"/>
+                <filter name="group_user" string="Group by User" context="{'group_by': 'user_id'}"/>
+                <filter name="group_expense_head" string="Group by Expense Head" context="{'group_by': 'expense_head_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_goldverse_cash_transaction" model="ir.actions.act_window">
+        <field name="name">Cash Desk</field>
+        <field name="res_model">goldverse.cash.transaction</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_goldverse_cash_transaction_search"/>
+        <field name="context">{'search_default_draft': 1}</field>
+    </record>
+
+    <record id="view_goldverse_cash_expense_head_list" model="ir.ui.view">
+        <field name="name">goldverse.cash.expense.head.list</field>
+        <field name="model">goldverse.cash.expense.head</field>
+        <field name="arch" type="xml">
+            <list string="Expense Heads" editable="bottom">
+                <field name="sequence" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="account_id" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="active" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_goldverse_cash_expense_head_form" model="ir.ui.view">
+        <field name="name">goldverse.cash.expense.head.form</field>
+        <field name="model">goldverse.cash.expense.head</field>
+        <field name="arch" type="xml">
+            <form string="Expense Head">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="account_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_goldverse_cash_expense_head" model="ir.actions.act_window">
+        <field name="name">Expense Heads</field>
+        <field name="res_model">goldverse.cash.expense.head</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_laundry_account_config_form_goldverse_cash" model="ir.ui.view">
+        <field name="name">aimaze.laundry.account.config.form.goldverse.cash</field>
+        <field name="model">aimaze.laundry.account.config</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_account_config_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='compensation_expense_account_id']" position="after">
+                <field name="main_cash_account_id"/>
+                <field name="petty_cash_account_id"/>
+            </xpath>
+            <xpath expr="//field[@name='card_journal_id']" position="after">
+                <field name="cash_transfer_journal_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_account_config_list_goldverse_cash" model="ir.ui.view">
+        <field name="name">aimaze.laundry.account.config.list.goldverse.cash</field>
+        <field name="model">aimaze.laundry.account.config</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_account_config_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='cash_journal_id']" position="before">
+                <field name="main_cash_account_id" optional="show"/>
+                <field name="petty_cash_account_id" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='cash_journal_id']" position="after">
+                <field name="cash_transfer_journal_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_goldverse_cash_root" name="Cash Management" sequence="45" web_icon="aimaze_laundry_management,static/description/icon.png"/>
+    <menuitem id="menu_goldverse_cash_desk" name="Cash Desk" parent="menu_goldverse_cash_root" action="action_goldverse_cash_transaction" sequence="10"/>
+    <menuitem id="menu_goldverse_cash_expense_heads" name="Expense Heads" parent="menu_goldverse_cash_root" action="action_goldverse_cash_expense_head" sequence="20" groups="base.group_system,aimaze_laundry_management.group_laundry_admin"/>
+</odoo>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_goldverse_cash_transaction" model="ir.sequence">
+        <field name="name">GoldVerse Cash Transaction</field>
+        <field name="code">goldverse.cash.transaction</field>
+        <field name="prefix">GPL/EME/CASH/%(y)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <function model="aimaze.laundry.account.config" name="_goldverse_configure_cash_management"/>
+</odoo>

@@ -9,3 +9,4 @@ from . import interactive_account_report
 from . import dashboard
 from . import account_journal
 from . import role_access_manager
+from . import cash_management
