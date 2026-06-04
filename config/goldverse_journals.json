@@ -1,0 +1,83 @@
+[
+  {
+    "name": "Bank",
+    "type": "bank",
+    "code": "GPL/EME/BV",
+    "default_account_code": "217001",
+    "default_account_name": "BOP",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Cash Basis Taxes",
+    "type": "general",
+    "code": "CABA",
+    "default_account_code": "",
+    "default_account_name": "",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Cash Sales",
+    "type": "cash",
+    "code": "GPL/EME/CV",
+    "default_account_code": "216001",
+    "default_account_name": "Cash Sales",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Exchange Difference",
+    "type": "general",
+    "code": "EXCH",
+    "default_account_code": "",
+    "default_account_name": "",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Inventory Valuation",
+    "type": "general",
+    "code": "GPL/EME/STK",
+    "default_account_code": "",
+    "default_account_name": "",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Miscellaneous Operations",
+    "type": "general",
+    "code": "GPL/EME/JV",
+    "default_account_code": "",
+    "default_account_name": "",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "POS Machines",
+    "type": "bank",
+    "code": "GPL/EME/POS1",
+    "default_account_code": "218001",
+    "default_account_name": "POS Machines",
+    "refund_sequence": false,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Purchases",
+    "type": "purchase",
+    "code": "GPL/EME/BILL/",
+    "default_account_code": "611005",
+    "default_account_name": "Other Cost",
+    "refund_sequence": true,
+    "sequence_override_regex": ""
+  },
+  {
+    "name": "Sales",
+    "type": "sale",
+    "code": "GPL/EME/INV",
+    "default_account_code": "511001",
+    "default_account_name": "Laundry Income - B2C",
+    "refund_sequence": true,
+    "sequence_override_regex": ""
+  }
+]

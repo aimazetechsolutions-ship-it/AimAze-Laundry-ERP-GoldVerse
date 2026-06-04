@@ -1,0 +1,770 @@
+[
+  {
+    "code": "111001",
+    "name": "Land",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "111002",
+    "name": "Building",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "111003",
+    "name": "Plant and Machinery",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "111004",
+    "name": "Furniture and Fixtures",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "111005",
+    "name": "Computer and IT Equipment",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "111006",
+    "name": "Office and Electric Equipment",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "111007",
+    "name": "Vehicles",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "112001",
+    "name": "Accumulated Depreciation of Building",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "112002",
+    "name": "Accumulated Depreciation of Plant and Machinery",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "112003",
+    "name": "Accumulated Depreciation of Furniture and Fixtures",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "112004",
+    "name": "Accumulated Depreciation of Computer and IT Equipment",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "112005",
+    "name": "Accumulated Depreciation of Office and Electric Equipment",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "112006",
+    "name": "Accumulated Depreciation of Motor Vehicles",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "113001",
+    "name": "Intangible Assets",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "114001",
+    "name": "Amortization of Intangible Assets",
+    "account_type": "asset_fixed",
+    "reconcile": false
+  },
+  {
+    "code": "115001",
+    "name": "Long Term Deposit",
+    "account_type": "asset_non_current",
+    "reconcile": false
+  },
+  {
+    "code": "211001",
+    "name": "Accounts Receivable",
+    "account_type": "asset_receivable",
+    "reconcile": true
+  },
+  {
+    "code": "212001",
+    "name": "Advance against Expenses",
+    "account_type": "asset_current",
+    "reconcile": true
+  },
+  {
+    "code": "213001",
+    "name": "Deposit - Office Rent",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "213002",
+    "name": "Deposits - Customs",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "213003",
+    "name": "Deposit to Immigration (Visa)",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "213004",
+    "name": "Deposit Others",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214001",
+    "name": "Prepaid Medical Insurance",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214002",
+    "name": "Prepaid Life Insurance",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214003",
+    "name": "Prepaid Office Rent",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214004",
+    "name": "Prepaid Other Insurance",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214005",
+    "name": "Prepaid License Fees",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214006",
+    "name": "Prepaid Maintenance",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214007",
+    "name": "Prepaid Site Hosting Fees",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214008",
+    "name": "Prepaid Employees Housing",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214009",
+    "name": "Prepaid Schooling Fees",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214010",
+    "name": "Prepaid Consultancy Fees",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214011",
+    "name": "Prepaid Legal Fees",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214012",
+    "name": "Prepaid Sponsorship Fees",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "214013",
+    "name": "Prepaid Advertisement Expenses",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "215001",
+    "name": "Other Receivable",
+    "account_type": "asset_current",
+    "reconcile": true
+  },
+  {
+    "code": "215002",
+    "name": "Post Dated Cheques Received",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "215003",
+    "name": "Other Receivable",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "215004",
+    "name": "Sales Tax Input",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "215005",
+    "name": "WHT Receivable",
+    "account_type": "asset_current",
+    "reconcile": false
+  },
+  {
+    "code": "216001",
+    "name": "Cash Sales",
+    "account_type": "asset_cash",
+    "reconcile": false
+  },
+  {
+    "code": "216002",
+    "name": "Petty Cash",
+    "account_type": "asset_cash",
+    "reconcile": false
+  },
+  {
+    "code": "217001",
+    "name": "BOP",
+    "account_type": "asset_cash",
+    "reconcile": false
+  },
+  {
+    "code": "218001",
+    "name": "POS Machines",
+    "account_type": "asset_cash",
+    "reconcile": false
+  },
+  {
+    "code": "311001",
+    "name": "Share Capital - A",
+    "account_type": "equity",
+    "reconcile": false
+  },
+  {
+    "code": "311002",
+    "name": "Share Capital - B",
+    "account_type": "equity",
+    "reconcile": false
+  },
+  {
+    "code": "312001",
+    "name": "Loan from/to Mr. A",
+    "account_type": "liability_non_current",
+    "reconcile": false
+  },
+  {
+    "code": "312002",
+    "name": "Loan from/to Mr. B",
+    "account_type": "liability_non_current",
+    "reconcile": false
+  },
+  {
+    "code": "411001",
+    "name": "Accounts Payables",
+    "account_type": "liability_payable",
+    "reconcile": true
+  },
+  {
+    "code": "412001",
+    "name": "Accrued - Salaries",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412002",
+    "name": "Accrued - Staff Bonus",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412003",
+    "name": "Accrued - Commissions",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412004",
+    "name": "Accrued - Utilities",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412005",
+    "name": "Accrued - Telephone",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412006",
+    "name": "Accrued - Sponsorship",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412007",
+    "name": "Accrued - Office Rent",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412008",
+    "name": "Accrued - Audit Fees",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "412009",
+    "name": "Accrued - Charity/Donations",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "413001",
+    "name": "Sales Tax Output",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "413002",
+    "name": "Net Sales Payable/Receivable",
+    "account_type": "liability_current",
+    "reconcile": true
+  },
+  {
+    "code": "413003",
+    "name": "Corporate Tax Payable",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "413004",
+    "name": "Wallet Balance Payable",
+    "account_type": "liability_current",
+    "reconcile": false
+  },
+  {
+    "code": "511001",
+    "name": "Laundry Income - B2C",
+    "account_type": "income",
+    "reconcile": false
+  },
+  {
+    "code": "511002",
+    "name": "Laundry Income - B2B",
+    "account_type": "income",
+    "reconcile": false
+  },
+  {
+    "code": "511003",
+    "name": "Delivery Chgs Income",
+    "account_type": "income",
+    "reconcile": false
+  },
+  {
+    "code": "512001",
+    "name": "Other Income",
+    "account_type": "income",
+    "reconcile": false
+  },
+  {
+    "code": "611001",
+    "name": "Laundry Cost - B2C",
+    "account_type": "expense_direct_cost",
+    "reconcile": false
+  },
+  {
+    "code": "611002",
+    "name": "Laundry Cost - B2B",
+    "account_type": "expense_direct_cost",
+    "reconcile": false
+  },
+  {
+    "code": "611003",
+    "name": "Delivery Cost",
+    "account_type": "expense_direct_cost",
+    "reconcile": false
+  },
+  {
+    "code": "611004",
+    "name": "Packing Material Cost",
+    "account_type": "expense_direct_cost",
+    "reconcile": false
+  },
+  {
+    "code": "611005",
+    "name": "Other Cost",
+    "account_type": "expense_direct_cost",
+    "reconcile": false
+  },
+  {
+    "code": "711001",
+    "name": "Salaries Wages and Benefits - Management",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711002",
+    "name": "Salaries Wages and Benefits - Finance",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711003",
+    "name": "Salaries Wages and Benefits - Operations",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711004",
+    "name": "Salaries Wages and Benefits - HR",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711005",
+    "name": "Salaries Wages and Benefits - Sales & Marketing",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711006",
+    "name": "Medical Insurance",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711007",
+    "name": "Life Insurance",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711008",
+    "name": "Gratuity Expense",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711009",
+    "name": "Staff Other Allowances",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711010",
+    "name": "Staff Accommodation",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711011",
+    "name": "Staff Employment Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711012",
+    "name": "Staff Annual Leave",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711013",
+    "name": "Staff Annual Tickets",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711014",
+    "name": "Staff Uniform",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711015",
+    "name": "Staff Food",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "711016",
+    "name": "Commission - Sales",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "712001",
+    "name": "Office Rent",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "713001",
+    "name": "Water & Electricity",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "713002",
+    "name": "Other Utility Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "713003",
+    "name": "Telephone & Internet Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "714001",
+    "name": "Entertainment Expense",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "715001",
+    "name": "Postage and Courier",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "716001",
+    "name": "Travelling, Boarding and Lodging - Local",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "716002",
+    "name": "Travelling, Boarding and Lodging - International",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "717001",
+    "name": "Insurance",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "718001",
+    "name": "Repair & Maintenance Expense - Office & Electric Equipment's",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "718002",
+    "name": "Repair & Maintenance Expense - IT Equipment's",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "718003",
+    "name": "Repair & Maintenance Expense - Furniture & Fixtures",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "718004",
+    "name": "Repair & Maintenance Expense - Vehicle",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "719001",
+    "name": "Office Cleaning Expense",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "720001",
+    "name": "Legal and Professional Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "720002",
+    "name": "Sponsorship Fees",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "720003",
+    "name": "Trade License Fees",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "721001",
+    "name": "Printing and Stationery Expense",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "722001",
+    "name": "Audit Fees",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "723001",
+    "name": "Advertising Expenses",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "723002",
+    "name": "Social media and Marketing Expense",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "724001",
+    "name": "Websites, Logos, Trademark, Domain etc.",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "725001",
+    "name": "Charity/Donations",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "726001",
+    "name": "Amortization on Leasehold Improvement",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "726002",
+    "name": "Depreciation Of Furniture & Office Equipment",
+    "account_type": "expense_depreciation",
+    "reconcile": false
+  },
+  {
+    "code": "726003",
+    "name": "Depreciation on Right of Use Asset (IFRS 16)",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "727001",
+    "name": "Bank Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "727002",
+    "name": "Credit Card Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "727003",
+    "name": "Credit Card Swipe Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "727004",
+    "name": "PayPal Charges",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "728001",
+    "name": "Loss On Fixed Assets Disposal",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "728002",
+    "name": "Loss on Difference on Exchange",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "729001",
+    "name": "Provision for Doubtful Debts",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "730001",
+    "name": "Corporate Tax",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "999001",
+    "name": "Cash Difference Gain",
+    "account_type": "income_other",
+    "reconcile": false
+  },
+  {
+    "code": "999002",
+    "name": "Cash Difference Loss",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "999003",
+    "name": "Off-Balance Sheet Counterpart Account",
+    "account_type": "off_balance",
+    "reconcile": false
+  },
+  {
+    "code": "999005",
+    "name": "Closing Account",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "999006",
+    "name": "Cash Discount Loss",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "999007",
+    "name": "Customs",
+    "account_type": "expense",
+    "reconcile": false
+  },
+  {
+    "code": "999999",
+    "name": "Undistributed Profits/Losses",
+    "account_type": "equity_unaffected",
+    "reconcile": false
+  }
+]
