@@ -138,7 +138,7 @@ class LaundryOrder(models.Model):
 
         sequence.sudo().write(
             {
-                "prefix": "GPL/EME/%(y)s/",
+                "prefix": "GPL/EME/LO/%(y)s/",
                 "padding": 4,
                 "use_date_range": False,
                 "number_increment": 1,
@@ -176,6 +176,22 @@ class LaundryOrder(models.Model):
                     field=quote_identifier(field_name),
                 )
                 self.env.cr.execute(query, ("GVP/", "GPL/", "GOP/", "GPL/", "%GVP/%", "%GOP/%"))
+                order_ref_query = """
+                    UPDATE {table}
+                       SET {field} = regexp_replace({field}, %s, %s, 'g')
+                     WHERE {field} ~ %s
+                """.format(
+                    table=quote_identifier(table),
+                    field=quote_identifier(field_name),
+                )
+                self.env.cr.execute(
+                    order_ref_query,
+                    (
+                        r"(^|[^A-Z])GPL/EME/([0-9]{2})/",
+                        r"\1GPL/EME/LO/\2/",
+                        r"(^|[^A-Z])GPL/EME/[0-9]{2}/",
+                    ),
+                )
         return True
 
     def _goldverse_delivery_timezone(self):
