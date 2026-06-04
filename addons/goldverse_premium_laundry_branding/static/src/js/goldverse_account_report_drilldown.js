@@ -203,6 +203,13 @@ if (InteractiveAccountReport && InteractiveAccountReport.prototype.__goldverseAc
             return `${this.formatAmount(value)} ${this.report.currency_label}`;
         },
 
+        formatGoldverseAgedCell(line, column) {
+            if (column?.type === "number") {
+                return this.formatAmount((line.values || {})[column.key]);
+            }
+            return this.formatCell(line, column);
+        },
+
         async exportXlsx() {
             await download({
                 url: "/goldverse/interactive_report/xlsx",

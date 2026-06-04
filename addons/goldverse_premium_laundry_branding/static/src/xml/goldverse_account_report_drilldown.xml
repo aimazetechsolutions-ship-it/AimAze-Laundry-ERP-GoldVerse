@@ -58,10 +58,10 @@
                                         class="goldverse-aged-amount-button"
                                         t-on-click="(ev) => this.openGoldverseAgedLedger(line, ev)"
                                     >
-                                        <t t-esc="formatCell(line, column)"/>
+                                        <t t-esc="formatGoldverseAgedCell(line, column)"/>
                                     </button>
-                                    <strong t-elif="line.type === 'aged_total'"><t t-esc="formatCell(line, column)"/></strong>
-                                    <t t-else="" t-esc="formatCell(line, column)"/>
+                                    <strong t-elif="line.type === 'aged_total'"><t t-esc="formatGoldverseAgedCell(line, column)"/></strong>
+                                    <t t-else="" t-esc="formatGoldverseAgedCell(line, column)"/>
                                 </td>
                             </tr>
                         </tbody>

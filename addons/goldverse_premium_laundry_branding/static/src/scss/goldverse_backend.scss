@@ -647,15 +647,15 @@
 
   .o_account_aged_table {
     width: 100%;
-    min-width: 1060px;
+    min-width: 980px;
     table-layout: fixed;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 12.5px;
   }
 
   .o_account_aged_table th,
   .o_account_aged_table td {
-    padding: 6px 7px;
+    padding: 6px 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
@@ -664,17 +664,17 @@
 
   .o_account_aged_table th:first-child,
   .o_account_aged_table td:first-child {
-    width: 26%;
+    width: 34%;
   }
 
   .o_account_aged_table th:nth-child(2),
   .o_account_aged_table td:nth-child(2) {
-    width: 12%;
+    width: 10%;
   }
 
   .o_account_aged_table th.o_account_report_number,
   .o_account_aged_table td.o_account_report_number {
-    width: 8.85%;
+    width: 8%;
     text-align: right;
   }
 
