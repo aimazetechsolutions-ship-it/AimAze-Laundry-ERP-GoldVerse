@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from io import BytesIO
 
 from openpyxl import Workbook
@@ -121,6 +121,77 @@ class InteractiveAccountReport(models.AbstractModel):
         if options.get("period") == "year":
             return str(start.year)
         return f"{start.strftime('%d %b %Y')} to {end.strftime('%d %b %Y')}"
+
+    @api.model
+    def _balance_sheet_statement(self, options):
+        columns, lines = super()._balance_sheet_statement(options)
+        retained_earnings, current_year_earnings = self._goldverse_balance_sheet_earnings(options)
+        total_earnings = retained_earnings + current_year_earnings
+
+        old_earnings = 0.0
+        current_index = False
+        for index, line in enumerate(lines):
+            if line.get("id") == "current_year_earnings":
+                old_earnings = (line.get("values") or {}).get("balance") or 0.0
+                current_index = index
+                break
+        if current_index is False:
+            return columns, lines
+
+        replacement_lines = []
+        if abs(retained_earnings) >= 0.005:
+            replacement_lines.append(
+                self._goldverse_earnings_line(
+                    "retained_earnings",
+                    _("Retained Earnings"),
+                    retained_earnings,
+                )
+            )
+        replacement_lines.append(
+            self._goldverse_earnings_line(
+                "current_year_earnings",
+                _("Current Year Earnings"),
+                current_year_earnings,
+            )
+        )
+        lines[current_index : current_index + 1] = replacement_lines
+
+        earnings_delta = total_earnings - old_earnings
+        for line in lines:
+            if line.get("id") in ("total_equity", "total_liabilities_equity"):
+                values = line.get("values") or {}
+                values["balance"] = (values.get("balance") or 0.0) + earnings_delta
+        return columns, lines
+
+    @api.model
+    def _goldverse_balance_sheet_earnings(self, options):
+        date_to = fields.Date.from_string(options.get("date_to") or fields.Date.context_today(self))
+        if not isinstance(date_to, date):
+            date_to = fields.Date.context_today(self)
+        year_start = date(date_to.year, 1, 1)
+
+        current_options = dict(options, date_from=fields.Date.to_string(year_start))
+        retained_options = dict(options, date_from=False, date_to=fields.Date.to_string(year_start - timedelta(days=1)))
+
+        retained = self._profit_and_loss_totals(retained_options)["net_profit"] if year_start > date.min else 0.0
+        current = self._profit_and_loss_totals(current_options)["net_profit"]
+        return retained, current
+
+    @api.model
+    def _goldverse_earnings_line(self, key, name, amount):
+        return {
+            "id": key,
+            "name": name,
+            "level": 2,
+            "type": "account",
+            "is_total": False,
+            "values": {
+                "name": name,
+                "debit": 0.0,
+                "credit": 0.0,
+                "balance": amount,
+            },
+        }
 
     @api.model
     def _goldverse_export_filters(self, payload):
