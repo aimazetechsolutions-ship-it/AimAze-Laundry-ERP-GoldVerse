@@ -21,6 +21,9 @@
         <field name="model">aimaze.laundry.executive.dashboard</field>
         <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_executive_dashboard_form_phase5"/>
         <field name="arch" type="xml">
+            <xpath expr="//sheet/group[field[@name='branch_id'] and field[@name='currency_id']]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//div[hasclass('aimaze-dashboard-shell')]" position="replace">
                 <div class="goldverse-executive-dashboard">
                     <div class="goldverse-executive-toolbar">
@@ -28,7 +31,16 @@
                             <h2>Executive Dashboard</h2>
                             <div class="goldverse-executive-subtitle">
                                 <field name="company_id" readonly="1" nolabel="1"/>
-                                <span invisible="not branch_id"> / <field name="branch_id" readonly="1" nolabel="1"/></span>
+                            </div>
+                            <div class="goldverse-executive-meta">
+                                <span class="goldverse-meta-pill" invisible="not branch_id">
+                                    <span>Branch</span>
+                                    <strong><field name="branch_id" readonly="1" nolabel="1"/></strong>
+                                </span>
+                                <span class="goldverse-meta-pill">
+                                    <span>Currency</span>
+                                    <strong><field name="currency_id" readonly="1" nolabel="1"/></strong>
+                                </span>
                             </div>
                         </div>
                         <div class="goldverse-executive-filters">

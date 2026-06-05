@@ -329,6 +329,37 @@
   color: inherit;
 }
 
+.o_form_view .goldverse-executive-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.o_form_view .goldverse-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid rgba(24, 168, 185, 0.24);
+  border-radius: 8px;
+  background: rgba(24, 168, 185, 0.08);
+  color: var(--gv-exec-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.o_form_view .goldverse-meta-pill > span {
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-meta-pill strong,
+.o_form_view .goldverse-meta-pill .o_field_widget {
+  color: var(--gv-exec-ink);
+  font-weight: 800;
+}
+
 .o_form_view .goldverse-executive-filters {
   display: flex;
   align-items: center;
