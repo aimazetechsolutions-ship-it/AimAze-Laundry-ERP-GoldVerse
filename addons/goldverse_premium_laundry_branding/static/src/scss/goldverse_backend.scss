@@ -516,6 +516,30 @@
   }
 }
 
+.o_form_view:has(.goldverse-premium-dashboard) {
+  .o_form_sheet_bg {
+    padding: 0 !important;
+    background:
+      radial-gradient(circle at 88% 8%, rgba(33, 184, 200, 0.14), transparent 34%),
+      linear-gradient(140deg, #eef7fb 0%, #f9fbff 48%, #f2f5fb 100%) !important;
+  }
+
+  .o_form_sheet,
+  .o_form_renderer {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .o_form_sheet {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
 .o_form_view .goldverse-premium-dashboard {
   --gv-premium-ink: #10243f;
   --gv-premium-muted: #64748b;
@@ -534,8 +558,8 @@
   grid-template-columns: minmax(0, 1fr);
   min-height: calc(100vh - 150px);
   overflow: hidden;
-  border: 1px solid var(--gv-premium-line);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   background:
     radial-gradient(circle at 85% 8%, rgba(33, 184, 200, 0.13), transparent 32%),
     linear-gradient(140deg, #eef7fb 0%, #f9fbff 48%, #f2f5fb 100%);
