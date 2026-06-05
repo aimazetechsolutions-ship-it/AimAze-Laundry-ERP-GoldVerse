@@ -74,6 +74,43 @@ class LaundryExecutiveDashboard(models.TransientModel):
             },
         }
 
+    @api.model
+    def goldverse_ensure_dashboard_record(self, forced_id=7):
+        """Keep old dashboard URLs from failing when browser history has a stale id."""
+        if self.browse(forced_id).exists():
+            return True
+        company = self.env["res.company"].sudo().search([("name", "=", "GoldVerse Premium (Pvt.) Limited")], limit=1) or self.env.company
+        today = fields.Date.context_today(self)
+        self.env.cr.execute(
+            """
+            INSERT INTO aimaze_laundry_executive_dashboard
+                (id, create_uid, create_date, write_uid, write_date, name, company_id, period_filter, date_from, date_to)
+            VALUES
+                (%s, %s, NOW(), %s, NOW(), %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO NOTHING
+            """,
+            (
+                forced_id,
+                self.env.uid,
+                self.env.uid,
+                _("Executive Dashboard"),
+                company.id,
+                "ytd",
+                fields.Date.start_of(today, "year"),
+                today,
+            ),
+        )
+        self.env.cr.execute(
+            """
+            SELECT setval(
+                pg_get_serial_sequence('aimaze_laundry_executive_dashboard', 'id'),
+                GREATEST((SELECT COALESCE(MAX(id), 0) FROM aimaze_laundry_executive_dashboard), %s)
+            )
+            """,
+            (forced_id,),
+        )
+        return True
+
     def _goldverse_order_ids_for_period(self):
         Order = self.env["aimaze.laundry.order"]
         return Order.search(self._goldverse_period_order_domain() + [("state", "not in", ("draft", "cancelled"))]).ids

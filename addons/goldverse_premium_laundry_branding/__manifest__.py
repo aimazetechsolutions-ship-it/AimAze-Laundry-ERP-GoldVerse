@@ -23,6 +23,7 @@
         "data/goldverse_qc_addon_data.xml",
         "data/service_line_detail_sync.xml",
         "data/order_flow_defaults.xml",
+        "data/dashboard_defaults.xml",
         "data/menu_cleanup.xml",
         "data/customer_care_menus.xml",
         "views/login_branding_views.xml",

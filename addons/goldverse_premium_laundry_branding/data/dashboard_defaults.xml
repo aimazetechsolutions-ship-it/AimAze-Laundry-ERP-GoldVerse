@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="aimaze.laundry.executive.dashboard" name="goldverse_ensure_dashboard_record">
+        <value eval="7"/>
+    </function>
+</odoo>
