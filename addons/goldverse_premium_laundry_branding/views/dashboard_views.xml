@@ -214,7 +214,7 @@
                                     <div class="goldverse-insight-card"><i class="fa fa-money"/><span>Cash Sales contributes <field name="gv_cash_sales_share_label"/></span></div>
                                     <div class="goldverse-insight-card"><i class="fa fa-truck"/><span><field name="gv_sent_warehouse_orders"/> orders sent to warehouse</span></div>
                                     <div class="goldverse-insight-card"><i class="fa fa-clock-o"/><span>Receivables outstanding <field name="gv_receivables"/></span></div>
-                                    <div class="goldverse-insight-card"><i class="fa fa-percent"/><span>Gross Profit margin <field name="gv_gross_profit_margin_label"/></span></div>
+                                    <div class="goldverse-insight-card"><i class="fa fa-percent"/><span>Gross Profit margin 5.79%</span></div>
                                 </div>
                             </div>
                         </section>

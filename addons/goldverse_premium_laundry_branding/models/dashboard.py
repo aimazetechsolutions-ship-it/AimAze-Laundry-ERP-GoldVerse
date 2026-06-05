@@ -26,7 +26,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
     gv_bank_sales_share_label = fields.Char(string="Bank Sales Share", compute="_compute_goldverse_dashboard_cards")
     gv_ibft_sales_share_label = fields.Char(string="IBFT Sales Share", compute="_compute_goldverse_dashboard_cards")
     gv_credit_sales_share_label = fields.Char(string="Credit Sales Share", compute="_compute_goldverse_dashboard_cards")
-    gv_gross_profit_margin_label = fields.Char(string="Gross Profit Margin", compute="_compute_goldverse_dashboard_cards")
 
     def _goldverse_base_order_domain(self):
         self.ensure_one()
@@ -377,4 +376,3 @@ class LaundryExecutiveDashboard(models.TransientModel):
             dashboard.gv_bank_sales_share_label = "%.1f%%" % ((dashboard.gv_bank_sales / sales_total) * 100) if sales_total else "0.0%"
             dashboard.gv_ibft_sales_share_label = "%.1f%%" % ((dashboard.gv_ibft_sales / sales_total) * 100) if sales_total else "0.0%"
             dashboard.gv_credit_sales_share_label = "%.1f%%" % ((dashboard.gv_credit_sales / sales_total) * 100) if sales_total else "0.0%"
-            dashboard.gv_gross_profit_margin_label = "%.2f%%" % ((dashboard.gv_gross_profit / sales_total) * 100) if sales_total else "0.00%"
