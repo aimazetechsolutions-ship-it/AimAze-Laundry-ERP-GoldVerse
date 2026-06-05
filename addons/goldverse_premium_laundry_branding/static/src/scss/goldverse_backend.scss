@@ -275,6 +275,216 @@
   outline-offset: 2px;
 }
 
+.o_form_view .goldverse-executive-dashboard {
+  --gv-exec-ink: #11253f;
+  --gv-exec-muted: #64748b;
+  --gv-exec-line: #d7e0ea;
+  --gv-exec-panel: #ffffff;
+  --gv-exec-soft: #f5f8fb;
+  --gv-exec-teal: #18a8b9;
+  --gv-exec-plum: #714b67;
+  --gv-exec-gold: #b7791f;
+  --gv-exec-green: #138a5b;
+  padding: 18px;
+  border: 1px solid var(--gv-exec-line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(24, 168, 185, 0.08), rgba(255, 255, 255, 0) 34%),
+    linear-gradient(315deg, rgba(113, 75, 103, 0.07), rgba(255, 255, 255, 0) 34%),
+    var(--gv-exec-soft);
+  color: var(--gv-exec-ink);
+}
+
+.o_form_view .goldverse-executive-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid rgba(215, 224, 234, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 28px rgba(17, 37, 63, 0.07);
+}
+
+.o_form_view .goldverse-executive-toolbar h2 {
+  margin: 0;
+  color: var(--gv-exec-ink);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.o_form_view .goldverse-executive-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  color: var(--gv-exec-muted);
+  font-weight: 700;
+}
+
+.o_form_view .goldverse-executive-subtitle .o_field_widget {
+  color: inherit;
+}
+
+.o_form_view .goldverse-executive-filters {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 360px;
+}
+
+.o_form_view .goldverse-dashboard-section {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(215, 224, 234, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 24px rgba(17, 37, 63, 0.05);
+}
+
+.o_form_view .goldverse-section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #e1e8f0;
+}
+
+.o_form_view .goldverse-section-title span {
+  color: var(--gv-exec-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.o_form_view .goldverse-section-title strong {
+  color: var(--gv-exec-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-card-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.o_form_view .goldverse-dashboard-card {
+  position: relative;
+  display: flex;
+  min-height: 96px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 14px 13px;
+  overflow: hidden;
+  border: 1px solid #d9e3ee;
+  border-radius: 8px;
+  background: var(--gv-exec-panel);
+  color: var(--gv-exec-ink);
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(17, 37, 63, 0.06);
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+
+.o_form_view .goldverse-dashboard-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--gv-exec-teal);
+}
+
+.o_form_view .goldverse-flow-section .goldverse-dashboard-card::before {
+  background: var(--gv-exec-gold);
+}
+
+.o_form_view .goldverse-profit-section .goldverse-dashboard-card::before {
+  background: var(--gv-exec-plum);
+}
+
+.o_form_view .goldverse-dashboard-card.goldverse-card-total::before {
+  width: 6px;
+  background: var(--gv-exec-green);
+}
+
+.o_form_view .goldverse-dashboard-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(24, 168, 185, 0.55);
+  box-shadow: 0 14px 30px rgba(17, 37, 63, 0.12);
+}
+
+.o_form_view .goldverse-dashboard-card:focus-visible {
+  outline: 2px solid var(--gv-exec-plum);
+  outline-offset: 2px;
+}
+
+.o_form_view .goldverse-dashboard-card span {
+  display: block;
+  max-width: 100%;
+  color: var(--gv-exec-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.o_form_view .goldverse-dashboard-card strong {
+  display: block;
+  margin-top: 14px;
+  color: var(--gv-exec-ink);
+  font-size: 21px;
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.o_form_view .goldverse-dashboard-card strong .o_field_monetary,
+.o_form_view .goldverse-dashboard-card strong .o_field_integer {
+  color: inherit;
+  font: inherit;
+}
+
+@media (max-width: 1400px) {
+  .o_form_view .goldverse-card-row {
+    grid-template-columns: repeat(3, minmax(170px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .o_form_view .goldverse-executive-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .o_form_view .goldverse-executive-filters {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .o_form_view .goldverse-card-row {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .o_form_view .goldverse-executive-dashboard {
+    padding: 10px;
+  }
+
+  .o_form_view .goldverse-card-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .o_account_dashboard_kanban_view.o_account_kanban {
   --goldverse-account-ink: #10243a;
   --goldverse-account-muted: #5c6f84;

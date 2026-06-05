@@ -5,56 +5,113 @@
         <field name="model">aimaze.laundry.executive.dashboard</field>
         <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_executive_dashboard_form_phase5"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('alm-dashboard-grid')]" position="replace">
-                <div class="alm-dashboard-grid aimaze-premium-grid goldverse-clickable-dashboard-grid">
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'today_sales'}" class="alm-kpi-card alm-kpi-primary goldverse-kpi-button">
-                        <span>Today Sales</span><strong><field name="today_sales"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'month_sales'}" class="alm-kpi-card alm-kpi-success goldverse-kpi-button">
-                        <span>Monthly Sales</span><strong><field name="month_sales"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'pending_orders'}" class="alm-kpi-card alm-kpi-warning goldverse-kpi-button">
-                        <span>Pending Orders</span><strong><field name="pending_orders"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'ready_orders'}" class="alm-kpi-card alm-kpi-info goldverse-kpi-button">
-                        <span>Ready Orders</span><strong><field name="ready_orders"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'delivered_orders'}" class="alm-kpi-card alm-kpi-success goldverse-kpi-button">
-                        <span>Delivered</span><strong><field name="delivered_orders"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'delayed_orders'}" class="alm-kpi-card alm-kpi-danger goldverse-kpi-button">
-                        <span>Delayed</span><strong><field name="delayed_orders"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'open_complaints'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Open Complaints</span><strong><field name="open_complaints"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'rewash_ratio'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Rewash Ratio</span><strong><field name="rewash_ratio"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'wallet_liability'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Wallet Liability</span><strong><field name="wallet_liability"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'advance_liability'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Advance Liability</span><strong><field name="advance_liability"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'receivables'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Receivables</span><strong><field name="outstanding_receivables"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'branch_profit'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Branch Profit</span><strong><field name="branch_profitability"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'staff_score'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Staff Score</span><strong><field name="staff_productivity"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'driver_performance'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Driver Performance</span><strong><field name="driver_performance"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'machine_utilization'}" class="alm-kpi-card goldverse-kpi-button">
-                        <span>Machine Utilization</span><strong><field name="machine_utilization"/></strong>
-                    </button>
-                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'low_stock'}" class="alm-kpi-card alm-kpi-danger goldverse-kpi-button">
-                        <span>Low Stock</span><strong><field name="inventory_low_stock"/></strong>
-                    </button>
+            <xpath expr="//div[hasclass('aimaze-dashboard-shell')]" position="replace">
+                <div class="goldverse-executive-dashboard">
+                    <div class="goldverse-executive-toolbar">
+                        <div>
+                            <h2>Executive Dashboard</h2>
+                            <div class="goldverse-executive-subtitle">
+                                <field name="company_id" readonly="1" nolabel="1"/>
+                                <span invisible="not branch_id"> / <field name="branch_id" readonly="1" nolabel="1"/></span>
+                            </div>
+                        </div>
+                        <div class="goldverse-executive-filters">
+                            <field name="period_filter" widget="selection_badge" nolabel="1" class="aimaze-segmented-field"/>
+                            <field name="date_from" invisible="1"/>
+                            <field name="date_to" invisible="1"/>
+                            <div class="aimaze-custom-range-wrapper" invisible="period_filter != 'custom'">
+                                <a class="aimaze-date-range-pill" role="button">
+                                    <i class="fa fa-calendar-o" title="Date range"/>
+                                    <field name="date_range_label" nolabel="1" readonly="1" class="aimaze-date-range-label"/>
+                                    <i class="fa fa-caret-down aimaze-range-caret" title="Open date range"/>
+                                </a>
+                                <div class="aimaze-date-popover">
+                                    <div class="aimaze-date-popover-body">
+                                        <span class="o_form_label">From</span>
+                                        <input type="date" class="aimaze-range-native-input aimaze-date-from-input"/>
+                                        <span class="o_form_label">To</span>
+                                        <input type="date" class="aimaze-range-native-input aimaze-date-to-input"/>
+                                    </div>
+                                    <div class="aimaze-date-popover-footer">
+                                        <a class="btn btn-light aimaze-range-cancel" role="button">Cancel</a>
+                                        <a class="btn btn-primary aimaze-range-apply" role="button">Apply Range</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section class="goldverse-dashboard-section goldverse-sales-section">
+                        <div class="goldverse-section-title">
+                            <span>Sales</span>
+                            <strong><field name="date_range_label"/></strong>
+                        </div>
+                        <div class="goldverse-card-row">
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_total_sales'}" class="goldverse-dashboard-card goldverse-card-total">
+                                <span>Total Sales</span><strong><field name="gv_total_sales"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_cash_sales'}" class="goldverse-dashboard-card">
+                                <span>Cash Sales</span><strong><field name="gv_cash_sales"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_bank_sales'}" class="goldverse-dashboard-card">
+                                <span>Bank Sales</span><strong><field name="gv_bank_sales"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_ibft_sales'}" class="goldverse-dashboard-card">
+                                <span>IBFT Sales</span><strong><field name="gv_ibft_sales"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_credit_sales'}" class="goldverse-dashboard-card">
+                                <span>Credit Sales</span><strong><field name="gv_credit_sales"/></strong>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="goldverse-dashboard-section goldverse-flow-section">
+                        <div class="goldverse-section-title">
+                            <span>Order Flow</span>
+                            <strong>Operations</strong>
+                        </div>
+                        <div class="goldverse-card-row">
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_total_orders'}" class="goldverse-dashboard-card goldverse-card-total">
+                                <span>Total Orders</span><strong><field name="gv_total_orders"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_draft_orders'}" class="goldverse-dashboard-card">
+                                <span>Draft</span><strong><field name="gv_draft_orders"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_sent_warehouse_orders'}" class="goldverse-dashboard-card">
+                                <span>Sent to Warehouse</span><strong><field name="gv_sent_warehouse_orders"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_received_warehouse_orders'}" class="goldverse-dashboard-card">
+                                <span>Receive from Warehouse</span><strong><field name="gv_received_warehouse_orders"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_delivered_customer_orders'}" class="goldverse-dashboard-card">
+                                <span>Delivered to Customers</span><strong><field name="gv_delivered_customer_orders"/></strong>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="goldverse-dashboard-section goldverse-profit-section">
+                        <div class="goldverse-section-title">
+                            <span>Finance</span>
+                            <strong>Profit and Position</strong>
+                        </div>
+                        <div class="goldverse-card-row">
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_gross_profit'}" class="goldverse-dashboard-card goldverse-card-total">
+                                <span>Gross Profit</span><strong><field name="gv_gross_profit"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_net_profit'}" class="goldverse-dashboard-card">
+                                <span>Net Profit</span><strong><field name="gv_net_profit"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_top_expenses'}" class="goldverse-dashboard-card">
+                                <span>Top 5 Expenses</span><strong><field name="gv_top_expenses"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_receivables'}" class="goldverse-dashboard-card">
+                                <span>Receivables</span><strong><field name="gv_receivables"/></strong>
+                            </button>
+                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_advances_payables'}" class="goldverse-dashboard-card">
+                                <span>Advances Payables</span><strong><field name="gv_advances_payables"/></strong>
+                            </button>
+                        </div>
+                    </section>
                 </div>
             </xpath>
         </field>
