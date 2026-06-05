@@ -531,7 +531,7 @@
   --gv-premium-pink: #d94d8b;
   --gv-premium-shadow: 0 18px 42px rgba(30, 41, 59, 0.1);
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: calc(100vh - 150px);
   overflow: hidden;
   border: 1px solid var(--gv-premium-line);
@@ -1188,7 +1188,7 @@
 
 @media (max-width: 1180px) {
   .o_form_view .goldverse-premium-dashboard {
-    grid-template-columns: 78px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .o_form_view .goldverse-premium-sidebar {

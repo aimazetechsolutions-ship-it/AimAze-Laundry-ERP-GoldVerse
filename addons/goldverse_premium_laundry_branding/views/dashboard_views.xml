@@ -26,20 +26,6 @@
             </xpath>
             <xpath expr="//div[hasclass('aimaze-dashboard-shell')]" position="replace">
                 <div class="goldverse-premium-dashboard">
-                    <aside class="goldverse-premium-sidebar">
-                        <div class="goldverse-sidebar-logo">GV</div>
-                        <nav class="goldverse-sidebar-nav">
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-th-large"/>Dashboards</a>
-                            <a class="goldverse-sidebar-item active" role="button"><i class="fa fa-line-chart"/>Executive Dashboard</a>
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-tasks"/>Operational Dashboard</a>
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-sitemap"/>Branch Dashboard</a>
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-file-text-o"/>Reports</a>
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-bar-chart"/>Analytics</a>
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-bell-o"/>Alerts</a>
-                            <a class="goldverse-sidebar-item" role="button"><i class="fa fa-cog"/>Settings</a>
-                        </nav>
-                    </aside>
-
                     <main class="goldverse-premium-main">
                         <header class="goldverse-premium-header">
                             <div class="goldverse-title-block">
