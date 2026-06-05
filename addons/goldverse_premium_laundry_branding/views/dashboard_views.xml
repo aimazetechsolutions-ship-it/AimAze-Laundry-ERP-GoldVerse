@@ -9,6 +9,11 @@
 
     <record id="aimaze_laundry_management.menu_laundry_executive_dashboard" model="ir.ui.menu">
         <field name="action" ref="action_goldverse_open_executive_dashboard"/>
+        <field name="sequence">1</field>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_aimaze_laundry_root" model="ir.ui.menu">
+        <field name="action" ref="action_goldverse_open_executive_dashboard"/>
     </record>
 
     <record id="view_laundry_executive_dashboard_form_goldverse_clickable_cards" model="ir.ui.view">

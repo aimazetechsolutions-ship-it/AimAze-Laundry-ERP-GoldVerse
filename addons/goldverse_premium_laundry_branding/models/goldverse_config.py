@@ -25,6 +25,18 @@ class ResUsers(models.Model):
         return True
 
     @api.model
+    def _goldverse_executive_dashboard_action(self):
+        return self.env.ref("goldverse_premium_laundry_branding.action_goldverse_open_executive_dashboard", raise_if_not_found=False)
+
+    @api.model
+    def _goldverse_set_executive_dashboard_home(self):
+        action = self._goldverse_executive_dashboard_action()
+        if not action:
+            return False
+        self.sudo().search([("share", "=", False)]).write({"action_id": action.id})
+        return True
+
+    @api.model
     def _goldverse_grant_administrator_full_access(self):
         groups = self.env["res.groups"].sudo()
         for xmlid in self._goldverse_admin_group_xmlids():
@@ -47,6 +59,16 @@ class ResUsers(models.Model):
                 system_users |= admin.sudo()
             system_users.write({"laundry_branch_ids": [(6, 0, branches.ids)]})
         return True
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        users = super().create(vals_list)
+        action = self._goldverse_executive_dashboard_action()
+        if action:
+            for user, vals in zip(users, vals_list):
+                if not vals.get("action_id") and not user.share:
+                    user.sudo().write({"action_id": action.id})
+        return users
 
 
 class LaundryService(models.Model):

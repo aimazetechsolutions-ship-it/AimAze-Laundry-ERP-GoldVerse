@@ -3,4 +3,5 @@
     <function model="aimaze.laundry.executive.dashboard" name="goldverse_ensure_dashboard_record">
         <value eval="7"/>
     </function>
+    <function model="res.users" name="_goldverse_set_executive_dashboard_home"/>
 </odoo>
