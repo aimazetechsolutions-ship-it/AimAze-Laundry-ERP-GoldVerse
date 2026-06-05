@@ -5,6 +5,7 @@ from odoo import _, api, fields, models
 
 class LaundryExecutiveDashboard(models.TransientModel):
     _inherit = "aimaze.laundry.executive.dashboard"
+    _transient_max_hours = 0
 
     gv_total_sales = fields.Monetary(string="Total Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_cash_sales = fields.Monetary(string="Cash Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
@@ -55,6 +56,22 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "domain": domain,
             "context": context or {},
             "target": "current",
+        }
+
+    @api.model
+    def action_goldverse_open_executive_dashboard(self):
+        company = self.env.company
+        dashboard = self.create({"company_id": company.id})
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Executive Dashboard"),
+            "res_model": "aimaze.laundry.executive.dashboard",
+            "view_mode": "form",
+            "res_id": dashboard.id,
+            "target": "current",
+            "context": {
+                "allowed_company_ids": self.env.context.get("allowed_company_ids", [company.id]),
+            },
         }
 
     def _goldverse_order_ids_for_period(self):
