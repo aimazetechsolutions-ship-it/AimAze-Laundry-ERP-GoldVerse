@@ -516,6 +516,761 @@
   }
 }
 
+.o_form_view .goldverse-premium-dashboard {
+  --gv-premium-ink: #10243f;
+  --gv-premium-muted: #64748b;
+  --gv-premium-line: #dce6f1;
+  --gv-premium-bg: #f3f8fc;
+  --gv-premium-purple: #6f4da0;
+  --gv-premium-purple-dark: #2d2146;
+  --gv-premium-violet: #7d5cc7;
+  --gv-premium-blue: #2387d6;
+  --gv-premium-cyan: #21b8c8;
+  --gv-premium-green: #159467;
+  --gv-premium-orange: #f39a25;
+  --gv-premium-pink: #d94d8b;
+  --gv-premium-shadow: 0 18px 42px rgba(30, 41, 59, 0.1);
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: calc(100vh - 150px);
+  overflow: hidden;
+  border: 1px solid var(--gv-premium-line);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 85% 8%, rgba(33, 184, 200, 0.13), transparent 32%),
+    linear-gradient(140deg, #eef7fb 0%, #f9fbff 48%, #f2f5fb 100%);
+  color: var(--gv-premium-ink);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.o_form_view .goldverse-premium-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 18px;
+  background:
+    linear-gradient(165deg, rgba(125, 92, 199, 0.92), rgba(65, 39, 91, 0.98) 46%, #211936 100%);
+  color: #fff;
+}
+
+.o_form_view .goldverse-sidebar-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.13);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.o_form_view .goldverse-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.o_form_view .goldverse-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.o_form_view .goldverse-sidebar-item i {
+  width: 18px;
+  color: rgba(255, 255, 255, 0.86);
+  text-align: center;
+}
+
+.o_form_view .goldverse-sidebar-item.active,
+.o_form_view .goldverse-sidebar-item:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.o_form_view .goldverse-premium-main {
+  min-width: 0;
+  padding: 22px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.o_form_view .goldverse-premium-header,
+.o_form_view .goldverse-filter-bar,
+.o_form_view .goldverse-chart-card,
+.o_form_view .goldverse-finance-section,
+.o_form_view .goldverse-insight-panel,
+.o_form_view .goldverse-empty-state {
+  border: 1px solid rgba(220, 230, 241, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--gv-premium-shadow);
+}
+
+.o_form_view .goldverse-premium-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 22px;
+}
+
+.o_form_view .goldverse-eyebrow {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: var(--gv-premium-purple);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-title-block h2 {
+  margin: 0;
+  color: var(--gv-premium-ink);
+  font-size: 29px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.o_form_view .goldverse-company-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-top: 7px;
+  color: var(--gv-premium-muted);
+  font-weight: 800;
+}
+
+.o_form_view .goldverse-company-line .o_field_widget {
+  color: inherit;
+  font-weight: inherit;
+}
+
+.o_form_view .goldverse-branch-pill,
+.o_form_view .goldverse-date-pill,
+.o_form_view .goldverse-currency-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid rgba(111, 77, 160, 0.16);
+  border-radius: 8px;
+  background: #f7f3ff;
+  color: #5c4388;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.o_form_view .goldverse-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.o_form_view .goldverse-search-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 210px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #d8e2ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.o_form_view .goldverse-icon-button,
+.o_form_view .goldverse-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d8e2ee;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--gv-premium-purple);
+  text-decoration: none;
+}
+
+.o_form_view .goldverse-avatar {
+  background: linear-gradient(135deg, var(--gv-premium-purple), var(--gv-premium-cyan));
+  color: #fff;
+  font-weight: 900;
+}
+
+.o_form_view .goldverse-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 12px 14px;
+}
+
+.o_form_view .goldverse-filter-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.o_form_view .goldverse-filter-title span,
+.o_form_view .goldverse-section-header span,
+.o_form_view .goldverse-card-heading span {
+  color: var(--gv-premium-ink);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.o_form_view .goldverse-filter-title strong,
+.o_form_view .goldverse-section-header strong,
+.o_form_view .goldverse-card-heading strong {
+  color: var(--gv-premium-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-period-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.o_form_view .goldverse-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px;
+  color: var(--gv-premium-muted);
+  font-weight: 800;
+}
+
+.o_form_view .goldverse-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(170px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.o_form_view .goldverse-kpi-card,
+.o_form_view .goldverse-finance-card,
+.o_form_view .goldverse-donut-legend button {
+  border: 1px solid var(--gv-premium-line);
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.o_form_view .goldverse-kpi-card {
+  position: relative;
+  display: flex;
+  min-height: 174px;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 8px;
+  box-shadow: 0 14px 30px rgba(30, 41, 59, 0.08);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.o_form_view .goldverse-kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--gv-card-accent, var(--gv-premium-purple));
+}
+
+.o_form_view .goldverse-kpi-card::after {
+  content: "";
+  position: absolute;
+  top: -38px;
+  right: -28px;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: rgba(125, 92, 199, 0.1);
+}
+
+.o_form_view .goldverse-kpi-card:hover,
+.o_form_view .goldverse-finance-card:hover,
+.o_form_view .goldverse-donut-legend button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 77, 160, 0.42);
+  box-shadow: 0 20px 40px rgba(30, 41, 59, 0.13);
+}
+
+.o_form_view .goldverse-kpi-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f3effb;
+  color: var(--gv-card-accent, var(--gv-premium-purple));
+  font-size: 17px;
+}
+
+.o_form_view .goldverse-kpi-label {
+  position: relative;
+  z-index: 1;
+  color: var(--gv-premium-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-kpi-card strong {
+  position: relative;
+  z-index: 1;
+  color: var(--gv-premium-ink);
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.o_form_view .goldverse-kpi-card strong .o_field_widget,
+.o_form_view .goldverse-finance-card strong .o_field_widget,
+.o_form_view .goldverse-donut-chart .o_field_widget {
+  color: inherit;
+  font: inherit;
+}
+
+.o_form_view .goldverse-kpi-trend {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #eef5ff;
+  color: #315f9f;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.o_form_view .goldverse-kpi-trend.positive {
+  background: #eaf8f0;
+  color: var(--gv-premium-green);
+}
+
+.o_form_view .goldverse-kpi-trend.warning {
+  background: #fff4e6;
+  color: #b86400;
+}
+
+.o_form_view .goldverse-sparkline {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 28px;
+  margin-top: auto;
+  overflow: hidden;
+}
+
+.o_form_view .goldverse-sparkline span {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, transparent 8%, rgba(125, 92, 199, 0.28) 8% 16%, transparent 16% 28%, rgba(35, 135, 214, 0.34) 28% 42%, transparent 42% 56%, rgba(21, 148, 103, 0.28) 56% 68%, transparent 68%);
+}
+
+.o_form_view .accent-violet { --gv-card-accent: var(--gv-premium-violet); }
+.o_form_view .accent-green { --gv-card-accent: var(--gv-premium-green); }
+.o_form_view .accent-blue { --gv-card-accent: var(--gv-premium-blue); }
+.o_form_view .accent-pink { --gv-card-accent: var(--gv-premium-pink); }
+.o_form_view .accent-orange { --gv-card-accent: var(--gv-premium-orange); }
+
+.o_form_view .goldverse-chart-grid,
+.o_form_view .goldverse-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.o_form_view .goldverse-chart-card,
+.o_form_view .goldverse-insight-panel,
+.o_form_view .goldverse-finance-section {
+  padding: 18px;
+}
+
+.o_form_view .goldverse-card-heading,
+.o_form_view .goldverse-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.o_form_view .goldverse-card-heading em {
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #f1f5fb;
+  color: var(--gv-premium-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.o_form_view .goldverse-line-chart {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  border: 1px solid #e2eaf3;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 248, 252, 0.96)),
+    repeating-linear-gradient(0deg, transparent 0, transparent 51px, rgba(15, 36, 63, 0.05) 52px);
+}
+
+.o_form_view .goldverse-line-chart svg {
+  position: absolute;
+  inset: 18px 20px 56px;
+  width: calc(100% - 40px);
+  height: calc(100% - 76px);
+}
+
+.o_form_view .goldverse-line-chart polyline {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 6px 8px rgba(30, 41, 59, 0.12));
+}
+
+.o_form_view .line-total { stroke: var(--gv-premium-purple); }
+.o_form_view .line-cash { stroke: var(--gv-premium-green); }
+.o_form_view .line-credit { stroke: var(--gv-premium-orange); }
+.o_form_view .line-bank { stroke: var(--gv-premium-blue); }
+.o_form_view .line-ibft { stroke: var(--gv-premium-pink); }
+
+.o_form_view .goldverse-chart-legend {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--gv-premium-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.o_form_view .goldverse-chart-legend span,
+.o_form_view .goldverse-donut-legend i {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.o_form_view .goldverse-chart-legend i,
+.o_form_view .goldverse-donut-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.o_form_view .legend-total { background: var(--gv-premium-purple); }
+.o_form_view .legend-cash,
+.o_form_view .dot-green { background: var(--gv-premium-green); }
+.o_form_view .legend-credit,
+.o_form_view .dot-orange { background: var(--gv-premium-orange); }
+.o_form_view .legend-bank,
+.o_form_view .dot-blue { background: var(--gv-premium-blue); }
+.o_form_view .legend-ibft,
+.o_form_view .dot-pink { background: var(--gv-premium-pink); }
+.o_form_view .dot-gray { background: #94a3b8; }
+
+.o_form_view .goldverse-donut-layout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.o_form_view .goldverse-donut-chart {
+  display: flex;
+  width: 170px;
+  height: 170px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--gv-premium-ink);
+  text-align: center;
+}
+
+.o_form_view button.goldverse-donut-chart {
+  cursor: pointer;
+}
+
+.o_form_view .goldverse-order-donut {
+  background:
+    radial-gradient(circle, #fff 0 56%, transparent 57%),
+    conic-gradient(var(--gv-premium-blue) 0 58%, var(--gv-premium-orange) 58% 78%, var(--gv-premium-green) 78% 94%, #cbd5e1 94% 100%);
+}
+
+.o_form_view .goldverse-sales-donut {
+  background:
+    radial-gradient(circle, #fff 0 56%, transparent 57%),
+    conic-gradient(var(--gv-premium-green) 0 48%, var(--gv-premium-orange) 48% 95%, var(--gv-premium-blue) 95% 100%, var(--gv-premium-pink) 100% 100%);
+}
+
+.o_form_view .goldverse-donut-chart span {
+  max-width: 116px;
+  color: var(--gv-premium-ink);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.o_form_view .goldverse-donut-chart small {
+  color: var(--gv-premium-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.o_form_view .goldverse-donut-legend button {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(30, 41, 59, 0.05);
+}
+
+.o_form_view .goldverse-donut-legend button span {
+  color: var(--gv-premium-muted);
+  font-weight: 800;
+}
+
+.o_form_view .goldverse-donut-legend button strong {
+  color: var(--gv-premium-ink);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.o_form_view .goldverse-donut-legend button em {
+  color: var(--gv-premium-purple);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.o_form_view .goldverse-finance-section {
+  margin-top: 16px;
+}
+
+.o_form_view .goldverse-finance-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.o_form_view .goldverse-finance-card {
+  display: flex;
+  min-height: 118px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(30, 41, 59, 0.07);
+}
+
+.o_form_view .goldverse-finance-card i {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #eef7fb;
+  color: var(--gv-premium-cyan);
+}
+
+.o_form_view .goldverse-finance-card span {
+  color: var(--gv-premium-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.o_form_view .goldverse-finance-card strong {
+  color: var(--gv-premium-ink);
+  font-size: 17px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.o_form_view .goldverse-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.o_form_view .goldverse-insight-card {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e1e9f2;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff, #f8fbff);
+  color: var(--gv-premium-ink);
+  font-weight: 850;
+}
+
+.o_form_view .goldverse-insight-card i {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f2ecff;
+  color: var(--gv-premium-purple);
+}
+
+@media (max-width: 1500px) {
+  .o_form_view .goldverse-kpi-grid,
+  .o_form_view .goldverse-finance-grid {
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .o_form_view .goldverse-premium-dashboard {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+
+  .o_form_view .goldverse-premium-sidebar {
+    align-items: center;
+    padding: 18px 10px;
+  }
+
+  .o_form_view .goldverse-sidebar-item {
+    justify-content: center;
+    width: 48px;
+    padding: 10px;
+  }
+
+  .o_form_view .goldverse-sidebar-item:not(.active) {
+    color: transparent;
+  }
+
+  .o_form_view .goldverse-sidebar-item i {
+    color: #fff;
+  }
+
+  .o_form_view .goldverse-premium-header,
+  .o_form_view .goldverse-filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .o_form_view .goldverse-header-actions,
+  .o_form_view .goldverse-period-controls {
+    justify-content: flex-start;
+  }
+
+  .o_form_view .goldverse-chart-grid,
+  .o_form_view .goldverse-lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 780px) {
+  .o_form_view .goldverse-premium-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .o_form_view .goldverse-premium-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .o_form_view .goldverse-sidebar-nav {
+    flex-direction: row;
+  }
+
+  .o_form_view .goldverse-sidebar-item {
+    width: auto;
+    min-width: 46px;
+  }
+
+  .o_form_view .goldverse-sidebar-item:not(.active) {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .o_form_view .goldverse-premium-main {
+    padding: 14px;
+  }
+
+  .o_form_view .goldverse-kpi-grid,
+  .o_form_view .goldverse-finance-grid,
+  .o_form_view .goldverse-insight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .o_form_view .goldverse-donut-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .o_form_view .goldverse-search-box {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .o_account_dashboard_kanban_view.o_account_kanban {
   --goldverse-account-ink: #10243a;
   --goldverse-account-muted: #5c6f84;

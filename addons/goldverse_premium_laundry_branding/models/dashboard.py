@@ -22,6 +22,11 @@ class LaundryExecutiveDashboard(models.TransientModel):
     gv_top_expenses = fields.Monetary(string="Top 5 Expenses", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_receivables = fields.Monetary(string="Receivables", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_advances_payables = fields.Monetary(string="Advances Payables", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
+    gv_cash_sales_share_label = fields.Char(string="Cash Sales Share", compute="_compute_goldverse_dashboard_cards")
+    gv_bank_sales_share_label = fields.Char(string="Bank Sales Share", compute="_compute_goldverse_dashboard_cards")
+    gv_ibft_sales_share_label = fields.Char(string="IBFT Sales Share", compute="_compute_goldverse_dashboard_cards")
+    gv_credit_sales_share_label = fields.Char(string="Credit Sales Share", compute="_compute_goldverse_dashboard_cards")
+    gv_gross_profit_margin_label = fields.Char(string="Gross Profit Margin", compute="_compute_goldverse_dashboard_cards")
 
     def _goldverse_base_order_domain(self):
         self.ensure_one()
@@ -367,3 +372,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
             dashboard.gv_top_expenses = sum(top_expense_lines.mapped("balance"))
             dashboard.gv_receivables = sum(MoveLine.search(dashboard._goldverse_receivable_domain()).mapped("amount_residual"))
             dashboard.gv_advances_payables = abs(sum(MoveLine.search(dashboard._goldverse_advance_payable_domain()).mapped("balance")))
+            sales_total = dashboard.gv_total_sales or 0.0
+            dashboard.gv_cash_sales_share_label = "%.1f%%" % ((dashboard.gv_cash_sales / sales_total) * 100) if sales_total else "0.0%"
+            dashboard.gv_bank_sales_share_label = "%.1f%%" % ((dashboard.gv_bank_sales / sales_total) * 100) if sales_total else "0.0%"
+            dashboard.gv_ibft_sales_share_label = "%.1f%%" % ((dashboard.gv_ibft_sales / sales_total) * 100) if sales_total else "0.0%"
+            dashboard.gv_credit_sales_share_label = "%.1f%%" % ((dashboard.gv_credit_sales / sales_total) * 100) if sales_total else "0.0%"
+            dashboard.gv_gross_profit_margin_label = "%.2f%%" % ((dashboard.gv_gross_profit / sales_total) * 100) if sales_total else "0.00%"
