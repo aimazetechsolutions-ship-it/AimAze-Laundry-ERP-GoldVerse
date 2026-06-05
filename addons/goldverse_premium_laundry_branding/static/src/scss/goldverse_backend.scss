@@ -517,6 +517,18 @@
 }
 
 .o_form_view:has(.goldverse-premium-dashboard) {
+  width: 100% !important;
+  max-width: none !important;
+
+  .o_form_view_container,
+  .o_form_renderer,
+  .o_form_sheet_bg {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
   .o_form_sheet_bg {
     padding: 0 !important;
     background:
@@ -524,19 +536,26 @@
       linear-gradient(140deg, #eef7fb 0%, #f9fbff 48%, #f2f5fb 100%) !important;
   }
 
-  .o_form_sheet,
-  .o_form_renderer {
+  .o_form_sheet {
     width: 100% !important;
     max-width: none !important;
-  }
-
-  .o_form_sheet {
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+  }
+
+  .o-mail-Form-chatter,
+  .o-mail-ChatterContainer,
+  .o-mail-Form-chatter.o-aside,
+  .o-mail-ChatterContainer.o-aside {
+    display: none !important;
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
   }
 }
 
@@ -560,6 +579,8 @@
   overflow: hidden;
   border: 0;
   border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
   background:
     radial-gradient(circle at 85% 8%, rgba(33, 184, 200, 0.13), transparent 32%),
     linear-gradient(140deg, #eef7fb 0%, #f9fbff 48%, #f2f5fb 100%);
@@ -626,6 +647,8 @@
 
 .o_form_view .goldverse-premium-main {
   min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   padding: 22px;
   overflow-x: hidden;
   overflow-y: auto;
