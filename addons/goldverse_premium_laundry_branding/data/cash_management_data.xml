@@ -3,10 +3,11 @@
     <record id="seq_goldverse_cash_transaction" model="ir.sequence">
         <field name="name">GoldVerse Cash Transaction</field>
         <field name="code">goldverse.cash.transaction</field>
-        <field name="prefix">GPL/EME/CASH/%(y)s/</field>
+        <field name="prefix">GPL/EME/CV/%(y)s/</field>
         <field name="padding">4</field>
         <field name="company_id" eval="False"/>
     </record>
 
     <function model="aimaze.laundry.account.config" name="_goldverse_configure_cash_management"/>
+    <function model="goldverse.cash.transaction" name="_goldverse_configure_cash_voucher_sequence"/>
 </odoo>

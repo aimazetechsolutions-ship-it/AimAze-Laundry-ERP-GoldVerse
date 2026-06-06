@@ -10,3 +10,4 @@ from . import dashboard
 from . import account_journal
 from . import role_access_manager
 from . import cash_management
+from . import customer_wallet_receipt

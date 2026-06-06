@@ -26,7 +26,7 @@
             <form string="Cash Desk">
                 <header>
                     <button name="action_post" type="object" string="Post Entry" class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'draft'"/>
+                    <button name="action_cancel" type="object" string="Reset Voucher" invisible="state != 'draft'" confirm="Are you sure you want to reset/cancel this cash voucher? This will mark the draft voucher as cancelled."/>
                     <button name="action_view_journal_entry" type="object" string="View Journal Entry" invisible="not account_move_id"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
                 </header>
@@ -50,7 +50,7 @@
                         </group>
                     </group>
                     <group string="Live Cash Position">
-                        <field name="main_cash_balance" readonly="1"/>
+                        <field name="main_cash_balance" readonly="1" groups="base.group_system"/>
                         <field name="petty_cash_balance" readonly="1"/>
                     </group>
                     <group string="Receipt">

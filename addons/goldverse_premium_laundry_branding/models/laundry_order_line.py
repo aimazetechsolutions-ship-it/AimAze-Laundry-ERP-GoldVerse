@@ -82,6 +82,7 @@ class LaundryOrderLine(models.Model):
         "line_id",
         "topup_id",
         string="Add On",
+        required=True,
     )
     goldverse_discount = fields.Char(string="Discount", default="0")
     goldverse_base_price = fields.Monetary(
@@ -242,6 +243,12 @@ class LaundryOrderLine(models.Model):
             if line.goldverse_topup_id:
                 line.goldverse_topup_ids = [(4, line.goldverse_topup_id.id)]
 
+    @api.constrains("service_id", "goldverse_topup_ids")
+    def _check_goldverse_topup_required(self):
+        missing_lines = self.filtered(lambda line: line.service_id and not line.goldverse_topup_ids)
+        if missing_lines:
+            raise UserError(_("Add On is mandatory for every laundry order service line."))
+
     @api.onchange("goldverse_discount", "quantity", "unit_price")
     def _onchange_goldverse_discount(self):
         for line in self:
@@ -336,10 +343,46 @@ class LaundryOrderLine(models.Model):
             line.goldverse_net_price = net_price
             line.goldverse_priority_charge = priority_unit_charge * (line.quantity or 0.0)
 
+    def _goldverse_check_lines_editable(self):
+        if self.env.context.get("goldverse_allow_locked_order_write") or self.env.context.get("goldverse_refreshing_amounts"):
+            return True
+        locked_lines = self.filtered(
+            lambda line: line.order_id
+            and (line.order_id._goldverse_is_locked() or line.order_id._goldverse_is_created_edit_locked())
+        )
+        if locked_lines:
+            order_names = ", ".join(locked_lines.mapped("order_id.display_name")[:5])
+            raise UserError(
+                _("Created laundry orders are locked and their item lines cannot be changed. Receive payments or use workflow buttons only. Locked order(s): %s")
+                % order_names
+            )
+        return True
+
+    @api.model
+    def _goldverse_check_create_vals_editable(self, vals_list):
+        if self.env.context.get("goldverse_allow_locked_order_write") or self.env.context.get("goldverse_refreshing_amounts"):
+            return True
+        order_ids = [vals.get("order_id") for vals in vals_list if vals.get("order_id")]
+        if not order_ids:
+            return True
+        locked_orders = self.env["aimaze.laundry.order"].browse(order_ids).filtered(
+            lambda order: order._goldverse_is_locked() or order._goldverse_is_created_edit_locked()
+        )
+        if locked_orders:
+            order_names = ", ".join(locked_orders.mapped("display_name")[:5])
+            raise UserError(
+                _("Created laundry orders are locked and new item lines cannot be added. Receive payments or use workflow buttons only. Locked order(s): %s")
+                % order_names
+            )
+        return True
+
     @api.model_create_multi
     def create(self, vals_list):
+        self._goldverse_check_create_vals_editable(vals_list)
         for vals in vals_list:
             vals.setdefault("goldverse_priority", "normal")
+            if vals.get("goldverse_topup_id") and not vals.get("goldverse_topup_ids"):
+                vals["goldverse_topup_ids"] = [(4, vals["goldverse_topup_id"])]
             self._goldverse_apply_priority_price_vals(vals)
         lines = super().create(vals_list)
         lines._goldverse_sync_display_fields()
@@ -347,11 +390,7 @@ class LaundryOrderLine(models.Model):
         return lines
 
     def write(self, vals):
-        if not self.env.context.get("goldverse_allow_locked_order_write"):
-            locked_lines = self.filtered(lambda line: line.order_id and line.order_id._goldverse_is_locked())
-            if locked_lines:
-                order_names = ", ".join(locked_lines.mapped("order_id.display_name")[:5])
-                raise UserError("Paid laundry orders are locked and their item lines cannot be changed. Locked order(s): %s" % order_names)
+        self._goldverse_check_lines_editable()
         if self.env.context.get("goldverse_refreshing_amounts"):
             return super().write(vals)
         if {"service_id", "goldverse_priority"} & set(vals) and "unit_price" not in vals:
@@ -384,6 +423,10 @@ class LaundryOrderLine(models.Model):
             self._goldverse_sync_display_fields()
             self._goldverse_refresh_amount_fields()
         return result
+
+    def unlink(self):
+        self._goldverse_check_lines_editable()
+        return super().unlink()
 
     def _goldverse_set_qc_status_from_options(self):
         self.ensure_one()

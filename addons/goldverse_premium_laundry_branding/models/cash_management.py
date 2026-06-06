@@ -217,7 +217,7 @@ class GoldVerseCashTransaction(models.Model):
             "date": self.date,
             "journal_id": journal.id,
             "company_id": self.company_id.id,
-            "ref": self.name if self.name != "New" else label,
+            "ref": False,
             "line_ids": [
                 (
                     0,
@@ -278,6 +278,29 @@ class GoldVerseCashTransaction(models.Model):
             "view_mode": "form",
             "target": "current",
         }
+
+    @api.model
+    def _goldverse_configure_cash_voucher_sequence(self):
+        sequence = self.env["ir.sequence"].sudo().search([("code", "=", "goldverse.cash.transaction")], limit=1)
+        if sequence:
+            sequence.write({"prefix": "GPL/EME/CV/%(y)s/"})
+
+        transactions = self.sudo().search([("name", "like", "/CASH/")])
+        for record in transactions:
+            old_name = record.name
+            new_name = old_name.replace("/CASH/", "/CV/")
+            if not self.sudo().search([("id", "!=", record.id), ("name", "=", new_name)], limit=1):
+                record.write({"name": new_name})
+            move = record.account_move_id.sudo()
+            if move and (move.ref in (old_name, new_name) or (move.ref and "/CASH/" in move.ref)):
+                move.write({"ref": False})
+
+        redundant_ref_records = self.sudo().search([("account_move_id", "!=", False)])
+        for record in redundant_ref_records:
+            move = record.account_move_id.sudo()
+            if move.ref == record.name:
+                move.write({"ref": False})
+        return True
 
 
 class GoldVerseCashReportWizard(models.TransientModel):

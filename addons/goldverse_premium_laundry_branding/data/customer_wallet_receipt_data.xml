@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_goldverse_customer_wallet_receipt" model="ir.sequence">
+        <field name="name">GoldVerse Customer Wallet Receipt</field>
+        <field name="code">goldverse.customer.wallet.receipt</field>
+        <field name="prefix">GPL/EME/WR/%(y)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

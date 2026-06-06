@@ -32,6 +32,32 @@ GOLDVERSE_LOCKED_ORDER_ALLOWED_WRITE_FIELDS = {
     "message_partner_ids",
     "my_activity_date_deadline",
 }
+GOLDVERSE_CREATED_ORDER_PROTECTED_WRITE_FIELDS = {
+    "barcode",
+    "branch_id",
+    "company_id",
+    "contract_id",
+    "country_id",
+    "currency_id",
+    "customer_type",
+    "delivery_charge",
+    "delivery_required",
+    "discount_amount",
+    "driver_id",
+    "email",
+    "expected_delivery_datetime",
+    "line_ids",
+    "mobile",
+    "name",
+    "order_date",
+    "partner_id",
+    "pickup_required",
+    "priority",
+    "responsible_id",
+    "service_type",
+    "source",
+    "user_id",
+}
 
 
 class LaundryOrder(models.Model):
@@ -103,6 +129,28 @@ class LaundryOrder(models.Model):
                 order.goldverse_delivery_status = "delivered"
             else:
                 order.goldverse_delivery_status = "undelivered"
+
+    @api.depends(
+        "amount_total",
+        "payment_ids.amount",
+        "payment_ids.state",
+        "invoice_id.state",
+        "invoice_id.payment_state",
+        "invoice_id.amount_residual",
+    )
+    def _compute_payment_totals(self):
+        super()._compute_payment_totals()
+        for order in self.filtered(lambda item: item.invoice_id and item.invoice_id.state == "posted"):
+            residual = max(order.invoice_id.amount_residual or 0.0, 0.0)
+            paid_from_invoice = max((order.amount_total or 0.0) - residual, 0.0)
+            order.paid_amount = max(order.paid_amount or 0.0, paid_from_invoice)
+            order.balance_amount = residual
+            if order.invoice_id.payment_state == "paid" or residual <= 0.01:
+                order.payment_status = "paid"
+            elif order.paid_amount > 0:
+                order.payment_status = "partial"
+            else:
+                order.payment_status = "unpaid"
 
     @api.depends(
         "state",
@@ -354,6 +402,13 @@ class LaundryOrder(models.Model):
             if missing:
                 raise ValidationError(_("Please fill mandatory fields: %s.") % ", ".join(missing))
 
+    def _goldverse_validate_order_lines_required(self):
+        missing_lines = self.filtered(lambda order: not order.line_ids)
+        if missing_lines:
+            names = ", ".join(missing_lines.mapped("display_name")[:5])
+            raise ValidationError(_("Add at least one line item before creating the laundry order. Order(s): %s") % names)
+        return True
+
     def _goldverse_assign_order_number(self):
         sequence = self.env["ir.sequence"].sudo().search([("code", "=", "aimaze.laundry.order")], limit=1)
         for order in self:
@@ -415,15 +470,28 @@ class LaundryOrder(models.Model):
         self.ensure_one()
         return self.state == "paid" or (self.payment_status == "paid" and self.balance_amount <= 0.01)
 
+    def _goldverse_is_created_edit_locked(self):
+        self.ensure_one()
+        return bool(self.name and self.name != "New" and self.name != GOLDVERSE_DRAFT_ORDER_MARKER and self.state != "draft")
+
     def _goldverse_check_locked_write(self, vals):
         if self.env.context.get("goldverse_allow_locked_order_write"):
             return True
         if not vals:
             return True
+        if set(vals).issubset(GOLDVERSE_LOCKED_ORDER_ALLOWED_WRITE_FIELDS):
+            return True
+        created_locked = self.filtered(lambda order: order._goldverse_is_created_edit_locked())
+        protected_fields = GOLDVERSE_CREATED_ORDER_PROTECTED_WRITE_FIELDS & set(vals)
+        if created_locked and protected_fields:
+            names = ", ".join(created_locked.mapped("display_name")[:5])
+            fields_label = ", ".join(sorted(protected_fields))
+            raise UserError(
+                _("Created laundry orders are locked for editing. Receive payments or use workflow buttons only. Locked order(s): %s. Field(s): %s")
+                % (names, fields_label)
+            )
         locked = self.filtered(lambda order: order._goldverse_is_locked())
         if not locked:
-            return True
-        if set(vals).issubset(GOLDVERSE_LOCKED_ORDER_ALLOWED_WRITE_FIELDS):
             return True
         if set(vals) == {"state"} and vals.get("state") == "paid":
             return True
@@ -432,6 +500,7 @@ class LaundryOrder(models.Model):
 
     def action_create_order(self):
         self._goldverse_validate_required_order_fields()
+        self._goldverse_validate_order_lines_required()
         self._goldverse_assign_order_number()
         self._set_state("order_created")
 
@@ -481,7 +550,51 @@ class LaundryOrder(models.Model):
     def action_use_wallet(self):
         self._goldverse_validate_created_for_financial_action()
         self._goldverse_check_payment_action_allowed()
-        return super().action_use_wallet()
+        for order in self:
+            order._goldverse_create_and_post_invoice()
+            order._goldverse_apply_ar_wallet_credit()
+        return {"type": "ir.actions.client", "tag": "reload"}
+
+    def _goldverse_apply_ar_wallet_credit(self):
+        self.ensure_one()
+        invoice = self.invoice_id
+        if not invoice or invoice.state != "posted":
+            raise UserError(_("Create and post the invoice before using customer wallet balance."))
+
+        receivable_lines = invoice.line_ids.filtered(
+            lambda line: line.account_id.account_type == "asset_receivable" and not line.reconciled and line.balance > 0
+        )
+        if not receivable_lines:
+            raise UserError(_("No open receivable balance is available on this invoice."))
+
+        credit_lines = self.env["account.move.line"].sudo().search(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("partner_id.commercial_partner_id", "=", self.partner_id.commercial_partner_id.id),
+                ("account_id.account_type", "=", "asset_receivable"),
+                ("parent_state", "=", "posted"),
+                ("reconciled", "=", False),
+                ("amount_residual", "<", 0),
+            ],
+            order="date, id",
+        )
+        if not credit_lines:
+            raise UserError(_("No customer wallet/advance AR credit balance is available for %s.") % self.partner_id.display_name)
+
+        before_residual = invoice.amount_residual
+        (receivable_lines + credit_lines).reconcile()
+        invoice.invalidate_recordset(["amount_residual", "payment_state"])
+        self.invalidate_recordset(["balance_amount", "payment_status", "state"])
+        applied_amount = max(before_residual - invoice.amount_residual, 0.0)
+        if applied_amount <= 0:
+            raise UserError(_("The available customer wallet balance could not be applied to this invoice."))
+        self.message_post(
+            body=_("Customer wallet/advance AR credit applied: %(amount).2f %(currency)s.")
+            % {"amount": applied_amount, "currency": self.currency_id.name}
+        )
+        if self.balance_amount <= 0.01 and self.payment_status == "paid":
+            self.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)._set_state("paid")
+        return True
 
     def action_create_invoice(self):
         self._goldverse_validate_created_for_financial_action()
