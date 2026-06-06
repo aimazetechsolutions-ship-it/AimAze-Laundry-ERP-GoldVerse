@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_goldverse_aged_partner_ledger_line_list" model="ir.ui.view">
+        <field name="name">account.move.line.goldverse.aged.partner.ledger.list</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <list string="Aged Partner Ledger" create="0" edit="0" default_order="date asc, id asc">
+                <field name="date" optional="show"/>
+                <field name="company_currency_id" column_invisible="True"/>
+                <field name="move_name" string="Journal Entry" optional="show"/>
+                <field name="account_id" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="name" string="Label" optional="show"/>
+                <field name="debit" optional="show" sum="Total Debit"/>
+                <field name="credit" optional="show" sum="Total Credit"/>
+                <field name="goldverse_running_balance" string="Running Balance" optional="show"/>
+                <field name="matching_number" string="Matching" optional="show"/>
+            </list>
+        </field>
+    </record>
+</odoo>

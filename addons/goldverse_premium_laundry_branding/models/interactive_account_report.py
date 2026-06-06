@@ -542,15 +542,18 @@ class InteractiveAccountReport(models.AbstractModel):
         )
         if partner_id:
             domain.append(("partner_id", "=", partner_id))
+        list_view = self.env.ref(
+            "goldverse_premium_laundry_branding.view_goldverse_aged_partner_ledger_line_list",
+            raise_if_not_found=False,
+        )
         return {
             "type": "ir.actions.act_window",
             "name": name,
             "res_model": "account.move.line",
             "view_mode": "list,form",
-            "views": [(False, "list"), (False, "form")],
+            "views": [(list_view.id, "list"), (False, "form")] if list_view else [(False, "list"), (False, "form")],
             "domain": domain,
             "context": {
-                "search_default_group_by_move": 1,
                 "default_company_id": self.env.company.id,
             },
         }
