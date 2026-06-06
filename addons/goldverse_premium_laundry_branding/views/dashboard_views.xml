@@ -47,32 +47,18 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//div[hasclass('aimaze-dashboard-shell')]" position="replace">
-                <div class="goldverse-premium-dashboard">
-                    <main class="goldverse-premium-main">
-                        <header class="goldverse-premium-header">
-                            <div class="goldverse-title-block">
-                                <span class="goldverse-eyebrow">Executive Analytics</span>
+                <div class="goldverse-premium-dashboard goldverse-flat-dashboard">
+                    <main class="goldverse-premium-main goldverse-flat-main">
+                        <header class="goldverse-flat-header">
+                            <div class="goldverse-flat-title">
                                 <h2>Executive Dashboard</h2>
-                                <div class="goldverse-company-line">
-                                    <field name="company_id" readonly="1" nolabel="1"/>
-                                    <span class="goldverse-branch-pill" invisible="not branch_id"><i class="fa fa-map-marker"/><field name="branch_id" readonly="1" nolabel="1"/></span>
+                                <div class="goldverse-flat-company"><field name="company_id" readonly="1" nolabel="1"/></div>
+                                <div class="goldverse-flat-meta">
+                                    <span invisible="not branch_id"><strong>Branch</strong><field name="branch_id" readonly="1" nolabel="1"/></span>
+                                    <span><strong>Currency</strong><field name="currency_id" readonly="1" nolabel="1"/></span>
                                 </div>
                             </div>
-                            <div class="goldverse-header-actions">
-                                <div class="goldverse-search-box"><i class="fa fa-search"/><span>Search...</span></div>
-                                <div class="goldverse-date-pill"><i class="fa fa-calendar"/><field name="date_range_label" readonly="1" nolabel="1"/></div>
-                                <div class="goldverse-currency-pill"><i class="fa fa-money"/><field name="currency_id" readonly="1" nolabel="1"/></div>
-                                <a class="goldverse-icon-button" role="button"><i class="fa fa-bell-o"/></a>
-                                <a class="goldverse-avatar" role="button">A</a>
-                            </div>
-                        </header>
-
-                        <section class="goldverse-filter-bar">
-                            <div class="goldverse-filter-title">
-                                <span>Performance Window</span>
-                                <strong><field name="date_range_label" readonly="1"/></strong>
-                            </div>
-                            <div class="goldverse-period-controls">
+                            <div class="goldverse-flat-filters">
                                 <field name="period_filter" widget="selection_badge" nolabel="1" class="aimaze-segmented-field"/>
                                 <field name="date_from" invisible="1"/>
                                 <field name="date_to" invisible="1"/>
@@ -96,134 +82,47 @@
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </header>
 
-                        <section class="goldverse-empty-state" invisible="gv_total_sales or gv_total_orders">
-                            <i class="fa fa-info-circle"/>
-                            <span>No dashboard values are available for this selected period yet.</span>
-                        </section>
-
-                        <section class="goldverse-kpi-grid">
-                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_total_sales'}" class="goldverse-kpi-card accent-violet">
-                                <span class="goldverse-kpi-icon"><i class="fa fa-line-chart"/></span>
-                                <span class="goldverse-kpi-label">Total Sales</span>
-                                <strong><field name="gv_total_sales"/></strong>
-                                <span class="goldverse-kpi-trend positive"><i class="fa fa-arrow-up"/>18.6%</span>
-                                <span class="goldverse-sparkline"><span></span></span>
-                            </button>
-                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_cash_sales'}" class="goldverse-kpi-card accent-green">
-                                <span class="goldverse-kpi-icon"><i class="fa fa-money"/></span>
-                                <span class="goldverse-kpi-label">Cash Sales</span>
-                                <strong><field name="gv_cash_sales"/></strong>
-                                <span class="goldverse-kpi-trend positive"><field name="gv_cash_sales_share_label"/> share</span>
-                                <span class="goldverse-sparkline"><span></span></span>
-                            </button>
-                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_bank_sales'}" class="goldverse-kpi-card accent-blue">
-                                <span class="goldverse-kpi-icon"><i class="fa fa-university"/></span>
-                                <span class="goldverse-kpi-label">Bank Sales</span>
-                                <strong><field name="gv_bank_sales"/></strong>
-                                <span class="goldverse-kpi-trend"><field name="gv_bank_sales_share_label"/> share</span>
-                                <span class="goldverse-sparkline"><span></span></span>
-                            </button>
-                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_ibft_sales'}" class="goldverse-kpi-card accent-pink">
-                                <span class="goldverse-kpi-icon"><i class="fa fa-exchange"/></span>
-                                <span class="goldverse-kpi-label">IBFT Sales</span>
-                                <strong><field name="gv_ibft_sales"/></strong>
-                                <span class="goldverse-kpi-trend"><field name="gv_ibft_sales_share_label"/> share</span>
-                                <span class="goldverse-sparkline"><span></span></span>
-                            </button>
-                            <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_credit_sales'}" class="goldverse-kpi-card accent-orange">
-                                <span class="goldverse-kpi-icon"><i class="fa fa-credit-card"/></span>
-                                <span class="goldverse-kpi-label">Credit Sales</span>
-                                <strong><field name="gv_credit_sales"/></strong>
-                                <span class="goldverse-kpi-trend warning"><field name="gv_credit_sales_share_label"/> share</span>
-                                <span class="goldverse-sparkline"><span></span></span>
-                            </button>
-                        </section>
-
-                        <section class="goldverse-chart-grid">
-                            <div class="goldverse-chart-card goldverse-sales-overview">
-                                <div class="goldverse-card-heading">
-                                    <div><span>Sales Overview</span><strong>Total, Cash, Credit, Bank, IBFT</strong></div>
-                                    <em><field name="date_range_label"/></em>
-                                </div>
-                                <div class="goldverse-line-chart">
-                                    <div class="goldverse-chart-gridlines"></div>
-                                    <svg viewBox="0 0 640 260" preserveAspectRatio="none" aria-label="Sales overview chart">
-                                        <polyline points="20,185 135,145 250,160 365,95 500,118 620,52" class="line-total"/>
-                                        <polyline points="20,208 135,176 250,190 365,150 500,160 620,118" class="line-cash"/>
-                                        <polyline points="20,222 135,185 250,194 365,130 500,148 620,96" class="line-credit"/>
-                                        <polyline points="20,232 135,220 250,214 365,206 500,188 620,176" class="line-bank"/>
-                                        <polyline points="20,238 135,238 250,238 365,238 500,238 620,238" class="line-ibft"/>
-                                    </svg>
-                                    <div class="goldverse-chart-legend">
-                                        <span><i class="legend-total"></i>Total Sales</span>
-                                        <span><i class="legend-cash"></i>Cash Sales</span>
-                                        <span><i class="legend-credit"></i>Credit Sales</span>
-                                        <span><i class="legend-bank"></i>Bank Sales</span>
-                                        <span><i class="legend-ibft"></i>IBFT Sales</span>
-                                    </div>
-                                </div>
+                        <section class="goldverse-flat-section goldverse-sales-section">
+                            <div class="goldverse-flat-section-title">
+                                <h3>Sales</h3>
+                                <strong><field name="date_range_label" readonly="1" nolabel="1"/></strong>
                             </div>
-
-                            <div class="goldverse-chart-card">
-                                <div class="goldverse-card-heading">
-                                    <div><span>Order Flow</span><strong>Operational movement</strong></div>
-                                </div>
-                                <div class="goldverse-donut-layout">
-                                    <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_total_orders'}" class="goldverse-donut-chart goldverse-order-donut">
-                                        <span><field name="gv_total_orders"/></span>
-                                        <small>Total Orders</small>
-                                    </button>
-                                    <div class="goldverse-donut-legend">
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_draft_orders'}"><i class="dot-gray"></i><span>Draft</span><strong><field name="gv_draft_orders"/></strong></button>
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_sent_warehouse_orders'}"><i class="dot-blue"></i><span>Sent to Warehouse</span><strong><field name="gv_sent_warehouse_orders"/></strong></button>
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_received_warehouse_orders'}"><i class="dot-orange"></i><span>Receive from Warehouse</span><strong><field name="gv_received_warehouse_orders"/></strong></button>
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_delivered_customer_orders'}"><i class="dot-green"></i><span>Delivered to Customers</span><strong><field name="gv_delivered_customer_orders"/></strong></button>
-                                    </div>
-                                </div>
+                            <div class="goldverse-flat-card-grid">
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_total_sales'}" class="goldverse-flat-card goldverse-card-total"><span>Total Sales</span><strong><field name="gv_total_sales"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_cash_sales'}" class="goldverse-flat-card"><span>Cash Sales</span><strong><field name="gv_cash_sales"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_bank_sales'}" class="goldverse-flat-card"><span>Bank Sales</span><strong><field name="gv_bank_sales"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_ibft_sales'}" class="goldverse-flat-card"><span>IBFT Sales</span><strong><field name="gv_ibft_sales"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_credit_sales'}" class="goldverse-flat-card"><span>Credit Sales</span><strong><field name="gv_credit_sales"/></strong></button>
                             </div>
                         </section>
 
-                        <section class="goldverse-finance-section">
-                            <div class="goldverse-section-header">
-                                <div><span>Finance Overview</span><strong>Profitability and exposure</strong></div>
+                        <section class="goldverse-flat-section goldverse-flow-section">
+                            <div class="goldverse-flat-section-title">
+                                <h3>Order Flow</h3>
+                                <strong>Operations</strong>
                             </div>
-                            <div class="goldverse-finance-grid">
-                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_gross_profit'}" class="goldverse-finance-card"><i class="fa fa-line-chart"/><span>Gross Profit</span><strong><field name="gv_gross_profit"/></strong></button>
-                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_net_profit'}" class="goldverse-finance-card"><i class="fa fa-pie-chart"/><span>Net Profit</span><strong><field name="gv_net_profit"/></strong></button>
-                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_top_expenses'}" class="goldverse-finance-card"><i class="fa fa-list-ol"/><span>Top 5 Expenses</span><strong><field name="gv_top_expenses"/></strong></button>
-                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_receivables'}" class="goldverse-finance-card"><i class="fa fa-user-o"/><span>Receivables</span><strong><field name="gv_receivables"/></strong></button>
-                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_advances_payables'}" class="goldverse-finance-card"><i class="fa fa-balance-scale"/><span>Advances Payables</span><strong><field name="gv_advances_payables"/></strong></button>
+                            <div class="goldverse-flat-card-grid">
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_total_orders'}" class="goldverse-flat-card goldverse-card-total"><span>Total Orders</span><strong><field name="gv_total_orders"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_draft_orders'}" class="goldverse-flat-card"><span>Draft</span><strong><field name="gv_draft_orders"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_sent_warehouse_orders'}" class="goldverse-flat-card"><span>Sent to Warehouse</span><strong><field name="gv_sent_warehouse_orders"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_received_warehouse_orders'}" class="goldverse-flat-card"><span>Receive from Warehouse</span><strong><field name="gv_received_warehouse_orders"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_delivered_customer_orders'}" class="goldverse-flat-card"><span>Delivered to Customers</span><strong><field name="gv_delivered_customer_orders"/></strong></button>
                             </div>
                         </section>
 
-                        <section class="goldverse-chart-grid goldverse-lower-grid">
-                            <div class="goldverse-chart-card">
-                                <div class="goldverse-card-heading">
-                                    <div><span>Sales Breakdown</span><strong>Receipts and credit mix</strong></div>
-                                </div>
-                                <div class="goldverse-donut-layout">
-                                    <div class="goldverse-donut-chart goldverse-sales-donut"><span><field name="gv_total_sales"/></span><small>Total Sales</small></div>
-                                    <div class="goldverse-donut-legend">
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_cash_sales'}"><i class="dot-green"></i><span>Cash Sales</span><strong><field name="gv_cash_sales"/></strong><em><field name="gv_cash_sales_share_label"/></em></button>
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_credit_sales'}"><i class="dot-orange"></i><span>Credit Sales</span><strong><field name="gv_credit_sales"/></strong><em><field name="gv_credit_sales_share_label"/></em></button>
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_bank_sales'}"><i class="dot-blue"></i><span>Bank Sales</span><strong><field name="gv_bank_sales"/></strong><em><field name="gv_bank_sales_share_label"/></em></button>
-                                        <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_ibft_sales'}"><i class="dot-pink"></i><span>IBFT Sales</span><strong><field name="gv_ibft_sales"/></strong><em><field name="gv_ibft_sales_share_label"/></em></button>
-                                    </div>
-                                </div>
+                        <section class="goldverse-flat-section goldverse-finance-flat-section">
+                            <div class="goldverse-flat-section-title">
+                                <h3>Finance</h3>
+                                <strong>Profit and Position</strong>
                             </div>
-                            <div class="goldverse-insight-panel">
-                                <div class="goldverse-section-header">
-                                    <div><span>Key Insights</span><strong>Executive signals</strong></div>
-                                </div>
-                                <div class="goldverse-insight-grid">
-                                    <div class="goldverse-insight-card"><i class="fa fa-arrow-up"/><span>Total Sales increased by 18.6%</span></div>
-                                    <div class="goldverse-insight-card"><i class="fa fa-money"/><span>Cash Sales contributes <field name="gv_cash_sales_share_label"/></span></div>
-                                    <div class="goldverse-insight-card"><i class="fa fa-truck"/><span><field name="gv_sent_warehouse_orders"/> orders sent to warehouse</span></div>
-                                    <div class="goldverse-insight-card"><i class="fa fa-clock-o"/><span>Receivables outstanding <field name="gv_receivables"/></span></div>
-                                    <div class="goldverse-insight-card"><i class="fa fa-percent"/><span>Gross Profit margin 5.79%</span></div>
-                                </div>
+                            <div class="goldverse-flat-card-grid">
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_gross_profit'}" class="goldverse-flat-card goldverse-card-total"><span>Gross Profit</span><strong><field name="gv_gross_profit"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_net_profit'}" class="goldverse-flat-card goldverse-card-finance"><span>Net Profit</span><strong><field name="gv_net_profit"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_top_expenses'}" class="goldverse-flat-card goldverse-card-finance"><span>Top 5 Expenses</span><strong><field name="gv_top_expenses"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_receivables'}" class="goldverse-flat-card goldverse-card-finance"><span>Receivables</span><strong><field name="gv_receivables"/></strong></button>
+                                <button type="object" name="action_goldverse_open_dashboard_card" context="{'goldverse_card': 'gv_advances_payables'}" class="goldverse-flat-card goldverse-card-finance"><span>Advances Payables</span><strong><field name="gv_advances_payables"/></strong></button>
                             </div>
                         </section>
                     </main>
