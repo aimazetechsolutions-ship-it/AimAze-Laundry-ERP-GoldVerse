@@ -33,18 +33,31 @@
   --goldverse-receive-green: #138a5b;
   --goldverse-receive-green-hover: #0f704a;
 
+  .o_list_table {
+    width: max-content !important;
+    min-width: 100% !important;
+  }
+
+  .o_list_table th,
+  .o_list_table td {
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .o_list_table th[data-name],
+  .o_list_table td[name] {
+    max-width: none !important;
+  }
+
   .o_list_table th[data-name] {
     cursor: grab;
   }
 
   .o_list_table th.o_list_button,
   .o_list_table td.o_list_button {
-    width: 320px !important;
-    min-width: 320px !important;
-    max-width: 320px !important;
     padding: 7px 8px !important;
     overflow: visible;
-    white-space: normal;
+    white-space: nowrap;
   }
 
   .o_list_table th.o_list_button::before {
@@ -65,7 +78,7 @@
 
   .o_list_table td.o_list_button .btn {
     flex: 0 0 auto;
-    max-width: 205px;
+    max-width: 215px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

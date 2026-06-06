@@ -7,6 +7,15 @@ import { ListRenderer } from "@web/views/list/list_renderer";
 const LEGACY_ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order";
 const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order_v2";
 const PINNED_FIELD_ORDER = ["name", "partner_id", "goldverse_flow_status", "priority", "payment_status"];
+const COLUMN_WIDTH_LIMITS = {
+    "__selector__": { min: 42, max: 42 },
+    "__actions__": { min: 250, max: 340 },
+    name: { min: 155, max: 210 },
+    partner_id: { min: 150, max: 300 },
+    goldverse_flow_status: { min: 190, max: 265 },
+    priority: { min: 105, max: 140 },
+    payment_status: { min: 130, max: 165 },
+};
 
 function isGoldverseLaundryList(renderer) {
     return (
@@ -136,6 +145,79 @@ function rendererForTable(table) {
     return table.closest(".o_list_renderer")?.__owl__?.component || null;
 }
 
+function clampWidth(value, key) {
+    const limits = COLUMN_WIDTH_LIMITS[key] || { min: 96, max: 260 };
+    return Math.min(Math.max(value, limits.min), limits.max);
+}
+
+function columnKey(header) {
+    if (header.classList.contains("o_list_record_selector")) {
+        return "__selector__";
+    }
+    if (header.classList.contains("o_list_button")) {
+        return "__actions__";
+    }
+    return header.dataset.name || "";
+}
+
+function textWidth(cell) {
+    const clone = cell.cloneNode(true);
+    clone.style.position = "absolute";
+    clone.style.left = "-10000px";
+    clone.style.top = "-10000px";
+    clone.style.width = "auto";
+    clone.style.minWidth = "0";
+    clone.style.maxWidth = "none";
+    clone.style.whiteSpace = "nowrap";
+    clone.style.visibility = "hidden";
+    clone.style.pointerEvents = "none";
+    document.body.appendChild(clone);
+    const width = Math.ceil(clone.scrollWidth || clone.getBoundingClientRect().width || 0);
+    clone.remove();
+    return width;
+}
+
+function setCellWidth(cell, width) {
+    cell.style.width = `${width}px`;
+    cell.style.minWidth = `${width}px`;
+    cell.style.maxWidth = `${width}px`;
+}
+
+function autoFitTableColumns(table) {
+    const headerRow = table.querySelector("thead tr");
+    if (!headerRow) {
+        return;
+    }
+    table.style.tableLayout = "fixed";
+    table.style.width = "max-content";
+    table.style.minWidth = "100%";
+    const headers = Array.from(headerRow.children);
+    headers.forEach((header, index) => {
+        const key = columnKey(header);
+        const cells = [
+            header,
+            ...Array.from(table.querySelectorAll("tbody tr")).map((row) => row.children[index]).filter(Boolean),
+        ];
+        const measured = Math.max(...cells.map(textWidth), 0) + 18;
+        const width = clampWidth(measured, key);
+        cells.forEach((cell) => setCellWidth(cell, width));
+    });
+}
+
+let autoFitRequest = null;
+
+function scheduleAutoFit() {
+    if (autoFitRequest) {
+        return;
+    }
+    autoFitRequest = requestAnimationFrame(() => {
+        autoFitRequest = null;
+        document
+            .querySelectorAll(".goldverse-laundry-order-list table.o_list_table")
+            .forEach(autoFitTableColumns);
+    });
+}
+
 if (!window.__goldverseLaundryColumnDragEnabled) {
     window.__goldverseLaundryColumnDragEnabled = true;
     removeLegacyColumnOrders();
@@ -184,6 +266,7 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
         const nextOrder = moveNameBefore(orderNamesFromHeader(table.querySelector("thead tr")), source, target);
         writeColumnOrder(rendererForTable(table), nextOrder);
         applyOrderToTable(table, nextOrder);
+        autoFitTableColumns(table);
         header.classList.remove("goldverse-column-drop-target");
     });
 
@@ -197,6 +280,7 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
                     ? "Pinned column. Use the edge handle to resize."
                     : header.title || "Drag to move column. Use the edge handle to resize.";
             });
+        scheduleAutoFit();
     };
 
     const observer = new MutationObserver(markHeadersDraggable);
