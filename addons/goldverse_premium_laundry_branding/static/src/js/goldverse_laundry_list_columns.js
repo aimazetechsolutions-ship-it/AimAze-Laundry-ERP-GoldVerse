@@ -9,13 +9,18 @@ const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order_v2";
 const PINNED_FIELD_ORDER = ["name", "partner_id", "goldverse_flow_status", "priority", "payment_status"];
 const COLUMN_WIDTH_LIMITS = {
     "__selector__": { min: 42, max: 42 },
-    "__actions__": { min: 250, max: 340 },
-    name: { min: 155, max: 210 },
-    partner_id: { min: 150, max: 300 },
-    goldverse_flow_status: { min: 190, max: 265 },
-    priority: { min: 105, max: 140 },
-    payment_status: { min: 130, max: 165 },
+    "__actions__": { min: 150, max: 360 },
+    name: { min: 130, max: 280 },
+    partner_id: { min: 110, max: 340 },
+    goldverse_flow_status: { min: 130, max: 280 },
+    priority: { min: 90, max: 150 },
+    payment_status: { min: 105, max: 170 },
+    invoice_status: { min: 105, max: 170 },
+    date_order: { min: 115, max: 185 },
+    expected_delivery_datetime: { min: 150, max: 230 },
+    actual_delivery_datetime: { min: 170, max: 260 },
 };
+const AMOUNT_FIELD_PATTERN = /(amount|price|qty|quantity|tax|balance|charge|discount|debit|credit|received|paid|total|net|gross)/i;
 
 function isGoldverseLaundryList(renderer) {
     return (
@@ -146,7 +151,7 @@ function rendererForTable(table) {
 }
 
 function clampWidth(value, key) {
-    const limits = COLUMN_WIDTH_LIMITS[key] || { min: 96, max: 260 };
+    const limits = COLUMN_WIDTH_LIMITS[key] || { min: 72, max: 360 };
     return Math.min(Math.max(value, limits.min), limits.max);
 }
 
@@ -183,6 +188,15 @@ function setCellWidth(cell, width) {
     cell.style.maxWidth = `${width}px`;
 }
 
+function alignColumn(cells, key) {
+    const align = AMOUNT_FIELD_PATTERN.test(key) ? "right" : "center";
+    for (const cell of cells) {
+        cell.classList.toggle("goldverse-list-amount-column", align === "right");
+        cell.classList.toggle("goldverse-list-text-column", align === "center");
+        cell.style.textAlign = align;
+    }
+}
+
 function autoFitTableColumns(table) {
     const headerRow = table.querySelector("thead tr");
     if (!headerRow) {
@@ -198,8 +212,10 @@ function autoFitTableColumns(table) {
             header,
             ...Array.from(table.querySelectorAll("tbody tr")).map((row) => row.children[index]).filter(Boolean),
         ];
-        const measured = Math.max(...cells.map(textWidth), 0) + 18;
+        const padding = key === "__actions__" ? 12 : 22;
+        const measured = Math.max(...cells.map(textWidth), 0) + padding;
         const width = clampWidth(measured, key);
+        alignColumn(cells, key);
         cells.forEach((cell) => setCellWidth(cell, width));
     });
 }
