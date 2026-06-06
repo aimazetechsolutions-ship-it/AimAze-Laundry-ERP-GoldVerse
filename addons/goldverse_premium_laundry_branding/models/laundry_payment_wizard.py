@@ -1,6 +1,25 @@
 from odoo import api, fields, models
 
 
+class LaundryPaymentMethod(models.Model):
+    _inherit = "aimaze.laundry.payment.method"
+
+    @api.model
+    def _goldverse_sync_laundry_payment_methods(self):
+        cash = self.search([("name", "=", "Cash")], limit=1)
+        if not cash:
+            cash = self.create({"name": "Cash", "method_type": "cash", "sequence": 10})
+        cash.write({"name": "Cash", "method_type": "cash", "sequence": 10, "active": True})
+
+        ibft_methods = self.search([("name", "ilike", "IBFT")], order="sequence, id")
+        ibft = ibft_methods[:1]
+        if not ibft:
+            ibft = self.create({"name": "IBFT", "method_type": "online", "sequence": 20})
+        ibft.write({"name": "IBFT", "method_type": "online", "sequence": 20, "active": True})
+        (ibft_methods - ibft).write({"active": False})
+        return True
+
+
 class LaundryPaymentWizard(models.TransientModel):
     _inherit = "aimaze.laundry.payment.wizard"
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_payment_wizard_form_goldverse_methods" model="ir.ui.view">
+        <field name="name">aimaze.laundry.payment.wizard.form.goldverse.methods</field>
+        <field name="model">aimaze.laundry.payment.wizard</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_payment_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_method_id']" position="attributes">
+                <attribute name="domain">[('active', '=', True), ('name', 'in', ['Cash', 'IBFT'])]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

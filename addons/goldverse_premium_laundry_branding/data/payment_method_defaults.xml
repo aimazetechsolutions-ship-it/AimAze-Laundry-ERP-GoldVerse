@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="aimaze.laundry.payment.method" name="_goldverse_sync_laundry_payment_methods"/>
+</odoo>
