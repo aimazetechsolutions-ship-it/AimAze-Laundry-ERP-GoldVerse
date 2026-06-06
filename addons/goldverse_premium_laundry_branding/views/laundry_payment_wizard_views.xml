@@ -9,6 +9,10 @@
                 <attribute name="domain">[('active', '=', True), ('name', 'in', ['Cash', 'IBFT'])]</attribute>
                 <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
             </xpath>
+            <xpath expr="//field[@name='journal_id']" position="attributes">
+                <attribute name="domain">[('type', 'in', ('cash', 'bank')), ('name', 'in', ['Cash', 'IBFT'])]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>

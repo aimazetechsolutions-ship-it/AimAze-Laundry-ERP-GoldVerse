@@ -6,16 +6,47 @@ class LaundryPaymentMethod(models.Model):
 
     @api.model
     def _goldverse_sync_laundry_payment_methods(self):
+        Journal = self.env["account.journal"].sudo()
+        company = self.env.company
+
+        cash_journal = Journal.search([("company_id", "=", company.id), ("name", "=", "Cash"), ("type", "=", "cash")], limit=1)
+        if not cash_journal:
+            cash_journal = Journal.search(
+                [
+                    ("company_id", "=", company.id),
+                    ("type", "=", "cash"),
+                    "|",
+                    ("name", "=", "Cash Sales"),
+                    ("code", "ilike", "CV"),
+                ],
+                limit=1,
+            )
+            if cash_journal:
+                cash_journal.name = "Cash"
+
+        ibft_journal = Journal.search([("company_id", "=", company.id), ("name", "=", "IBFT"), ("type", "=", "bank")], limit=1)
+        if not ibft_journal:
+            ibft_journal = Journal.search(
+                [
+                    ("company_id", "=", company.id),
+                    ("type", "=", "bank"),
+                    ("name", "not ilike", "POS"),
+                ],
+                limit=1,
+            )
+            if ibft_journal:
+                ibft_journal.name = "IBFT"
+
         cash = self.search([("name", "=", "Cash")], limit=1)
         if not cash:
             cash = self.create({"name": "Cash", "method_type": "cash", "sequence": 10})
-        cash.write({"name": "Cash", "method_type": "cash", "sequence": 10, "active": True})
+        cash.write({"name": "Cash", "method_type": "cash", "sequence": 10, "active": True, "journal_id": cash_journal.id if cash_journal else False})
 
         ibft_methods = self.search([("name", "ilike", "IBFT")], order="sequence, id")
         ibft = ibft_methods[:1]
         if not ibft:
             ibft = self.create({"name": "IBFT", "method_type": "online", "sequence": 20})
-        ibft.write({"name": "IBFT", "method_type": "online", "sequence": 20, "active": True})
+        ibft.write({"name": "IBFT", "method_type": "online", "sequence": 20, "active": True, "journal_id": ibft_journal.id if ibft_journal else False})
         (ibft_methods - ibft).write({"active": False})
         return True
 
@@ -30,7 +61,7 @@ class LaundryPaymentWizard(models.TransientModel):
 
     def _goldverse_default_payment_journal(self):
         company = self.env.company
-        domain = [("type", "in", ("cash", "bank")), ("company_id", "=", company.id)]
+        domain = [("type", "in", ("cash", "bank")), ("company_id", "=", company.id), ("name", "in", ["Cash", "IBFT"])]
         journal = self.env["account.journal"].search(domain + [("inbound_payment_method_line_ids", "!=", False)], limit=1)
         if journal:
             return journal
