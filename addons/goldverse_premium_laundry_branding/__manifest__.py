@@ -18,6 +18,7 @@
         "security/ir.model.access.csv",
         "data/admin_access.xml",
         "data/pakistan_defaults.xml",
+        "data/customer_type_defaults.xml",
         "data/cash_management_data.xml",
         "data/customer_wallet_receipt_data.xml",
         "data/payment_method_defaults.xml",
