@@ -81,7 +81,7 @@ class LaundryOrder(models.Model):
     goldverse_delivered_to_customer = fields.Boolean(string="Delivered to Customer", readonly=True, copy=False, tracking=True)
     goldverse_actual_delivery_datetime = fields.Datetime(string="Actual Delivery Date & Time", readonly=True, copy=False, tracking=True)
     goldverse_delivery_status = fields.Selection(
-        [("undelivered", "Undelivered"), ("delivered", "Delivered")],
+        [("cancelled", "Cancelled"), ("undelivered", "Undelivered"), ("delivered", "Delivered")],
         string="State",
         compute="_compute_goldverse_delivery_status",
         store=True,
@@ -97,7 +97,12 @@ class LaundryOrder(models.Model):
     @api.depends("state", "goldverse_delivered_to_customer")
     def _compute_goldverse_delivery_status(self):
         for order in self:
-            order.goldverse_delivery_status = "delivered" if order.goldverse_delivered_to_customer or order.state == "delivered" else "undelivered"
+            if order.state == "cancelled":
+                order.goldverse_delivery_status = "cancelled"
+            elif order.goldverse_delivered_to_customer or order.state == "delivered":
+                order.goldverse_delivery_status = "delivered"
+            else:
+                order.goldverse_delivery_status = "undelivered"
 
     @api.depends(
         "state",
@@ -668,11 +673,72 @@ class LaundryOrder(models.Model):
         return result
 
     def action_cancel(self):
+        if not self.env.user.has_group("base.group_system"):
+            raise UserError(_("Only an Administrator can cancel laundry orders."))
         cancellable_states = ("draft", "confirmed", "picked_up", "received", "order_created", "collection", "shift_to_plant")
         blocked = self.filtered(lambda order: order.state not in cancellable_states)
         if blocked:
             raise UserError(_("Orders can be cancelled only before they are sent to warehouse or moved into processing."))
-        return super().action_cancel()
+        result = super().action_cancel()
+        self.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)._goldverse_reverse_cancelled_order_invoices()
+        return result
+
+    def _goldverse_reverse_cancelled_order_invoices(self):
+        for order in self:
+            invoice = order.invoice_id
+            if not invoice:
+                order.write({"invoice_status": "no"})
+                continue
+
+            invoice = invoice.sudo().with_company(order.company_id)
+            if invoice.state == "draft":
+                invoice_name = invoice.name or invoice.display_name
+                try:
+                    invoice.unlink()
+                    order.write({"invoice_id": False, "invoice_status": "no"})
+                    order.message_post(body=_("Draft invoice %s was deleted because the laundry order was cancelled.") % invoice_name)
+                except Exception:
+                    invoice.button_cancel()
+                    order.write({"invoice_status": "no"})
+                    order.message_post(body=_("Draft invoice %s was cancelled because the laundry order was cancelled.") % invoice_name)
+                continue
+
+            if invoice.state == "posted":
+                existing_reversal = self.env["account.move"].sudo().search(
+                    [
+                        ("reversed_entry_id", "=", invoice.id),
+                        ("state", "=", "posted"),
+                    ],
+                    limit=1,
+                )
+                if not existing_reversal:
+                    reversal_defaults = {
+                        "invoice_date": fields.Date.context_today(order),
+                        "date": fields.Date.context_today(order),
+                        "ref": _("Reversal of cancelled laundry order %s") % order.name,
+                        "invoice_origin": order.name,
+                    }
+                    if "laundry_order_id" in invoice._fields:
+                        reversal_defaults["laundry_order_id"] = order.id
+                    if "laundry_branch_id" in invoice._fields:
+                        reversal_defaults["laundry_branch_id"] = order.branch_id.id
+                    reversal = invoice._reverse_moves(
+                        [reversal_defaults],
+                        cancel=True,
+                    )
+                    order.message_post(
+                        body=_("Posted invoice %(invoice)s was reversed by credit note %(credit_note)s because the laundry order was cancelled.")
+                        % {
+                            "invoice": invoice.name or invoice.display_name,
+                            "credit_note": ", ".join(reversal.mapped("name")) or reversal.display_name,
+                        }
+                    )
+                order.write({"invoice_status": "no"})
+                continue
+
+            if invoice.state == "cancel":
+                order.write({"invoice_status": "no"})
+        return True
 
     def _goldverse_normalize_order_flow(self):
         old_process_states = ("sorting", "washing", "drying", "ironing", "qc", "packing")

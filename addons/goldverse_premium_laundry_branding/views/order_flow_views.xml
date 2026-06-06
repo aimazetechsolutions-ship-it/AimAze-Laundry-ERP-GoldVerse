@@ -31,6 +31,7 @@
                             type="object"
                             string="Cancel Order"
                             class="alm-btn-danger"
+                            groups="base.group_system"
                             invisible="state not in ('draft','confirmed','picked_up','received','order_created','collection','shift_to_plant')"
                             confirm="Are you sure you want to cancel this laundry order? This action will mark the order as cancelled."/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,order_created,warehouse_pending,pending_customer_delivery,delivered,invoiced,paid"/>
@@ -105,7 +106,7 @@
             </xpath>
             <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" column_invisible="1"/>
-                <field name="goldverse_delivery_status" string="State" optional="show" widget="badge" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
+                <field name="goldverse_delivery_status" string="State" optional="show" widget="badge" decoration-danger="goldverse_delivery_status == 'cancelled'" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
             </xpath>
             <xpath expr="//field[@name='expected_delivery_datetime']" position="after">
                 <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time" optional="show"/>
@@ -243,7 +244,7 @@
                 <field name="branch_id"/>
                 <field name="warehouse_collected_datetime"/>
                 <field name="warehouse_received_datetime"/>
-                <field name="goldverse_delivery_status" string="State" widget="badge" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
+                <field name="goldverse_delivery_status" string="State" widget="badge" decoration-danger="goldverse_delivery_status == 'cancelled'" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
                 <field name="expected_delivery_datetime"/>
                 <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time"/>
             </list>
