@@ -78,6 +78,24 @@ class ResPartner(models.Model):
             if partner.customer_rank > 0 and partner.laundry_customer_type != category:
                 vals["laundry_customer_type"] = category
             partner.write(vals)
+        partners._goldverse_ensure_customer_rank_for_customer_categories()
+        return True
+
+    def _goldverse_customer_rank_candidates(self):
+        company_partner_ids = set(self.env["res.company"].sudo().search([]).mapped("partner_id").ids)
+        return self.filtered(
+            lambda partner: partner.active
+            and partner.customer_rank <= 0
+            and partner.goldverse_customer_category in ("b2c", "b2b")
+            and partner.id not in company_partner_ids
+            and not partner.user_ids
+            and bool(partner._goldverse_mobile_value())
+        )
+
+    def _goldverse_ensure_customer_rank_for_customer_categories(self):
+        candidates = self.with_context(active_test=False)._goldverse_customer_rank_candidates()
+        if candidates:
+            candidates.with_context(goldverse_skip_customer_rank_sync=True).sudo().write({"customer_rank": 1})
         return True
 
     def _goldverse_check_duplicate_mobile(self):
@@ -111,6 +129,7 @@ class ResPartner(models.Model):
             self._goldverse_prepare_customer_category_vals(vals)
         partners = super().create(vals_list)
         partners._goldverse_check_duplicate_mobile()
+        partners._goldverse_ensure_customer_rank_for_customer_categories()
         return partners
 
     def write(self, vals):
@@ -119,4 +138,12 @@ class ResPartner(models.Model):
         result = super().write(vals)
         if {"phone", "mobile"} & set(vals):
             self._goldverse_check_duplicate_mobile()
+        if not self.env.context.get("goldverse_skip_customer_rank_sync") and {
+            "goldverse_customer_category",
+            "laundry_customer_type",
+            "phone",
+            "mobile",
+            "active",
+        } & set(vals):
+            self._goldverse_ensure_customer_rank_for_customer_categories()
         return result
