@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="aimaze_laundry_management.action_laundry_customers" model="ir.actions.act_window">
+        <field name="context">
+            {
+                'default_customer_rank': 1,
+                'default_laundry_customer_type': 'b2c',
+                'default_company_type': 'person',
+                'default_is_company': False
+            }
+        </field>
+    </record>
+
     <record id="view_partner_form_goldverse_mobile" model="ir.ui.view">
         <field name="name">res.partner.form.goldverse.mobile</field>
         <field name="model">res.partner</field>

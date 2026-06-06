@@ -47,6 +47,13 @@ class ResPartner(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        default_customer_rank = self.env.context.get("default_customer_rank")
+        default_laundry_customer_type = self.env.context.get("default_laundry_customer_type")
+        for vals in vals_list:
+            if default_customer_rank and not vals.get("customer_rank"):
+                vals["customer_rank"] = default_customer_rank
+            if default_laundry_customer_type and not vals.get("laundry_customer_type"):
+                vals["laundry_customer_type"] = default_laundry_customer_type
         partners = super().create(vals_list)
         partners._goldverse_check_duplicate_mobile()
         return partners
