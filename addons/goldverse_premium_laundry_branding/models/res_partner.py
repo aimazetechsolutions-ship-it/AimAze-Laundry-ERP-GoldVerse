@@ -31,9 +31,28 @@ class ResPartner(models.Model):
     def _goldverse_normalize_mobile(self, value):
         return re.sub(r"\D+", "", value or "")
 
+    def _goldverse_clean_mobile_number(self, value):
+        return self._goldverse_normalize_mobile(value) if value else value
+
+    def _goldverse_prepare_mobile_vals(self, vals):
+        if vals.get("mobile"):
+            vals["mobile"] = self._goldverse_clean_mobile_number(vals["mobile"])
+        if vals.get("phone"):
+            vals["phone"] = self._goldverse_clean_mobile_number(vals["phone"])
+        return vals
+
     def _goldverse_mobile_value(self):
         self.ensure_one()
         return self._goldverse_normalize_mobile(self.mobile or self.phone)
+
+    @api.model
+    def _goldverse_validate_mobile_digits(self, value, label=None):
+        if not value:
+            return True
+        mobile = self._goldverse_normalize_mobile(value)
+        if len(mobile) != 11:
+            raise ValidationError(_("%s must be exactly 11 numeric digits.") % (label or _("Mobile")))
+        return True
 
     @api.model
     def _goldverse_category_from_laundry_type(self, laundry_customer_type, is_company=False):
@@ -124,6 +143,10 @@ class ResPartner(models.Model):
         if missing:
             names = ", ".join(missing.mapped("display_name")[:5])
             raise ValidationError(_("Phone is mandatory for customer(s): %s.") % names)
+        invalid = self.filtered(lambda partner: partner.customer_rank > 0 and len(partner._goldverse_mobile_value()) != 11)
+        if invalid:
+            names = ", ".join(invalid.mapped("display_name")[:5])
+            raise ValidationError(_("Phone/Mobile must be exactly 11 numeric digits for customer(s): %s.") % names)
         return True
 
     @api.model_create_multi
@@ -131,6 +154,7 @@ class ResPartner(models.Model):
         default_customer_rank = self.env.context.get("default_customer_rank")
         default_laundry_customer_type = self.env.context.get("default_laundry_customer_type")
         for vals in vals_list:
+            self._goldverse_prepare_mobile_vals(vals)
             if default_customer_rank and not vals.get("customer_rank"):
                 vals["customer_rank"] = default_customer_rank
             if default_laundry_customer_type and not vals.get("laundry_customer_type"):
@@ -144,6 +168,7 @@ class ResPartner(models.Model):
 
     def write(self, vals):
         vals = dict(vals)
+        self._goldverse_prepare_mobile_vals(vals)
         self._goldverse_prepare_customer_category_vals(vals)
         result = super().write(vals)
         if {"phone", "mobile"} & set(vals):

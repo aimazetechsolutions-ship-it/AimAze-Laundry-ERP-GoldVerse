@@ -310,8 +310,14 @@ class LaundryOrder(models.Model):
         super()._onchange_partner_id()
         for order in self:
             if order.partner_id:
-                order.mobile = order.partner_id.mobile or order.partner_id.phone
+                order.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(order.partner_id.mobile or order.partner_id.phone)
                 order.email = order.partner_id.email
+
+    @api.onchange("mobile")
+    def _onchange_goldverse_mobile(self):
+        for order in self:
+            if order.mobile:
+                order.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(order.mobile)
 
     @api.onchange("customer_type")
     def _onchange_goldverse_customer_type(self):
@@ -360,6 +366,8 @@ class LaundryOrder(models.Model):
         return values
 
     def _goldverse_prepare_required_order_values(self, vals):
+        if vals.get("mobile"):
+            vals["mobile"] = self.env["res.partner"]._goldverse_clean_mobile_number(vals["mobile"])
         if vals.get("customer_type") == "b2b":
             vals["source"] = "corporate_contract"
         if not vals.get("order_date"):
@@ -384,6 +392,7 @@ class LaundryOrder(models.Model):
         missing = [label for field_name, label in labels.items() if not values.get(field_name)]
         if missing:
             raise ValidationError(_("Please fill mandatory fields: %s.") % ", ".join(dict.fromkeys(missing)))
+        self.env["res.partner"]._goldverse_validate_mobile_digits(values.get("mobile"))
 
     def _goldverse_validate_required_order_fields(self):
         labels = {
@@ -401,6 +410,7 @@ class LaundryOrder(models.Model):
             missing = [label for field_name, label in order_labels.items() if not order[field_name]]
             if missing:
                 raise ValidationError(_("Please fill mandatory fields: %s.") % ", ".join(missing))
+            self.env["res.partner"]._goldverse_validate_mobile_digits(order.mobile)
 
     def _goldverse_validate_order_lines_required(self):
         missing_lines = self.filtered(lambda order: not order.line_ids)
@@ -471,6 +481,9 @@ class LaundryOrder(models.Model):
 
     def write(self, vals):
         self._goldverse_check_locked_write(vals)
+        if vals.get("mobile"):
+            vals = dict(vals)
+            vals["mobile"] = self.env["res.partner"]._goldverse_clean_mobile_number(vals["mobile"])
         if vals.get("customer_type") == "b2b":
             vals = dict(vals)
             vals["source"] = "corporate_contract"
