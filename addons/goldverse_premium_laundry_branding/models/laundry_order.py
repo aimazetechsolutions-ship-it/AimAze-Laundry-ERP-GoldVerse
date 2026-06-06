@@ -409,6 +409,25 @@ class LaundryOrder(models.Model):
             raise ValidationError(_("Add at least one line item before creating the laundry order. Order(s): %s") % names)
         return True
 
+    def _goldverse_effective_line_priority(self):
+        self.ensure_one()
+        priorities = set(self.line_ids.mapped("goldverse_priority"))
+        if "urgent" in priorities:
+            return "urgent"
+        if "express" in priorities:
+            return "express"
+        return "normal"
+
+    def _goldverse_sync_priority_from_lines(self):
+        for order in self:
+            effective_priority = order._goldverse_effective_line_priority()
+            if order.priority != effective_priority:
+                order.with_context(
+                    goldverse_allow_locked_order_write=True,
+                    goldverse_skip_required_validation=True,
+                ).write({"priority": effective_priority})
+        return True
+
     def _goldverse_assign_order_number(self):
         sequence = self.env["ir.sequence"].sudo().search([("code", "=", "aimaze.laundry.order")], limit=1)
         for order in self:
@@ -900,6 +919,12 @@ class LaundryOrder(models.Model):
             order.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True).write({
                 "expected_delivery_datetime": order._goldverse_force_six_pm(order.expected_delivery_datetime),
             })
+        return True
+
+    @api.model
+    def _goldverse_sync_all_order_priorities_from_lines(self):
+        orders = self.sudo().search([])
+        orders.with_context(goldverse_allow_locked_order_write=True)._goldverse_sync_priority_from_lines()
         return True
 
     def _phase2_sync_garment_stage(self, order_state):

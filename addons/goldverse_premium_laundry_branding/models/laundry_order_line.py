@@ -387,12 +387,14 @@ class LaundryOrderLine(models.Model):
         lines = super().create(vals_list)
         lines._goldverse_sync_display_fields()
         lines._goldverse_refresh_amount_fields()
+        lines.mapped("order_id")._goldverse_sync_priority_from_lines()
         return lines
 
     def write(self, vals):
         self._goldverse_check_lines_editable()
         if self.env.context.get("goldverse_refreshing_amounts"):
             return super().write(vals)
+        original_orders = self.mapped("order_id") if "order_id" in vals else self.env["aimaze.laundry.order"]
         if {"service_id", "goldverse_priority"} & set(vals) and "unit_price" not in vals:
             for line in self:
                 service_id = vals.get("service_id") or line.service_id.id
@@ -422,11 +424,16 @@ class LaundryOrderLine(models.Model):
         } & set(vals):
             self._goldverse_sync_display_fields()
             self._goldverse_refresh_amount_fields()
+        if "goldverse_priority" in vals or "order_id" in vals:
+            (original_orders | self.mapped("order_id"))._goldverse_sync_priority_from_lines()
         return result
 
     def unlink(self):
         self._goldverse_check_lines_editable()
-        return super().unlink()
+        orders = self.mapped("order_id")
+        result = super().unlink()
+        orders._goldverse_sync_priority_from_lines()
+        return result
 
     def _goldverse_set_qc_status_from_options(self):
         self.ensure_one()
