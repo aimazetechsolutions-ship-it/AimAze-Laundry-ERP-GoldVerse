@@ -148,19 +148,20 @@
     <record id="addon_no_starch" model="goldverse.laundry.topup">
         <field name="name">No Starch</field>
         <field name="code">no_starch</field>
-        <field name="sequence">30</field>
+        <field name="sequence">40</field>
         <field name="active">1</field>
     </record>
     <record id="addon_light_starch" model="goldverse.laundry.topup">
         <field name="name">Light Starch</field>
         <field name="code">light_starch</field>
-        <field name="sequence">40</field>
+        <field name="sequence">50</field>
         <field name="active">1</field>
     </record>
     <record id="addon_high_starch" model="goldverse.laundry.topup">
         <field name="name">High Starch</field>
         <field name="code">high_starch</field>
-        <field name="sequence">50</field>
+        <field name="sequence">60</field>
         <field name="active">1</field>
     </record>
+    <function model="goldverse.laundry.topup" name="_goldverse_ensure_default_topups"/>
 </odoo>

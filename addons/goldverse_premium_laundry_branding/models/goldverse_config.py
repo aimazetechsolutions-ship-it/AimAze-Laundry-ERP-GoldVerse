@@ -362,6 +362,26 @@ class GoldVerseLaundryTopUp(models.Model):
 
     _name_unique = models.Constraint("UNIQUE(name)", "Add On must be unique.")
 
+    @api.model
+    def _goldverse_ensure_default_topups(self):
+        default_topups = [
+            ("Full Hang", "full_hang", 10),
+            ("Fold Hang", "fold_hang", 20),
+            ("Folded Pack", "Folded_Pack", 30),
+            ("No Starch", "no_starch", 40),
+            ("Light Starch", "light_starch", 50),
+            ("High Starch", "high_starch", 60),
+        ]
+        Topup = self.with_context(active_test=False).sudo()
+        for name, code, sequence in default_topups:
+            topup = Topup.search([("name", "=ilike", name)], limit=1)
+            values = {"name": name, "code": code, "sequence": sequence, "active": True}
+            if topup:
+                topup.write(values)
+            else:
+                Topup.create(values)
+        return True
+
     @api.model_create_multi
     def create(self, vals_list):
         records = self.browse()
