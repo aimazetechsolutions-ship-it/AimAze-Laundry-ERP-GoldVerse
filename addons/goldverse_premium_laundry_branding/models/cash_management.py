@@ -596,3 +596,16 @@ class GoldVerseCashReportLine(models.TransientModel):
     cash_paid = fields.Monetary(currency_field="currency_id", readonly=True)
     balance = fields.Monetary(string="Closing Cash in Hand", currency_field="currency_id", readonly=True)
     currency_id = fields.Many2one("res.currency", readonly=True)
+
+    def action_open_cash_voucher(self):
+        self.ensure_one()
+        if not self.transaction_id:
+            raise UserError(_("No cash voucher is linked to this report line."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Cash Voucher"),
+            "res_model": "goldverse.cash.transaction",
+            "res_id": self.transaction_id.id,
+            "view_mode": "form",
+            "target": "current",
+        }

@@ -177,6 +177,7 @@
                         <field name="line_ids" nolabel="1">
                             <list string="Cash Movement Details" create="0" edit="0" delete="0" no_open="True">
                                 <field name="date" optional="show"/>
+                                <button name="action_open_cash_voucher" type="object" string="Open Voucher" class="btn-link" icon="fa-external-link"/>
                                 <field name="name" optional="show"/>
                                 <field name="transaction_id" optional="show"/>
                                 <field name="transaction_type" optional="show"/>
