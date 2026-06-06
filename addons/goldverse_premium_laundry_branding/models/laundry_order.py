@@ -112,6 +112,18 @@ class LaundryOrder(models.Model):
         compute="_compute_goldverse_delivery_status",
         store=True,
     )
+    goldverse_flow_status = fields.Selection(
+        [
+            ("waiting_send", "Waiting Send to Warehouse"),
+            ("pending_receive", "Pending Receive from Warehouse"),
+            ("pending_delivery", "Pending Delivery to Customer"),
+            ("delivered_customer", "Delivered to Customer"),
+            ("cancelled", "Cancelled"),
+        ],
+        string="State",
+        compute="_compute_goldverse_flow_status",
+        store=True,
+    )
     goldverse_has_sent_lines = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
     goldverse_has_unsent_lines = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
     goldverse_has_receivable_lines = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
@@ -129,6 +141,39 @@ class LaundryOrder(models.Model):
                 order.goldverse_delivery_status = "delivered"
             else:
                 order.goldverse_delivery_status = "undelivered"
+
+    @api.depends(
+        "state",
+        "warehouse_collected_datetime",
+        "warehouse_received_datetime",
+        "goldverse_delivered_to_customer",
+        "goldverse_actual_delivery_datetime",
+        "line_ids.warehouse_sent_datetime",
+        "line_ids.warehouse_received_datetime",
+    )
+    def _compute_goldverse_flow_status(self):
+        for order in self:
+            if order.state == "cancelled":
+                order.goldverse_flow_status = "cancelled"
+                continue
+            if order.goldverse_delivered_to_customer or order.goldverse_actual_delivery_datetime or order.state == "delivered":
+                order.goldverse_flow_status = "delivered_customer"
+                continue
+
+            lines = order.line_ids
+            sent_lines = lines.filtered(lambda line: line.warehouse_sent_datetime)
+            unreceived_sent_lines = sent_lines.filtered(lambda line: not line.warehouse_received_datetime)
+            all_sent_lines_received = bool(sent_lines) and not unreceived_sent_lines
+            if (
+                order.state == "pending_customer_delivery"
+                or order.warehouse_received_datetime
+                or all_sent_lines_received
+            ):
+                order.goldverse_flow_status = "pending_delivery"
+            elif order.state == "warehouse_pending" or order.warehouse_collected_datetime or sent_lines:
+                order.goldverse_flow_status = "pending_receive"
+            else:
+                order.goldverse_flow_status = "waiting_send"
 
     @api.depends(
         "amount_total",

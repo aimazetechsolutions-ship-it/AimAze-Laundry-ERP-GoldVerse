@@ -105,7 +105,7 @@
             </xpath>
             <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" column_invisible="1"/>
-                <field name="goldverse_delivery_status" string="State" optional="show" widget="badge" decoration-danger="goldverse_delivery_status == 'cancelled'" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
+                <field name="goldverse_flow_status" string="State" optional="show" widget="badge" decoration-danger="goldverse_flow_status == 'cancelled'" decoration-info="goldverse_flow_status == 'waiting_send'" decoration-warning="goldverse_flow_status in ('pending_receive', 'pending_delivery')" decoration-success="goldverse_flow_status == 'delivered_customer'"/>
             </xpath>
             <xpath expr="//field[@name='expected_delivery_datetime']" position="after">
                 <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time" optional="show"/>
@@ -243,7 +243,7 @@
                 <field name="branch_id"/>
                 <field name="warehouse_collected_datetime"/>
                 <field name="warehouse_received_datetime"/>
-                <field name="goldverse_delivery_status" string="State" widget="badge" decoration-danger="goldverse_delivery_status == 'cancelled'" decoration-warning="goldverse_delivery_status == 'undelivered'" decoration-success="goldverse_delivery_status == 'delivered'"/>
+                <field name="goldverse_flow_status" string="State" widget="badge" decoration-danger="goldverse_flow_status == 'cancelled'" decoration-info="goldverse_flow_status == 'waiting_send'" decoration-warning="goldverse_flow_status in ('pending_receive', 'pending_delivery')" decoration-success="goldverse_flow_status == 'delivered_customer'"/>
                 <field name="expected_delivery_datetime"/>
                 <field name="goldverse_actual_delivery_datetime" string="Actual Delivery Date &amp; Time"/>
             </list>
