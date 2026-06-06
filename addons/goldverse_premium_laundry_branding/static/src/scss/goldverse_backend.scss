@@ -37,6 +37,47 @@
     cursor: grab;
   }
 
+  .o_list_table th.o_list_button,
+  .o_list_table td.o_list_button {
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    padding: 7px 8px !important;
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .o_list_table th.o_list_button::before {
+    content: "Actions";
+    display: block;
+    color: #111827;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .o_list_table td.o_list_button > div {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    min-height: 30px;
+  }
+
+  .o_list_table td.o_list_button .btn {
+    flex: 0 0 auto;
+    max-width: 205px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .o_list_table td.o_list_button:empty::after,
+  .o_list_table td.o_list_button > div:empty::after {
+    content: "";
+    display: block;
+    min-height: 30px;
+  }
+
   .o_list_table thead th,
   .o_list_table thead th[data-name],
   .o_list_table thead th .o_column_title,
