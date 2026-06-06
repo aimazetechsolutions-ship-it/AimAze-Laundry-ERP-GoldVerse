@@ -2,13 +2,13 @@
 <odoo>
     <function model="goldverse.laundry.qc.option" name="write">
         <function model="goldverse.laundry.qc.option" name="search">
-            <value eval="[('name', 'not in', ['Hard Stains', 'Mild Stains', 'Torn/Ripped', 'Holes', 'Color Faulty', 'Burned', 'Color Risk', 'Deformed', 'Missing Buttons', 'Faulty Zip', 'Shrunk', 'Damaged Stitch', 'Loose Beads', 'Damaged EMB', 'Missing Accessories', 'Weak Fabric', 'Delicate'])]"/>
+            <value eval="[('name', 'in', ['Pending', 'Pass', 'Fail', 'Rewash', 'Stain', 'Damage', 'Colour Faint', 'Color Faint'])]"/>
         </function>
         <value eval="{'active': False}"/>
     </function>
     <function model="goldverse.laundry.topup" name="write">
         <function model="goldverse.laundry.topup" name="search">
-            <value eval="[('name', 'not in', ['Full Hang', 'Fold Hang', 'No Starch', 'Light Starch', 'High Starch'])]"/>
+            <value eval="[('name', 'in', ['Starch', 'Hangers'])]"/>
         </function>
         <value eval="{'active': False}"/>
     </function>

@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class ResUsers(models.Model):
@@ -360,3 +361,24 @@ class GoldVerseLaundryTopUp(models.Model):
     active = fields.Boolean(default=True)
 
     _name_unique = models.Constraint("UNIQUE(name)", "Add On must be unique.")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = self.browse()
+        for vals in vals_list:
+            name = (vals.get("name") or "").strip()
+            if name:
+                existing = self.with_context(active_test=False).search([("name", "=ilike", name)], limit=1)
+                if existing:
+                    if not existing.active:
+                        updates = {"active": True}
+                        for field_name in ("code", "sequence"):
+                            if field_name in vals:
+                                updates[field_name] = vals[field_name]
+                        existing.write(updates)
+                        records |= existing
+                        continue
+                    raise ValidationError(_("Add On '%s' already exists. Open the existing Add On instead of creating a duplicate.") % existing.name)
+                vals["name"] = name
+            records |= super(GoldVerseLaundryTopUp, self).create([vals])
+        return records
