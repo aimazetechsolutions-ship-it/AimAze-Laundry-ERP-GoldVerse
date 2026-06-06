@@ -4,7 +4,9 @@ import { patch } from "@web/core/utils/patch";
 import { session } from "@web/session";
 import { ListRenderer } from "@web/views/list/list_renderer";
 
-const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order";
+const LEGACY_ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order";
+const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order_v2";
+const PINNED_FIELD_ORDER = ["name", "partner_id", "goldverse_flow_status", "priority", "payment_status"];
 
 function isGoldverseLaundryList(renderer) {
     return (
@@ -20,55 +22,74 @@ function columnStorageKey(renderer) {
     return `${ORDER_KEY_PREFIX}:${db}:${uid}:${model}`;
 }
 
-function readLegacyColumnOrder() {
+function removeLegacyColumnOrders() {
+    for (const key of Object.keys(localStorage)) {
+        if (key === LEGACY_ORDER_KEY_PREFIX || key.startsWith(`${LEGACY_ORDER_KEY_PREFIX}:`)) {
+            localStorage.removeItem(key);
+        }
+    }
+}
+
+function sanitizeOrder(order, columns) {
+    const allowed = columns?.length
+        ? new Set(
+              columns
+                  .filter((column) => column.type === "field" && column.name)
+                  .map((column) => column.name)
+          )
+        : null;
+    const clean = [];
+    for (const name of Array.isArray(order) ? order : []) {
+        if ((!allowed || allowed.has(name)) && name && !clean.includes(name)) {
+            clean.push(name);
+        }
+    }
+    return clean;
+}
+
+function isPinnedField(name) {
+    return PINNED_FIELD_ORDER.includes(name);
+}
+
+function readColumnOrder(renderer, columns) {
     try {
-        const value = JSON.parse(localStorage.getItem(ORDER_KEY_PREFIX) || "[]");
-        return Array.isArray(value) ? value.filter(Boolean) : [];
+        const value = JSON.parse(localStorage.getItem(columnStorageKey(renderer)) || "[]");
+        return sanitizeOrder(value, columns);
     } catch {
+        localStorage.removeItem(columnStorageKey(renderer));
         return [];
     }
 }
 
-function readColumnOrder(renderer) {
-    try {
-        const value = JSON.parse(localStorage.getItem(columnStorageKey(renderer)) || "[]");
-        if (Array.isArray(value) && value.filter(Boolean).length) {
-            return value.filter(Boolean);
-        }
-    } catch {
-        // Ignore stale or hand-edited browser storage and fall back safely.
-    }
-    return readLegacyColumnOrder();
-}
-
 function writeColumnOrder(renderer, order) {
-    localStorage.setItem(columnStorageKey(renderer), JSON.stringify(order.filter(Boolean)));
+    const columns = renderer?.columns || renderer?.getActiveColumns?.() || [];
+    localStorage.setItem(columnStorageKey(renderer), JSON.stringify(sanitizeOrder(order, columns)));
 }
 
 function applySavedOrder(renderer, columns) {
-    const order = readColumnOrder(renderer);
-    if (!order.length) {
-        return columns;
-    }
-    const byName = new Map();
+    const order = readColumnOrder(renderer, columns);
+    const buttonGroups = [];
+    const otherFixed = [];
     const movable = [];
-    const fixed = [];
     for (const column of columns) {
-        if (column.type === "field" && column.name) {
-            byName.set(column.name, column);
+        if (column.type === "button_group") {
+            buttonGroups.push(column);
+        } else if (column.type === "field" && column.name) {
             movable.push(column);
         } else {
-            fixed.push({ column, index: columns.indexOf(column) });
+            otherFixed.push(column);
         }
     }
-    const sorted = [
-        ...order.map((name) => byName.get(name)).filter(Boolean),
-        ...movable.filter((column) => !order.includes(column.name)),
-    ];
-    for (const item of fixed) {
-        sorted.splice(Math.min(item.index, sorted.length), 0, item.column);
-    }
-    return sorted;
+    const byName = new Map(movable.map((column) => [column.name, column]));
+    const pinnedFields = PINNED_FIELD_ORDER.map((name) => byName.get(name)).filter(Boolean);
+    const pinnedNames = new Set(pinnedFields.map((column) => column.name));
+    const remainder = movable.filter((column) => !pinnedNames.has(column.name));
+    const remainderOrder = order.filter((name) => !pinnedNames.has(name));
+    const orderedRemainder = remainderOrder.length ? [
+        ...remainderOrder.map((name) => byName.get(name)).filter(Boolean),
+        ...remainder.filter((column) => !remainderOrder.includes(column.name)),
+    ] : remainder;
+    return [...buttonGroups, ...pinnedFields, ...orderedRemainder, ...otherFixed];
 }
 
 function moveNameBefore(order, source, target) {
@@ -117,10 +138,11 @@ function rendererForTable(table) {
 
 if (!window.__goldverseLaundryColumnDragEnabled) {
     window.__goldverseLaundryColumnDragEnabled = true;
+    removeLegacyColumnOrders();
 
     document.addEventListener("dragstart", (ev) => {
         const header = ev.target.closest(".goldverse-laundry-order-list table.o_list_table th[data-name]");
-        if (!header || ev.target.closest(".o_resize")) {
+        if (!header || ev.target.closest(".o_resize") || isPinnedField(header.dataset.name)) {
             return;
         }
         ev.dataTransfer.effectAllowed = "move";
@@ -137,7 +159,7 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
 
     document.addEventListener("dragover", (ev) => {
         const header = ev.target.closest(".goldverse-laundry-order-list table.o_list_table th[data-name]");
-        if (!header) {
+        if (!header || isPinnedField(header.dataset.name)) {
             return;
         }
         ev.preventDefault();
@@ -155,7 +177,7 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
         const table = header && tableForHeader(header);
         const source = ev.dataTransfer.getData("text/plain");
         const target = header?.dataset.name;
-        if (!table || !source || !target || source === target) {
+        if (!table || !source || !target || source === target || isPinnedField(source) || isPinnedField(target)) {
             return;
         }
         ev.preventDefault();
@@ -169,8 +191,11 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
         document
             .querySelectorAll(".goldverse-laundry-order-list table.o_list_table th[data-name]")
             .forEach((header) => {
-                header.draggable = true;
-                header.title = header.title || "Drag to move column. Use the edge handle to resize.";
+                const pinned = isPinnedField(header.dataset.name);
+                header.draggable = !pinned;
+                header.title = pinned
+                    ? "Pinned column. Use the edge handle to resize."
+                    : header.title || "Drag to move column. Use the edge handle to resize.";
             });
     };
 
@@ -179,9 +204,9 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
     markHeadersDraggable();
 }
 
-if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 2) {
+if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 3) {
     patch(ListRenderer.prototype, {
-        __goldverseLaundryListColumnPatchVersion: 2,
+        __goldverseLaundryListColumnPatchVersion: 3,
 
         getActiveColumns() {
             const columns = super.getActiveColumns(...arguments);
