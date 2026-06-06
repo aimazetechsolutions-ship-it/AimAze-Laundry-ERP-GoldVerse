@@ -615,6 +615,38 @@ class LaundryOrder(models.Model):
             self.with_context(goldverse_allow_locked_order_write=True, goldverse_skip_required_validation=True)._set_state("paid")
         return True
 
+    def _goldverse_reconcile_order_invoice_payments(self):
+        for order in self:
+            invoice = order.invoice_id
+            if not invoice or invoice.state != "posted":
+                continue
+            receivable_lines = invoice.line_ids.filtered(
+                lambda line: line.account_id.account_type == "asset_receivable"
+                and line.amount_residual > 0
+                and not line.reconciled
+            )
+            if not receivable_lines:
+                continue
+            payment_lines = order.payment_ids.mapped("move_id.line_ids").filtered(
+                lambda line: line.account_id in receivable_lines.mapped("account_id")
+                and line.partner_id.commercial_partner_id == order.partner_id.commercial_partner_id
+                and line.company_id == order.company_id
+                and line.parent_state == "posted"
+                and line.amount_residual < 0
+                and not line.reconciled
+            )
+            if not payment_lines:
+                continue
+            (receivable_lines + payment_lines).sudo().reconcile()
+            invoice.invalidate_recordset(["amount_residual", "payment_state"])
+            order.invalidate_recordset(["paid_amount", "balance_amount", "payment_status"])
+        return True
+
+    @api.model
+    def _goldverse_reconcile_all_order_invoice_payments(self):
+        self.sudo().search([("invoice_id", "!=", False), ("payment_ids", "!=", False)])._goldverse_reconcile_order_invoice_payments()
+        return True
+
     def action_create_invoice(self):
         self._goldverse_validate_created_for_financial_action()
         workflow_states = {
@@ -630,6 +662,7 @@ class LaundryOrder(models.Model):
                     "state": workflow_states[order.id],
                     "invoice_status": "invoiced",
                 })
+        orders._goldverse_reconcile_order_invoice_payments()
         return action
 
     def action_view_invoice(self):
@@ -658,6 +691,7 @@ class LaundryOrder(models.Model):
                 order.action_create_invoice()
             if order.invoice_id.state == "draft":
                 order.invoice_id.action_post()
+            order._goldverse_reconcile_order_invoice_payments()
         return True
 
     def _goldverse_validate_send_to_warehouse(self):

@@ -103,6 +103,7 @@ class LaundryPaymentWizard(models.TransientModel):
         previous_states = {order.id: order.state for order in orders}
         self._goldverse_ensure_inbound_method_line()
         result = super(LaundryPaymentWizard, self.sudo()).action_register_payment()
+        orders._goldverse_reconcile_order_invoice_payments()
         if not deliver_after_payment:
             for order in orders:
                 previous_state = previous_states.get(order.id)
