@@ -29,11 +29,43 @@ class ResUsers(models.Model):
         return self.env.ref("goldverse_premium_laundry_branding.action_goldverse_open_executive_dashboard", raise_if_not_found=False)
 
     @api.model
-    def _goldverse_set_executive_dashboard_home(self):
-        action = self._goldverse_executive_dashboard_action()
-        if not action:
+    def _goldverse_laundry_orders_action(self):
+        return self.env.ref("aimaze_laundry_management.action_laundry_order", raise_if_not_found=False)
+
+    @api.model
+    def _goldverse_user_has_group(self, user, xmlid):
+        try:
+            return bool(user.sudo().has_group(xmlid))
+        except ValueError:
             return False
-        self.sudo().search([("share", "=", False)]).write({"action_id": action.id})
+
+    @api.model
+    def _goldverse_user_should_see_dashboard(self, user):
+        login = (user.login or "").lower()
+        if "sunny" in login:
+            return False
+        dashboard_groups = [
+            "base.group_system",
+            "aimaze_laundry_management.group_laundry_admin",
+        ]
+        return any(self._goldverse_user_has_group(user, xmlid) for xmlid in dashboard_groups)
+
+    @api.model
+    def _goldverse_home_action_for_user(self, user):
+        dashboard_action = self._goldverse_executive_dashboard_action()
+        orders_action = self._goldverse_laundry_orders_action()
+        if self._goldverse_user_should_see_dashboard(user):
+            return dashboard_action or orders_action
+        return orders_action or dashboard_action
+
+    @api.model
+    def _goldverse_set_executive_dashboard_home(self):
+        if not (self._goldverse_executive_dashboard_action() or self._goldverse_laundry_orders_action()):
+            return False
+        for user in self.sudo().search([("share", "=", False)]):
+            action = self._goldverse_home_action_for_user(user)
+            if action:
+                user.write({"action_id": action.id})
         return True
 
     @api.model
@@ -63,10 +95,10 @@ class ResUsers(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         users = super().create(vals_list)
-        action = self._goldverse_executive_dashboard_action()
-        if action:
-            for user, vals in zip(users, vals_list):
-                if not vals.get("action_id") and not user.share:
+        for user, vals in zip(users, vals_list):
+            if not vals.get("action_id") and not user.share:
+                action = self._goldverse_home_action_for_user(user)
+                if action:
                     user.sudo().write({"action_id": action.id})
         return users
 

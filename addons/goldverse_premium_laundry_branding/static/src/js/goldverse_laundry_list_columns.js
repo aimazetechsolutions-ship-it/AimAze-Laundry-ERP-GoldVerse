@@ -1,9 +1,10 @@
 /** @odoo-module **/
 
 import { patch } from "@web/core/utils/patch";
+import { session } from "@web/session";
 import { ListRenderer } from "@web/views/list/list_renderer";
 
-const ORDER_KEY = "goldverse_laundry_order_list_column_order";
+const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order";
 
 function isGoldverseLaundryList(renderer) {
     return (
@@ -12,21 +13,40 @@ function isGoldverseLaundryList(renderer) {
     );
 }
 
-function readColumnOrder() {
+function columnStorageKey(renderer) {
+    const db = session.db || "db";
+    const uid = session.uid || "uid";
+    const model = renderer?.props?.list?.resModel || "aimaze.laundry.order";
+    return `${ORDER_KEY_PREFIX}:${db}:${uid}:${model}`;
+}
+
+function readLegacyColumnOrder() {
     try {
-        const value = JSON.parse(localStorage.getItem(ORDER_KEY) || "[]");
+        const value = JSON.parse(localStorage.getItem(ORDER_KEY_PREFIX) || "[]");
         return Array.isArray(value) ? value.filter(Boolean) : [];
     } catch {
         return [];
     }
 }
 
-function writeColumnOrder(order) {
-    localStorage.setItem(ORDER_KEY, JSON.stringify(order.filter(Boolean)));
+function readColumnOrder(renderer) {
+    try {
+        const value = JSON.parse(localStorage.getItem(columnStorageKey(renderer)) || "[]");
+        if (Array.isArray(value) && value.filter(Boolean).length) {
+            return value.filter(Boolean);
+        }
+    } catch {
+        // Ignore stale or hand-edited browser storage and fall back safely.
+    }
+    return readLegacyColumnOrder();
 }
 
-function applySavedOrder(columns) {
-    const order = readColumnOrder();
+function writeColumnOrder(renderer, order) {
+    localStorage.setItem(columnStorageKey(renderer), JSON.stringify(order.filter(Boolean)));
+}
+
+function applySavedOrder(renderer, columns) {
+    const order = readColumnOrder(renderer);
     if (!order.length) {
         return columns;
     }
@@ -91,6 +111,10 @@ function tableForHeader(header) {
     return header.closest(".goldverse-laundry-order-list table.o_list_table");
 }
 
+function rendererForTable(table) {
+    return table.closest(".o_list_renderer")?.__owl__?.component || null;
+}
+
 if (!window.__goldverseLaundryColumnDragEnabled) {
     window.__goldverseLaundryColumnDragEnabled = true;
 
@@ -136,7 +160,7 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
         }
         ev.preventDefault();
         const nextOrder = moveNameBefore(orderNamesFromHeader(table.querySelector("thead tr")), source, target);
-        writeColumnOrder(nextOrder);
+        writeColumnOrder(rendererForTable(table), nextOrder);
         applyOrderToTable(table, nextOrder);
         header.classList.remove("goldverse-column-drop-target");
     });
@@ -155,13 +179,13 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
     markHeadersDraggable();
 }
 
-if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 1) {
+if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 2) {
     patch(ListRenderer.prototype, {
-        __goldverseLaundryListColumnPatchVersion: 1,
+        __goldverseLaundryListColumnPatchVersion: 2,
 
         getActiveColumns() {
             const columns = super.getActiveColumns(...arguments);
-            return isGoldverseLaundryList(this) ? applySavedOrder(columns) : columns;
+            return isGoldverseLaundryList(this) ? applySavedOrder(this, columns) : columns;
         },
     });
 }

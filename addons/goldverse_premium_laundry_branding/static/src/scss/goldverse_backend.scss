@@ -37,6 +37,18 @@
     cursor: grab;
   }
 
+  .o_list_table thead th,
+  .o_list_table thead th[data-name],
+  .o_list_table thead th .o_column_title,
+  .o_list_table thead th .o_list_number_th {
+    text-align: center !important;
+  }
+
+  .o_list_table thead th .d-flex,
+  .o_list_table thead th .o_column_sortable {
+    justify-content: center;
+  }
+
   .o_list_table th[data-name]:active,
   .o_list_table th.goldverse-column-dragging {
     cursor: grabbing;
@@ -45,13 +57,6 @@
   .o_list_table th.goldverse-column-drop-target {
     box-shadow: inset 3px 0 0 #25b7c9;
     background: rgba(37, 183, 201, 0.08);
-  }
-
-  .o_list_table th[data-name="partner_id"],
-  .o_list_table td[name="partner_id"] {
-    width: 1%;
-    min-width: 110px;
-    white-space: nowrap;
   }
 
   .goldverse-warehouse-send-btn,

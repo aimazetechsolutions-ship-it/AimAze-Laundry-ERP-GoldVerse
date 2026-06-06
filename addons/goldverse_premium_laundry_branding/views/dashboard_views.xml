@@ -10,10 +10,32 @@
     <record id="aimaze_laundry_management.menu_laundry_executive_dashboard" model="ir.ui.menu">
         <field name="action" ref="action_goldverse_open_executive_dashboard"/>
         <field name="sequence">1</field>
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_dashboard" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_branch_dashboard" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_aimaze_laundry_root" model="ir.ui.menu">
         <field name="action" ref="action_goldverse_open_executive_dashboard"/>
+        <field name="group_ids" eval="[(6, 0, [
+            ref('aimaze_laundry_management.group_laundry_admin'),
+            ref('base.group_system')
+        ])]"/>
     </record>
 
     <record id="view_laundry_executive_dashboard_form_goldverse_clickable_cards" model="ir.ui.view">
