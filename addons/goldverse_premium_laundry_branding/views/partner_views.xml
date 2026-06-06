@@ -19,6 +19,9 @@
             <xpath expr="//field[@name='phone']" position="before">
                 <field name="goldverse_customer_category" required="1"/>
             </xpath>
+            <xpath expr="//field[@name='phone']" position="attributes">
+                <attribute name="required">customer_rank &gt; 0</attribute>
+            </xpath>
             <xpath expr="//field[@name='phone']" position="after">
                 <field name="mobile"/>
             </xpath>

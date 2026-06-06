@@ -77,7 +77,7 @@ class ResPartner(models.Model):
             vals = {"goldverse_customer_category": category}
             if partner.customer_rank > 0 and partner.laundry_customer_type != category:
                 vals["laundry_customer_type"] = category
-            partner.write(vals)
+            partner.with_context(goldverse_skip_customer_phone_required=True).write(vals)
         partners._goldverse_ensure_customer_rank_for_customer_categories()
         return True
 
@@ -117,6 +117,15 @@ class ResPartner(models.Model):
                 )
             seen[mobile] = partner
 
+    def _goldverse_check_customer_phone_required(self):
+        if self.env.context.get("goldverse_skip_customer_phone_required"):
+            return True
+        missing = self.filtered(lambda partner: partner.customer_rank > 0 and not partner._goldverse_mobile_value())
+        if missing:
+            names = ", ".join(missing.mapped("display_name")[:5])
+            raise ValidationError(_("Phone is mandatory for customer(s): %s.") % names)
+        return True
+
     @api.model_create_multi
     def create(self, vals_list):
         default_customer_rank = self.env.context.get("default_customer_rank")
@@ -129,6 +138,7 @@ class ResPartner(models.Model):
             self._goldverse_prepare_customer_category_vals(vals)
         partners = super().create(vals_list)
         partners._goldverse_check_duplicate_mobile()
+        partners._goldverse_check_customer_phone_required()
         partners._goldverse_ensure_customer_rank_for_customer_categories()
         return partners
 
@@ -138,6 +148,8 @@ class ResPartner(models.Model):
         result = super().write(vals)
         if {"phone", "mobile"} & set(vals):
             self._goldverse_check_duplicate_mobile()
+        if {"customer_rank", "phone", "mobile", "goldverse_customer_category", "laundry_customer_type"} & set(vals):
+            self._goldverse_check_customer_phone_required()
         if not self.env.context.get("goldverse_skip_customer_rank_sync") and {
             "goldverse_customer_category",
             "laundry_customer_type",
