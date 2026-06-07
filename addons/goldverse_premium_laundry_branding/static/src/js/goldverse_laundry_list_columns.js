@@ -20,7 +20,8 @@ const COLUMN_WIDTH_LIMITS = {
     expected_delivery_datetime: { min: 150, max: 230 },
     actual_delivery_datetime: { min: 170, max: 260 },
 };
-const AMOUNT_FIELD_PATTERN = /(amount|price|qty|quantity|tax|balance|charge|discount|debit|credit|received|paid|total|net|gross)/i;
+const AMOUNT_FIELD_PATTERN = /(amount|price|qty|quantity|tax|balance|charge|discount|debit|credit|total|net|gross)/i;
+let measureContext = null;
 
 function isGoldverseLaundryList(renderer) {
     return (
@@ -165,27 +166,51 @@ function columnKey(header) {
     return header.dataset.name || "";
 }
 
-function textWidth(cell) {
-    const clone = cell.cloneNode(true);
-    clone.style.position = "absolute";
-    clone.style.left = "-10000px";
-    clone.style.top = "-10000px";
-    clone.style.width = "auto";
-    clone.style.minWidth = "0";
-    clone.style.maxWidth = "none";
-    clone.style.whiteSpace = "nowrap";
-    clone.style.visibility = "hidden";
-    clone.style.pointerEvents = "none";
-    document.body.appendChild(clone);
-    const width = Math.ceil(clone.scrollWidth || clone.getBoundingClientRect().width || 0);
-    clone.remove();
-    return width;
+function canvasContext() {
+    if (!measureContext) {
+        measureContext = document.createElement("canvas").getContext("2d");
+    }
+    return measureContext;
+}
+
+function fontFor(cell) {
+    const style = getComputedStyle(cell);
+    return `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+}
+
+function measureText(text, cell) {
+    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    if (!clean) {
+        return 0;
+    }
+    const context = canvasContext();
+    context.font = fontFor(cell);
+    return Math.ceil(context.measureText(clean).width);
+}
+
+function cellText(cell) {
+    const title = cell.querySelector(".o_column_title, .o_list_number_th");
+    return (title || cell).innerText || (title || cell).textContent || "";
+}
+
+function textWidth(cell, key) {
+    if (key === "__selector__") {
+        return 24;
+    }
+    if (key === "__actions__") {
+        const buttons = [...cell.querySelectorAll("button, .btn")].filter((button) => button.offsetParent !== null);
+        if (buttons.length) {
+            return buttons.reduce((total, button) => total + measureText(button.innerText || button.textContent, button) + 22, 0)
+                + Math.max(buttons.length - 1, 0) * 5;
+        }
+    }
+    return measureText(cellText(cell), cell);
 }
 
 function setCellWidth(cell, width) {
-    cell.style.width = `${width}px`;
-    cell.style.minWidth = `${width}px`;
-    cell.style.maxWidth = `${width}px`;
+    cell.style.setProperty("width", `${width}px`, "important");
+    cell.style.setProperty("min-width", `${width}px`, "important");
+    cell.style.setProperty("max-width", `${width}px`, "important");
 }
 
 function alignColumn(cells, key) {
@@ -202,7 +227,7 @@ function autoFitTableColumns(table) {
     if (!headerRow) {
         return;
     }
-    table.style.tableLayout = "fixed";
+    table.style.setProperty("table-layout", "fixed", "important");
     const headers = Array.from(headerRow.children);
     const colgroup = table.querySelector("colgroup");
     let totalWidth = 0;
@@ -213,7 +238,7 @@ function autoFitTableColumns(table) {
             ...Array.from(table.querySelectorAll("tbody tr")).map((row) => row.children[index]).filter(Boolean),
         ];
         const padding = key === "__actions__" ? 12 : 22;
-        const measured = Math.max(...cells.map(textWidth), 0) + padding;
+        const measured = Math.max(...cells.map((cell) => textWidth(cell, key)), 0) + padding;
         const width = clampWidth(measured, key);
         totalWidth += width;
         alignColumn(cells, key);
@@ -223,9 +248,9 @@ function autoFitTableColumns(table) {
             setCellWidth(col, width);
         }
     });
-    table.style.width = `${totalWidth}px`;
-    table.style.minWidth = `${totalWidth}px`;
-    table.style.maxWidth = "none";
+    table.style.setProperty("width", `${totalWidth}px`, "important");
+    table.style.setProperty("min-width", `${totalWidth}px`, "important");
+    table.style.setProperty("max-width", "none", "important");
 }
 
 let autoFitRequest = null;
