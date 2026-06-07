@@ -61,7 +61,6 @@
                                 <field name="driver_id"/>
                                 <field name="pickup_datetime"/>
                                 <field name="delivery_datetime"/>
-                                <field name="delivery_charge"/>
                                 <field name="state" widget="badge"/>
                             </list>
                         </field>
@@ -88,7 +87,6 @@
                     <field name="driver_id" optional="show"/>
                     <field name="pickup_datetime" optional="show"/>
                     <field name="delivery_datetime" optional="show"/>
-                    <field name="delivery_charge" optional="show"/>
                     <field name="cash_collected" optional="hide"/>
                     <field name="state" optional="show" widget="badge"
                            decoration-warning="state in ('scheduled','assigned','in_transit')"
@@ -132,7 +130,6 @@
                                 <field name="google_maps_url" widget="url" readonly="1"/>
                                 <field name="pickup_datetime" invisible="job_type == 'delivery'"/>
                                 <field name="delivery_datetime" invisible="job_type == 'pickup'"/>
-                                <field name="delivery_charge"/>
                             </group>
                         </group>
                         <group>
