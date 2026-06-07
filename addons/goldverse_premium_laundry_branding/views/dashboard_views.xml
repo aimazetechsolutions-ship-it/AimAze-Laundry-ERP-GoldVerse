@@ -47,9 +47,9 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//div[hasclass('aimaze-dashboard-shell')]" position="replace">
-                <div class="goldverse-command-view">
-                    <div class="goldverse-command-toolbar">
-                        <div class="goldverse-command-filters">
+                <div class="goldverse-command-view o_goldverse_dashboard">
+                    <div class="goldverse-command-toolbar o_goldverse_filter_bar">
+                        <div class="goldverse-command-filters o_goldverse_filter_group">
                             <field name="period_filter" widget="selection_badge" nolabel="1" class="aimaze-segmented-field"/>
                             <field name="date_from" invisible="period_filter != 'custom'"/>
                             <field name="date_to" invisible="period_filter != 'custom'"/>

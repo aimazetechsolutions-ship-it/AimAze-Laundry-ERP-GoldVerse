@@ -52,6 +52,7 @@
             "goldverse_premium_laundry_branding/static/src/js/goldverse_pwa_install_prompt.js",
             "goldverse_premium_laundry_branding/static/src/xml/goldverse_account_report_drilldown.xml",
             "goldverse_premium_laundry_branding/static/src/scss/goldverse_backend.scss",
+            "goldverse_premium_laundry_branding/static/src/scss/goldverse_dashboard.scss",
         ],
     },
     "application": False,

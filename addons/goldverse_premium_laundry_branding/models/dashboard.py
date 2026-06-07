@@ -784,9 +784,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
             domain.append(("branch_id", "=", self.branch_id.id))
         return self.env["aimaze.laundry.complaint"].sudo().search_count(domain)
 
+    def _gv_empty_state(self):
+        return (
+            '<div class="gv-empty o_goldverse_empty_state">'
+            '<div class="empty-icon"><i class="fa fa-bar-chart"></i></div>'
+            '<div class="empty-title">No data available</div>'
+            '<div class="empty-text">No records found for the selected period.</div>'
+            '</div>'
+        )
+
     def _gv_bar_chart(self, rows, label="Revenue"):
         if not rows:
-            return '<div class="gv-empty">No data available for the selected period.</div>'
+            return self._gv_empty_state()
         total = sum(value for _, value in rows) or 1.0
         max_value = max(value for _, value in rows) or 1.0
         rendered = []
@@ -810,7 +819,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
     def _gv_line_chart(self, rows, series):
         if not rows or not any(any(row.get(key) for key, _label, _color in series) for row in rows):
-            return '<div class="gv-empty">No data available for the selected period.</div>'
+            return self._gv_empty_state()
         width, height, padding = 640, 260, 32
         values = [row.get(key, 0.0) for row in rows for key, _label, _color in series]
         max_value = max(values) if values else 0.0
@@ -845,7 +854,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
     def _gv_donut_chart(self, rows):
         rows = [(name, value) for name, value in rows if value]
         if not rows:
-            return '<div class="gv-empty">No data available for the selected period.</div>'
+            return self._gv_empty_state()
         colors = ["#06b6d4", "#10b981", "#c9a227", "#f59e0b", "#8b5cf6", "#ef4444"]
         total = sum(value for _, value in rows) or 1.0
         cursor = 0.0
@@ -876,8 +885,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
         formatted_value = self._gv_money(value) if is_money else self._gv_number(value)
         comparison = self._gv_money(previous) if is_money else self._gv_number(previous)
         return (
-            '<div class="gv-kpi-card gv-clickable-card" style="--gv-accent:%s"%s><div class="gv-kpi-icon"><i class="fa %s"></i></div>'
-            '<span>%s</span><strong>%s</strong><em class="%s">%s vs previous</em><small>Previous: %s</small></div>'
+            '<div class="gv-kpi-card o_goldverse_kpi_card gv-clickable-card" style="--gv-accent:%s"%s><div class="gv-kpi-icon"><i class="fa %s"></i></div>'
+            '<span class="o_goldverse_kpi_label">%s</span><strong class="o_goldverse_kpi_value">%s</strong><em class="o_goldverse_kpi_trend %s">%s vs previous</em><small>Previous: %s</small></div>'
         ) % (
             accent,
             self._gv_click_attrs(card_key),
@@ -889,16 +898,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
             escape(comparison),
         )
 
-    def _gv_sales_card(self, title, value, card_key, accent, share=False):
+    def _gv_sales_card(self, title, value, card_key, accent, share=False, icon="fa-line-chart"):
         share_html = ""
         if share is not False:
-            share_html = '<em>%s share</em>' % escape("%.1f%%" % share)
+            share_html = '<em class="o_goldverse_kpi_trend">%s share</em>' % escape("%.1f%%" % share)
         return (
-            '<div class="gv-sales-card gv-clickable-card" style="--gv-accent:%s"%s>'
-            '<span>%s</span><strong>%s</strong>%s</div>'
+            '<div class="gv-sales-card o_goldverse_kpi_card gv-clickable-card" style="--gv-accent:%s"%s>'
+            '<div class="gv-kpi-icon"><i class="fa %s"></i></div>'
+            '<div class="gv-card-copy"><span class="o_goldverse_kpi_label">%s</span><strong class="o_goldverse_kpi_value">%s</strong>%s</div></div>'
         ) % (
             accent,
             self._gv_click_attrs(card_key),
+            icon,
             escape(title),
             escape(self._gv_money(value)),
             share_html,
@@ -906,7 +917,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
     def _gv_small_card(self, title, value, accent="#06b6d4", money=True):
         formatted = self._gv_money(value) if money else (("%.1f%%" % value) if isinstance(value, float) else self._gv_number(value))
-        return '<div class="gv-mini-card" style="--gv-accent:%s"><span>%s</span><strong>%s</strong></div>' % (
+        return '<div class="gv-mini-card o_goldverse_kpi_card" style="--gv-accent:%s"><span class="o_goldverse_kpi_label">%s</span><strong class="o_goldverse_kpi_value">%s</strong></div>' % (
             accent,
             escape(title),
             escape(formatted),
@@ -914,7 +925,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
     def _gv_customer_table(self, rows):
         if not rows:
-            return '<div class="gv-empty">No data available for the selected period.</div>'
+            return self._gv_empty_state()
         body = []
         for row in rows[:10]:
             body.append(
@@ -927,7 +938,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 )
             )
         return (
-            '<table class="gv-customer-table"><thead><tr><th>Customer Name</th><th>Orders</th><th>Revenue</th><th>Outstanding Balance</th></tr></thead>'
+            '<table class="gv-customer-table o_goldverse_table"><thead><tr><th>Customer Name</th><th>Orders</th><th>Revenue</th><th>Outstanding Balance</th></tr></thead>'
             '<tbody>%s</tbody></table>'
         ) % "".join(body)
 
@@ -977,7 +988,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ),
         ]
         return "".join(
-            '<div class="gv-alert %s"><span>%s</span><strong>%s</strong><p>%s</p></div>'
+            '<div class="gv-alert o_goldverse_alert %s"><i class="alert-dot"></i><div><span class="o_goldverse_alert_title">%s</span><strong class="o_goldverse_alert_value">%s</strong><p class="o_goldverse_alert_text">%s</p></div></div>'
             % (severity, escape(title), escape(value), escape(message))
             for severity, title, value, message in alert_specs
         )
@@ -1087,11 +1098,11 @@ class LaundryExecutiveDashboard(models.TransientModel):
             credit_sales = max(remaining_sales, 0.0)
             sales_share = lambda amount: ((amount or 0.0) / sales_total * 100.0) if sales_total else 0.0
             sales_cards = [
-                dashboard._gv_sales_card("Total Sales", sales_total, "gv_total_sales", "#c9a227"),
-                dashboard._gv_sales_card("Cash Sales", cash_sales, "gv_cash_sales", "#10b981", sales_share(cash_sales)),
-                dashboard._gv_sales_card("Bank Sales", bank_sales, "gv_bank_sales", "#0ea5e9", sales_share(bank_sales)),
-                dashboard._gv_sales_card("IBFT Sales", ibft_sales, "gv_ibft_sales", "#8b5cf6", sales_share(ibft_sales)),
-                dashboard._gv_sales_card("Credit Sales", credit_sales, "gv_credit_sales", "#f59e0b", sales_share(credit_sales)),
+                dashboard._gv_sales_card("Total Sales", sales_total, "gv_total_sales", "#c9a227", icon="fa-shopping-cart"),
+                dashboard._gv_sales_card("Cash Sales", cash_sales, "gv_cash_sales", "#10b981", sales_share(cash_sales), "fa-money"),
+                dashboard._gv_sales_card("Bank Sales", bank_sales, "gv_bank_sales", "#0ea5e9", sales_share(bank_sales), "fa-bank"),
+                dashboard._gv_sales_card("IBFT Sales", ibft_sales, "gv_ibft_sales", "#8b5cf6", sales_share(ibft_sales), "fa-exchange"),
+                dashboard._gv_sales_card("Credit Sales", credit_sales, "gv_credit_sales", "#f59e0b", sales_share(credit_sales), "fa-credit-card"),
             ]
             kpis = [
                 dashboard._gv_kpi_card("Total Revenue", data["revenue"], data["previous_revenue"], "fa-line-chart", "#c9a227", card_key="gv_total_revenue"),
@@ -1117,15 +1128,15 @@ class LaundryExecutiveDashboard(models.TransientModel):
             collection_cards = [
                 dashboard._gv_small_card(name, value, "#06b6d4")
                 for name, value in sorted(data["collections"].items())
-            ] or ['<div class="gv-empty">No data available for the selected period.</div>']
+            ] or [dashboard._gv_empty_state()]
             warning_html = '<div class="gv-warning">%s</div>' % escape(warning) if warning else ""
             dashboard.goldverse_command_center_html = """
                 <div class="gv-command-center">
-                    <section class="gv-command-hero">
+                    <section class="gv-command-hero o_goldverse_header">
                         <div>
                             <span class="gv-eyebrow">Executive Analytics</span>
                             <h1>GoldVerse Executive Command Center</h1>
-                            <p>%s</p>
+                            <p class="company-name">%s</p>
                             <div class="gv-filter-pills">
                                 <span><i class="fa fa-calendar"></i>%s</span>
                                 <span><i class="fa fa-money"></i>%s</span>
@@ -1133,35 +1144,35 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         </div>
                     </section>
                     %s
-                    <section class="gv-panel gv-sales-panel">
-                        <div class="gv-panel-head"><h2>Sales</h2><span>%s</span></div>
-                        <div class="gv-sales-grid">%s</div>
+                    <section class="gv-panel gv-sales-panel o_goldverse_section">
+                        <div class="gv-panel-head o_goldverse_section_header"><h2>Sales</h2><span class="section-tag">%s</span></div>
+                        <div class="gv-sales-grid o_goldverse_kpi_grid">%s</div>
                     </section>
-                    <section class="gv-kpi-grid">%s</section>
-                    <section class="gv-dashboard-row gv-row-70-30">
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Monthly Revenue vs Gross Profit</h2><span>%s</span></div>%s</div>
-                        <div class="gv-panel gv-revenue-composition-panel"><div class="gv-panel-head"><h2>Revenue Composition</h2><span>Actual services</span></div>%s</div>
+                    <section class="gv-kpi-grid o_goldverse_kpi_grid">%s</section>
+                    <section class="gv-dashboard-row gv-row-70-30 o_goldverse_chart_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Monthly Revenue vs Gross Profit</h2><span class="section-tag o_goldverse_chart_subtitle">%s</span></div>%s</div>
+                        <div class="gv-panel gv-revenue-composition-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue Composition</h2><span class="section-tag o_goldverse_chart_subtitle">Actual services</span></div>%s</div>
                     </section>
-                    <section class="gv-dashboard-row gv-row-3">
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Top Service Revenue</h2><span>Top 5</span></div>%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Top Category Revenue</h2><span>Top 5</span></div>%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Top Sub Category Revenue</h2><span>Top 5</span></div>%s</div>
+                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Service Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>%s</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>%s</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Sub Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>%s</div>
                     </section>
-                    <section class="gv-dashboard-row gv-row-60-40">
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Top Customers by Revenue</h2><span>Top 10</span></div>%s%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Customer KPIs</h2><span>Period quality</span></div><div class="gv-mini-grid">%s</div></div>
+                    <section class="gv-dashboard-row gv-row-60-40 o_goldverse_two_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Customers by Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 10</span></div>%s%s</div>
+                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Customer KPIs</h2><span class="section-tag">Period quality</span></div><div class="gv-mini-grid">%s</div></div>
                     </section>
-                    <section class="gv-dashboard-row gv-row-3">
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Receivable Aging</h2><span>Open AR</span></div>%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Collections</h2><span>Payment journals</span></div><div class="gv-mini-grid">%s</div></div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Customer Advances</h2><span>AR credit balance</span></div><div class="gv-mini-grid">%s</div></div>
+                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Receivable Aging</h2><span class="section-tag o_goldverse_chart_subtitle">Open AR</span></div>%s</div>
+                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Collections</h2><span class="section-tag">Payment journals</span></div><div class="gv-mini-grid">%s</div></div>
+                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Customer Advances</h2><span class="section-tag">AR credit balance</span></div><div class="gv-mini-grid">%s</div></div>
                     </section>
-                    <section class="gv-dashboard-row gv-row-3">
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Revenue vs Cost Breakdown</h2><span>Actual accounts</span></div>%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Gross Profit %% Trend</h2><span>Monthly</span></div>%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Net Profit %% Trend</h2><span>Monthly</span></div>%s</div>
+                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue vs Cost Breakdown</h2><span class="section-tag o_goldverse_chart_subtitle">Actual accounts</span></div>%s</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Gross Profit %% Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>%s</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Net Profit %% Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>%s</div>
                     </section>
-                    <section class="gv-panel gv-alert-center"><div class="gv-panel-head"><h2>Executive Alerts Center</h2><span>Live management signals</span></div><div class="gv-alert-grid">%s</div></section>
+                    <section class="gv-panel gv-alert-center o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Executive Alerts Center</h2><span class="section-tag">Live management signals</span></div><div class="gv-alert-grid o_goldverse_alert_grid">%s</div></section>
                 </div>
             """ % (
                 escape(company.name or dashboard.company_id.display_name),
