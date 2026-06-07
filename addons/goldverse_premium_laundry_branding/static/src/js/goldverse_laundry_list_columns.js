@@ -203,9 +203,9 @@ function autoFitTableColumns(table) {
         return;
     }
     table.style.tableLayout = "fixed";
-    table.style.width = "max-content";
-    table.style.minWidth = "100%";
     const headers = Array.from(headerRow.children);
+    const colgroup = table.querySelector("colgroup");
+    let totalWidth = 0;
     headers.forEach((header, index) => {
         const key = columnKey(header);
         const cells = [
@@ -215,9 +215,17 @@ function autoFitTableColumns(table) {
         const padding = key === "__actions__" ? 12 : 22;
         const measured = Math.max(...cells.map(textWidth), 0) + padding;
         const width = clampWidth(measured, key);
+        totalWidth += width;
         alignColumn(cells, key);
         cells.forEach((cell) => setCellWidth(cell, width));
+        const col = colgroup?.children[index];
+        if (col) {
+            setCellWidth(col, width);
+        }
     });
+    table.style.width = `${totalWidth}px`;
+    table.style.minWidth = `${totalWidth}px`;
+    table.style.maxWidth = "none";
 }
 
 let autoFitRequest = null;
