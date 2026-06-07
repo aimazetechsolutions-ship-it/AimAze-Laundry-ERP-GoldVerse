@@ -260,11 +260,31 @@
   width: 100%;
 }
 
+.o_form_view:has(.goldverse-command-view) {
+  .o_form_sheet_bg {
+    padding: 0 !important;
+    background: #f6fbfd !important;
+  }
+
+  .o_form_sheet {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
 .goldverse-command-view {
-  margin: -8px -16px 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #eef8fb 55%, #f8fafc 100%);
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  background: linear-gradient(135deg, #f7fbfd 0%, #edf7fa 46%, #fbfdff 100%);
   min-height: calc(100vh - 120px);
-  padding: 18px 24px 32px;
+  padding: 18px 20px 34px;
 
   .goldverse-command-toolbar {
     display: flex;
@@ -273,10 +293,10 @@
     gap: 16px;
     margin-bottom: 16px;
     padding: 12px;
-    border: 1px solid #dbeafe;
+    border: 1px solid #d7e8f0;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.055);
   }
 
   .goldverse-command-filters,
@@ -296,11 +316,13 @@
 .gv-command-center {
   --gv-navy: #0f172a;
   --gv-muted: #64748b;
-  --gv-border: #dbeafe;
+  --gv-border: #d7e8f0;
   --gv-gold: #c9a227;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  width: 100%;
+  max-width: none;
   color: var(--gv-navy);
   font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
@@ -308,10 +330,11 @@
 .gv-command-hero,
 .gv-panel,
 .gv-kpi-card,
+.gv-sales-card,
 .gv-mini-card {
   border: 1px solid var(--gv-border);
-  background: #ffffff;
-  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
 
 .gv-command-hero {
@@ -379,6 +402,64 @@
   gap: 16px;
 }
 
+.gv-sales-panel {
+  min-height: auto;
+}
+
+.gv-sales-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.gv-sales-card {
+  position: relative;
+  min-height: 118px;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 16px;
+  border-left: 5px solid var(--gv-accent, #06b6d4);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -44px;
+    right: -28px;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gv-accent, #06b6d4) 12%, transparent);
+  }
+
+  span {
+    display: block;
+    color: #5b6f86;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  strong {
+    display: block;
+    margin-top: 22px;
+    color: #082744;
+    font-size: 22px;
+    font-weight: 950;
+  }
+
+  em {
+    display: inline-flex;
+    margin-top: 8px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    background: color-mix(in srgb, var(--gv-accent, #06b6d4) 11%, #fff);
+    color: var(--gv-accent, #06b6d4);
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 900;
+  }
+}
+
 .gv-kpi-card {
   position: relative;
   min-height: 166px;
@@ -429,6 +510,19 @@
 
   em.down {
     color: #dc2626;
+  }
+}
+
+.gv-clickable-card {
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: color-mix(in srgb, var(--gv-accent, #06b6d4) 42%, var(--gv-border));
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.095);
+    outline: none;
+    transform: translateY(-2px);
   }
 }
 
@@ -763,6 +857,10 @@
     grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
 
+  .gv-sales-grid {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+  }
+
   .gv-row-3,
   .gv-row-70-30,
   .gv-row-60-40 {
@@ -776,7 +874,7 @@
 
 @media (max-width: 768px) {
   .goldverse-command-view {
-    margin: 0 -8px;
+    margin: 0;
     padding: 12px;
   }
 
@@ -787,6 +885,7 @@
   }
 
   .gv-kpi-grid,
+  .gv-sales-grid,
   .gv-mini-grid,
   .gv-alert-grid,
   .gv-donut-wrap,

@@ -67,11 +67,13 @@ class LaundryExecutiveDashboard(models.TransientModel):
         ]
 
     def _goldverse_action(self, name, model, domain, view_mode="list,form", context=None):
+        views = [(False, mode.strip()) for mode in view_mode.split(",") if mode.strip()]
         return {
             "type": "ir.actions.act_window",
             "name": name,
             "res_model": model,
             "view_mode": view_mode,
+            "views": views,
             "domain": domain,
             "context": context or {},
             "target": "current",
@@ -260,15 +262,20 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 "list,form",
             )
         if card == "gv_total_sales":
-            return self._goldverse_action(_("Total Sales"), "aimaze.laundry.order", period_order_domain + [("state", "not in", ("cancelled",))], "list,kanban,form,pivot,graph")
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("Total Sales"), "account.move", self._gv_invoice_domain(date_from, date_to), "list,form,pivot,graph")
         if card == "gv_cash_sales":
-            return self._goldverse_action(_("Cash Sales"), "account.payment", self._goldverse_payment_domain("cash"), "list,form,pivot,graph")
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("Cash Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "cash"), "list,form,pivot,graph")
         if card == "gv_bank_sales":
-            return self._goldverse_action(_("Bank Sales"), "account.payment", self._goldverse_payment_domain("bank"), "list,form,pivot,graph")
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("Bank Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "bank"), "list,form,pivot,graph")
         if card == "gv_ibft_sales":
-            return self._goldverse_action(_("IBFT Sales"), "account.payment", self._goldverse_payment_domain("ibft"), "list,form,pivot,graph")
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("IBFT Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "ibft"), "list,form,pivot,graph")
         if card == "gv_credit_sales":
-            return self._goldverse_action(_("Credit Sales"), "aimaze.laundry.order", period_order_domain + [("balance_amount", ">", 0), ("state", "not in", ("draft", "cancelled"))], "list,kanban,form,pivot,graph")
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("Credit Sales"), "account.move", self._gv_invoice_domain(date_from, date_to) + [("amount_residual", ">", 0)], "list,form,pivot,graph")
         if card == "gv_total_orders":
             return self._goldverse_action(_("Total Orders"), "aimaze.laundry.order", period_order_domain + [("state", "!=", "cancelled")], "list,kanban,form,pivot,graph")
         if card == "gv_draft_orders":
@@ -289,6 +296,19 @@ class LaundryExecutiveDashboard(models.TransientModel):
             return self._goldverse_action(_("Receivables"), "account.move.line", self._goldverse_receivable_domain(), "list,pivot,graph")
         if card == "gv_advances_payables":
             return self._goldverse_action(_("Advances Payables"), "account.move.line", self._goldverse_advance_payable_domain(), "list,pivot,graph")
+        if card == "gv_total_revenue":
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("Total Revenue"), "account.move", self._gv_invoice_domain(date_from, date_to), "list,form,pivot,graph")
+        if card == "gv_active_customers":
+            date_from, date_to = self._gv_period_date_bounds()
+            invoices = self._gv_posted_invoices(date_from, date_to)
+            orders = self.env["aimaze.laundry.order"].sudo().search(self._gv_order_domain(date_from, date_to))
+            partner_ids = set(invoices.mapped("partner_id.commercial_partner_id").ids)
+            partner_ids.update(orders.mapped("partner_id.commercial_partner_id").ids)
+            return self._goldverse_action(_("Active Customers"), "res.partner", [("id", "in", list(partner_ids))], "list,form")
+        if card == "gv_cash_bank_collections":
+            date_from, date_to = self._gv_period_date_bounds()
+            return self._goldverse_action(_("Cash & Bank Collections"), "account.payment", self._gv_payment_domain(date_from, date_to), "list,form,pivot,graph")
         return self.action_open_orders()
 
     def _goldverse_period_dates(self):
@@ -566,6 +586,20 @@ class LaundryExecutiveDashboard(models.TransientModel):
             domain.append(("state", "in", ("paid", "posted", "in_process")))
         return domain
 
+    def _gv_payment_bucket_domain(self, date_from, date_to, bucket):
+        domain = self._gv_payment_domain(date_from, date_to)
+        if bucket == "cash":
+            domain += ["|", ("journal_id.type", "=", "cash"), ("journal_id.name", "ilike", "cash")]
+        elif bucket == "ibft":
+            domain += ["|", ("journal_id.name", "ilike", "IBFT"), ("journal_id.code", "ilike", "IBFT")]
+        elif bucket == "bank":
+            domain += [
+                ("journal_id.type", "=", "bank"),
+                ("journal_id.name", "not ilike", "IBFT"),
+                ("journal_id.code", "not ilike", "IBFT"),
+            ]
+        return domain
+
     def _gv_collection_breakdown(self, date_from, date_to):
         payments = self.env["account.payment"].sudo().search(self._gv_payment_domain(date_from, date_to))
         totals = defaultdict(float)
@@ -838,22 +872,43 @@ class LaundryExecutiveDashboard(models.TransientModel):
             '<span>%s</span></div><div class="gv-donut-legend">%s</div></div>'
         ) % (", ".join(stops), escape(self._gv_money(total)), "".join(legend))
 
-    def _gv_kpi_card(self, title, value, previous, icon, accent, is_money=True):
+    def _gv_click_attrs(self, card_key):
+        if not card_key:
+            return ""
+        return ' role="button" tabindex="0" data-gv-dashboard-card="%s"' % escape(card_key)
+
+    def _gv_kpi_card(self, title, value, previous, icon, accent, is_money=True, card_key=False):
         trend = self._gv_trend(value, previous)
         trend_class = "up" if trend >= 0 else "down"
         formatted_value = self._gv_money(value) if is_money else self._gv_number(value)
         comparison = self._gv_money(previous) if is_money else self._gv_number(previous)
         return (
-            '<div class="gv-kpi-card" style="--gv-accent:%s"><div class="gv-kpi-icon"><i class="fa %s"></i></div>'
+            '<div class="gv-kpi-card gv-clickable-card" style="--gv-accent:%s"%s><div class="gv-kpi-icon"><i class="fa %s"></i></div>'
             '<span>%s</span><strong>%s</strong><em class="%s">%s vs previous</em><small>Previous: %s</small></div>'
         ) % (
             accent,
+            self._gv_click_attrs(card_key),
             icon,
             escape(title),
             escape(formatted_value),
             trend_class,
             escape(self._gv_percent(trend)),
             escape(comparison),
+        )
+
+    def _gv_sales_card(self, title, value, card_key, accent, share=False):
+        share_html = ""
+        if share is not False:
+            share_html = '<em>%s share</em>' % escape("%.1f%%" % share)
+        return (
+            '<div class="gv-sales-card gv-clickable-card" style="--gv-accent:%s"%s>'
+            '<span>%s</span><strong>%s</strong>%s</div>'
+        ) % (
+            accent,
+            self._gv_click_attrs(card_key),
+            escape(title),
+            escape(self._gv_money(value)),
+            share_html,
         )
 
     def _gv_small_card(self, title, value, accent="#06b6d4", money=True):
@@ -1029,15 +1084,33 @@ class LaundryExecutiveDashboard(models.TransientModel):
             customer_filter = dict(dashboard._fields["gv_customer_type_filter"].selection).get(dashboard.gv_customer_type_filter or "all", "All Customers")
             service_filter = dashboard.gv_service_type_id.display_name or _("All Services")
             date_label = dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])
+            sales_total = data["revenue"] or 0.0
+            collections = data["collections"]
+            remaining_sales = sales_total
+            cash_sales = min(collections.get("Cash Collection", 0.0), remaining_sales)
+            remaining_sales -= cash_sales
+            bank_sales = min(collections.get("Bank Collection", 0.0), remaining_sales)
+            remaining_sales -= bank_sales
+            ibft_sales = min(collections.get("IBFT Collection", 0.0), remaining_sales)
+            remaining_sales -= ibft_sales
+            credit_sales = max(remaining_sales, 0.0)
+            sales_share = lambda amount: ((amount or 0.0) / sales_total * 100.0) if sales_total else 0.0
+            sales_cards = [
+                dashboard._gv_sales_card("Total Sales", sales_total, "gv_total_sales", "#c9a227"),
+                dashboard._gv_sales_card("Cash Sales", cash_sales, "gv_cash_sales", "#10b981", sales_share(cash_sales)),
+                dashboard._gv_sales_card("Bank Sales", bank_sales, "gv_bank_sales", "#0ea5e9", sales_share(bank_sales)),
+                dashboard._gv_sales_card("IBFT Sales", ibft_sales, "gv_ibft_sales", "#8b5cf6", sales_share(ibft_sales)),
+                dashboard._gv_sales_card("Credit Sales", credit_sales, "gv_credit_sales", "#f59e0b", sales_share(credit_sales)),
+            ]
             kpis = [
-                dashboard._gv_kpi_card("Total Revenue", data["revenue"], data["previous_revenue"], "fa-line-chart", "#c9a227"),
-                dashboard._gv_kpi_card("Gross Profit", data["profit"]["gross_profit"], data["previous_profit"]["gross_profit"], "fa-trophy", "#10b981"),
-                dashboard._gv_kpi_card("Net Profit", data["profit"]["net_profit"], data["previous_profit"]["net_profit"], "fa-pie-chart", "#06b6d4"),
-                dashboard._gv_kpi_card("Total Orders", data["orders"], data["previous_orders"], "fa-shopping-bag", "#8b5cf6", is_money=False),
-                dashboard._gv_kpi_card("Average Order Value", data["average_order_value"], data["previous_aov"], "fa-calculator", "#f59e0b"),
-                dashboard._gv_kpi_card("Active Customers", data["customers"]["active"], 0, "fa-users", "#0ea5e9", is_money=False),
-                dashboard._gv_kpi_card("Receivables", data["receivables"], 0, "fa-credit-card", "#ef4444"),
-                dashboard._gv_kpi_card("Cash & Bank Collections", data["collections_total"], 0, "fa-bank", "#14b8a6"),
+                dashboard._gv_kpi_card("Total Revenue", data["revenue"], data["previous_revenue"], "fa-line-chart", "#c9a227", card_key="gv_total_revenue"),
+                dashboard._gv_kpi_card("Gross Profit", data["profit"]["gross_profit"], data["previous_profit"]["gross_profit"], "fa-trophy", "#10b981", card_key="gv_gross_profit"),
+                dashboard._gv_kpi_card("Net Profit", data["profit"]["net_profit"], data["previous_profit"]["net_profit"], "fa-pie-chart", "#06b6d4", card_key="gv_net_profit"),
+                dashboard._gv_kpi_card("Total Orders", data["orders"], data["previous_orders"], "fa-shopping-bag", "#8b5cf6", is_money=False, card_key="gv_total_orders"),
+                dashboard._gv_kpi_card("Average Order Value", data["average_order_value"], data["previous_aov"], "fa-calculator", "#f59e0b", card_key="gv_total_orders"),
+                dashboard._gv_kpi_card("Active Customers", data["customers"]["active"], 0, "fa-users", "#0ea5e9", is_money=False, card_key="gv_active_customers"),
+                dashboard._gv_kpi_card("Receivables", data["receivables"], 0, "fa-credit-card", "#ef4444", card_key="gv_receivables"),
+                dashboard._gv_kpi_card("Cash & Bank Collections", data["collections_total"], 0, "fa-bank", "#14b8a6", card_key="gv_cash_bank_collections"),
             ]
             customer_cards = [
                 dashboard._gv_small_card("New Customers", data["customers"]["new"], "#06b6d4", money=False),
@@ -1071,6 +1144,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         </div>
                     </section>
                     %s
+                    <section class="gv-panel gv-sales-panel">
+                        <div class="gv-panel-head"><h2>Sales</h2><span>%s</span></div>
+                        <div class="gv-sales-grid">%s</div>
+                    </section>
                     <section class="gv-kpi-grid">%s</section>
                     <section class="gv-dashboard-row gv-row-70-30">
                         <div class="gv-panel"><div class="gv-panel-head"><h2>Monthly Revenue vs Gross Profit</h2><span>%s</span></div>%s</div>
@@ -1104,6 +1181,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 escape(customer_filter),
                 escape(service_filter),
                 warning_html,
+                escape(date_label),
+                "".join(sales_cards),
                 "".join(kpis),
                 escape(date_label),
                 dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#c9a227"), ("gross_profit", "Gross Profit", "#10b981")]),
