@@ -287,6 +287,41 @@ class LaundryExecutiveDashboard(models.TransientModel):
             )
         return domain
 
+    def _goldverse_payment_bucket(self, payment):
+        journal_name = (payment.journal_id.name or "").lower()
+        journal_code = (payment.journal_id.code or "").lower()
+        if payment.journal_id.type == "cash" or "cash" in journal_name:
+            return "cash"
+        if "ibft" in journal_name or "ibft" in journal_code:
+            return "ibft"
+        if payment.journal_id.type == "bank":
+            return "bank"
+        return False
+
+    def _goldverse_sales_method_breakdown(self, orders):
+        self.ensure_one()
+        totals = {"cash": 0.0, "bank": 0.0, "ibft": 0.0}
+        remaining_by_order = {order.id: max(order.amount_total or 0.0, 0.0) for order in orders}
+        if not remaining_by_order:
+            return totals
+
+        payments = self.env["account.payment"].sudo().search(
+            self._goldverse_payment_domain(False) + [("aimaze_laundry_order_id", "in", list(remaining_by_order))],
+            order="date, id",
+        )
+        for payment in payments:
+            bucket = self._goldverse_payment_bucket(payment)
+            if bucket not in totals:
+                continue
+            order_id = payment.aimaze_laundry_order_id.id
+            remaining = max(remaining_by_order.get(order_id, 0.0), 0.0)
+            amount = min(payment.amount or 0.0, remaining)
+            if amount <= 0.0:
+                continue
+            totals[bucket] += amount
+            remaining_by_order[order_id] = remaining - amount
+        return totals
+
     def _goldverse_move_line_period_domain(self):
         self.ensure_one()
         date_from, date_to = self._goldverse_period_dates()
@@ -338,7 +373,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
     @api.depends("company_id", "branch_id", "date_from", "date_to")
     def _compute_goldverse_dashboard_cards(self):
         Order = self.env["aimaze.laundry.order"].sudo()
-        Payment = self.env["account.payment"].sudo()
         MoveLine = self.env["account.move.line"].sudo()
         for dashboard in self:
             order_domain = dashboard._goldverse_base_order_domain()
@@ -347,10 +381,14 @@ class LaundryExecutiveDashboard(models.TransientModel):
             active_period_orders = period_orders.filtered(lambda order: order.state != "draft")
 
             dashboard.gv_total_sales = sum(active_period_orders.mapped("amount_total"))
-            dashboard.gv_cash_sales = sum(Payment.search(dashboard._goldverse_payment_domain("cash")).mapped("amount"))
-            dashboard.gv_bank_sales = sum(Payment.search(dashboard._goldverse_payment_domain("bank")).mapped("amount"))
-            dashboard.gv_ibft_sales = sum(Payment.search(dashboard._goldverse_payment_domain("ibft")).mapped("amount"))
-            dashboard.gv_credit_sales = sum(active_period_orders.mapped("balance_amount"))
+            sales_breakdown = dashboard._goldverse_sales_method_breakdown(active_period_orders)
+            dashboard.gv_cash_sales = sales_breakdown["cash"]
+            dashboard.gv_bank_sales = sales_breakdown["bank"]
+            dashboard.gv_ibft_sales = sales_breakdown["ibft"]
+            dashboard.gv_credit_sales = max(
+                dashboard.gv_total_sales - dashboard.gv_cash_sales - dashboard.gv_bank_sales - dashboard.gv_ibft_sales,
+                0.0,
+            )
 
             dashboard.gv_total_orders = len(period_orders)
             dashboard.gv_draft_orders = len(period_orders.filtered(lambda order: order.state == "draft"))
