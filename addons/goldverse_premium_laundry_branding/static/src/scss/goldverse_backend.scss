@@ -180,6 +180,32 @@
   }
 }
 
+.o_list_table tfoot.goldverse-list-totals-footer td {
+  padding: 9px 10px !important;
+  border-top: 2px solid #cbd5e1;
+  background: #f8fbff;
+  color: #0f2744;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
+.o_list_table tfoot.goldverse-list-totals-footer tr.goldverse-grand-total-row td {
+  border-top: 1px solid #dbe6ef;
+  background: #eef7fb;
+  color: #082744;
+  font-weight: 900;
+}
+
+.o_list_table tfoot.goldverse-list-totals-footer td.goldverse-list-total-label {
+  text-align: center !important;
+}
+
+.o_list_table tfoot.goldverse-list-totals-footer td.goldverse-list-total-value {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .o_form_view {
   .goldverse-warehouse-send-btn,
   .goldverse-warehouse-send-line-btn {

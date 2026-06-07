@@ -3,6 +3,7 @@
 import { patch } from "@web/core/utils/patch";
 import { session } from "@web/session";
 import { ListRenderer } from "@web/views/list/list_renderer";
+import { onMounted, onPatched } from "@odoo/owl";
 
 const LEGACY_ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order";
 const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order_v2";
@@ -21,12 +22,24 @@ const COLUMN_WIDTH_LIMITS = {
     actual_delivery_datetime: { min: 170, max: 260 },
 };
 const AMOUNT_FIELD_PATTERN = /(amount|price|qty|quantity|tax|balance|charge|discount|debit|credit|total|net|gross)/i;
+const TOTALABLE_FIELD_TYPES = new Set(["float", "integer", "monetary"]);
+const TOTALABLE_MODEL_PREFIXES = ["aimaze.laundry.", "goldverse."];
+const TOTALABLE_MODELS = new Set(["account.move", "account.move.line", "account.payment"]);
 let measureContext = null;
 
 function isGoldverseLaundryList(renderer) {
     return (
         renderer.props?.list?.resModel === "aimaze.laundry.order" &&
         renderer.props?.archInfo?.className?.includes("goldverse-laundry-order-list")
+    );
+}
+
+function isGoldverseTotalsList(renderer) {
+    const model = renderer.props?.list?.resModel || "";
+    return (
+        isGoldverseLaundryList(renderer) ||
+        TOTALABLE_MODELS.has(model) ||
+        TOTALABLE_MODEL_PREFIXES.some((prefix) => model.startsWith(prefix))
     );
 }
 
@@ -222,6 +235,129 @@ function alignColumn(cells, key) {
     }
 }
 
+function totalableFields(renderer) {
+    const list = renderer.props?.list;
+    const fields = list?.fields || {};
+    const columns = renderer.columns || renderer.getActiveColumns?.() || [];
+    const names = [];
+    for (const column of columns) {
+        if (column.type !== "field" || !column.name || names.includes(column.name)) {
+            continue;
+        }
+        const field = fields[column.name] || {};
+        if (TOTALABLE_FIELD_TYPES.has(field.type) && AMOUNT_FIELD_PATTERN.test(column.name)) {
+            names.push(column.name);
+        }
+    }
+    return names;
+}
+
+function totalableHeaders(table, fields) {
+    const fieldSet = new Set(fields);
+    return Array.from(table.querySelectorAll("thead tr th[data-name]")).filter((header) =>
+        fieldSet.has(header.dataset.name)
+    );
+}
+
+function numericValue(value) {
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
+    if (Array.isArray(value)) {
+        return 0;
+    }
+    const parsed = Number(String(value || "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function pageTotals(renderer, fields) {
+    const totals = Object.fromEntries(fields.map((field) => [field, 0]));
+    for (const record of renderer.props?.list?.records || []) {
+        for (const field of fields) {
+            totals[field] += numericValue(record.data?.[field]);
+        }
+    }
+    return totals;
+}
+
+function formatTotalValue(renderer, fieldName, value) {
+    const field = renderer.props?.list?.fields?.[fieldName] || {};
+    const isQty = /qty|quantity/i.test(fieldName);
+    const formatter = new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: isQty ? 2 : 2,
+        maximumFractionDigits: isQty ? 2 : 2,
+    });
+    const formatted = formatter.format(numericValue(value));
+    return field.type === "monetary" || (/amount|balance|price|tax|charge|discount|debit|credit|net|gross/i.test(fieldName) && !isQty)
+        ? `${formatted} Rs.`
+        : formatted;
+}
+
+function totalsCacheKey(renderer, fields) {
+    const list = renderer.props?.list;
+    let domain = "[]";
+    try {
+        domain = JSON.stringify(list?.domain || []);
+    } catch {
+        domain = String(list?.domain || "");
+    }
+    return JSON.stringify({
+        model: list?.resModel || "",
+        count: list?.count || 0,
+        domain,
+        fields,
+    });
+}
+
+function removeTotalsFooter(table) {
+    table.querySelector("tfoot.goldverse-list-totals-footer")?.remove();
+}
+
+function buildTotalsRow(renderer, table, label, totals, className) {
+    const row = document.createElement("tr");
+    row.className = `goldverse-list-total-row ${className}`;
+    const headers = Array.from(table.querySelectorAll("thead tr:first-child > th"));
+    let labelPlaced = false;
+    for (const header of headers) {
+        const key = columnKey(header);
+        const fieldName = header.dataset.name || "";
+        const cell = document.createElement("td");
+        if (fieldName) {
+            cell.setAttribute("name", fieldName);
+        }
+        if (header.classList.contains("o_list_button")) {
+            cell.classList.add("o_list_button");
+        }
+        if (!labelPlaced && key !== "__selector__" && !header.classList.contains("o_list_button")) {
+            cell.textContent = label;
+            cell.classList.add("goldverse-list-total-label");
+            labelPlaced = true;
+        } else if (fieldName && Object.prototype.hasOwnProperty.call(totals || {}, fieldName)) {
+            cell.textContent = formatTotalValue(renderer, fieldName, totals[fieldName]);
+            cell.classList.add("goldverse-list-total-value");
+        }
+        row.appendChild(cell);
+    }
+    if (!labelPlaced && row.children.length) {
+        row.children[0].textContent = label;
+        row.children[0].classList.add("goldverse-list-total-label");
+    }
+    return row;
+}
+
+function renderTotalsFooter(renderer, table, page, grand) {
+    removeTotalsFooter(table);
+    const fields = totalableFields(renderer);
+    if (!fields.length || !totalableHeaders(table, fields).length) {
+        return;
+    }
+    const footer = document.createElement("tfoot");
+    footer.className = "goldverse-list-totals-footer";
+    footer.appendChild(buildTotalsRow(renderer, table, "Page Total", page, "goldverse-page-total-row"));
+    footer.appendChild(buildTotalsRow(renderer, table, "Grand Total", grand || page, "goldverse-grand-total-row"));
+    table.appendChild(footer);
+}
+
 function autoFitTableColumns(table) {
     const headerRow = table.querySelector("thead tr");
     if (!headerRow) {
@@ -235,7 +371,7 @@ function autoFitTableColumns(table) {
         const key = columnKey(header);
         const cells = [
             header,
-            ...Array.from(table.querySelectorAll("tbody tr")).map((row) => row.children[index]).filter(Boolean),
+            ...Array.from(table.querySelectorAll("tbody tr, tfoot tr")).map((row) => row.children[index]).filter(Boolean),
         ];
         const padding = key === "__actions__" ? 12 : 22;
         const measured = Math.max(...cells.map((cell) => textWidth(cell, key)), 0) + padding;
@@ -337,13 +473,65 @@ if (!window.__goldverseLaundryColumnDragEnabled) {
     markHeadersDraggable();
 }
 
-if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 3) {
+if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 4) {
     patch(ListRenderer.prototype, {
-        __goldverseLaundryListColumnPatchVersion: 3,
+        __goldverseLaundryListColumnPatchVersion: 4,
+
+        setup() {
+            super.setup(...arguments);
+            onMounted(() => this.goldverseUpdateListTotals());
+            onPatched(() => this.goldverseUpdateListTotals());
+        },
 
         getActiveColumns() {
             const columns = super.getActiveColumns(...arguments);
             return isGoldverseLaundryList(this) ? applySavedOrder(this, columns) : columns;
+        },
+
+        async goldverseUpdateListTotals() {
+            const table = this.tableRef?.el || document.querySelector(".o_list_renderer table.o_list_table");
+            if (!table || table.closest(".o_field_x2many, .o_field_one2many") || !isGoldverseTotalsList(this)) {
+                if (table) {
+                    removeTotalsFooter(table);
+                }
+                return;
+            }
+
+            const fields = totalableFields(this);
+            if (!fields.length || !totalableHeaders(table, fields).length) {
+                removeTotalsFooter(table);
+                return;
+            }
+
+            const page = pageTotals(this, fields);
+            const key = totalsCacheKey(this, fields);
+            const cachedGrand = this.__goldverseTotalsKey === key ? this.__goldverseGrandTotals : null;
+            renderTotalsFooter(this, table, page, cachedGrand || page);
+            autoFitTableColumns(table);
+
+            if (cachedGrand) {
+                return;
+            }
+
+            const sequence = (this.__goldverseTotalsSequence || 0) + 1;
+            this.__goldverseTotalsSequence = sequence;
+            try {
+                const grand = await this.orm.call(
+                    this.props.list.resModel,
+                    "goldverse_list_totals",
+                    [this.props.list.domain || [], fields],
+                    { context: this.props.list.context || {} }
+                );
+                if (this.__goldverseTotalsSequence !== sequence) {
+                    return;
+                }
+                this.__goldverseTotalsKey = key;
+                this.__goldverseGrandTotals = grand;
+                renderTotalsFooter(this, table, page, grand);
+                autoFitTableColumns(table);
+            } catch {
+                renderTotalsFooter(this, table, page, page);
+            }
         },
     });
 }
