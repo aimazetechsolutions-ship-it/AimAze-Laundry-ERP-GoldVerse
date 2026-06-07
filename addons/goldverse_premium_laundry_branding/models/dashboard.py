@@ -9,7 +9,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
     _inherit = "aimaze.laundry.executive.dashboard"
     _transient_max_hours = 0
 
-    period_filter = fields.Selection(selection_add=[("yesterday", "Yesterday")], ondelete={"yesterday": "set default"})
     gv_customer_type_filter = fields.Selection(
         [("all", "All Customers"), ("b2c", "B2C"), ("b2b", "B2B")],
         string="Customer Type",
@@ -85,12 +84,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
         if not company:
             company = self.env["res.company"].sudo().search([("name", "ilike", "Gold Verse")], limit=1)
         return company or self.env.company
-
-    def _aimaze_period_bounds(self, period):
-        if period == "yesterday":
-            yesterday = fields.Date.context_today(self) - timedelta(days=1)
-            return yesterday, yesterday
-        return super()._aimaze_period_bounds(period)
 
     @api.model
     def action_goldverse_open_executive_dashboard(self):
@@ -1081,8 +1074,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard.company_id = company
             dashboard.goldverse_company_warning = warning
             data = dashboard._gv_command_data()
-            customer_filter = dict(dashboard._fields["gv_customer_type_filter"].selection).get(dashboard.gv_customer_type_filter or "all", "All Customers")
-            service_filter = dashboard.gv_service_type_id.display_name or _("All Services")
             date_label = dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])
             sales_total = data["revenue"] or 0.0
             collections = data["collections"]
@@ -1138,8 +1129,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
                             <div class="gv-filter-pills">
                                 <span><i class="fa fa-calendar"></i>%s</span>
                                 <span><i class="fa fa-money"></i>%s</span>
-                                <span><i class="fa fa-user"></i>%s</span>
-                                <span><i class="fa fa-tags"></i>%s</span>
                             </div>
                         </div>
                     </section>
@@ -1178,8 +1167,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 escape(company.name or dashboard.company_id.display_name),
                 escape(date_label),
                 escape((dashboard.company_id.currency_id or dashboard.env.company.currency_id).name or ""),
-                escape(customer_filter),
-                escape(service_filter),
                 warning_html,
                 escape(date_label),
                 "".join(sales_cards),

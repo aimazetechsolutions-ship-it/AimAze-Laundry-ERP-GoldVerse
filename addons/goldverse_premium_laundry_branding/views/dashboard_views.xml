@@ -51,8 +51,6 @@
                     <div class="goldverse-command-toolbar">
                         <div class="goldverse-command-filters">
                             <field name="period_filter" widget="selection_badge" nolabel="1" class="aimaze-segmented-field"/>
-                            <field name="gv_customer_type_filter" nolabel="1"/>
-                            <field name="gv_service_type_id" nolabel="1" placeholder="All Services" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                             <field name="date_from" invisible="period_filter != 'custom'"/>
                             <field name="date_to" invisible="period_filter != 'custom'"/>
                         </div>
