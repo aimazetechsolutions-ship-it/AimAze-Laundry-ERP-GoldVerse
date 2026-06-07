@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_order_form_goldverse_pickup_delivery" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.form.goldverse.pickup.delivery</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_form"/>
+        <field name="priority">120</field>
+        <field name="arch" type="xml">
+            <xpath expr="//group/group/field[@name='pickup_required']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/group/field[@name='delivery_required']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='delivery_ids']/ancestor::page[1]" position="replace">
+                <page string="Pickup &amp; Delivery">
+                    <group>
+                        <group string="Pickup / Drop Selection">
+                            <field name="pickup_required" readonly="state != 'draft'"/>
+                            <field name="delivery_required" readonly="state != 'draft'"/>
+                            <field name="goldverse_delivery_zone_id"
+                                   invisible="not pickup_required and not delivery_required"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="goldverse_pickup_delivery_address"
+                                   invisible="not pickup_required and not delivery_required"
+                                   required="pickup_required or delivery_required"
+                                   readonly="state != 'draft'"/>
+                            <field name="goldverse_pickup_delivery_note"
+                                   invisible="not pickup_required and not delivery_required"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Schedule">
+                            <field name="goldverse_pickup_datetime"
+                                   invisible="not pickup_required"
+                                   readonly="state != 'draft'"/>
+                            <field name="expected_delivery_datetime"
+                                   string="Delivery Date &amp; Time"
+                                   invisible="not delivery_required"
+                                   readonly="state != 'draft'"/>
+                            <field name="delivery_charge"
+                                   invisible="not pickup_required and not delivery_required"
+                                   readonly="state != 'draft'"/>
+                            <field name="driver_id"
+                                   invisible="not pickup_required and not delivery_required"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True, 'no_create_edit': True}"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" invisible="not pickup_required and not delivery_required">
+                        Pickup &amp; Delivery job details are created from this laundry order automatically. Update the simple details here before pressing Create Order.
+                    </div>
+                    <group invisible="not delivery_ids">
+                        <field name="delivery_ids" readonly="1" nolabel="1">
+                            <list string="Pickup &amp; Delivery Jobs" create="0" delete="0">
+                                <field name="name"/>
+                                <field name="job_type" widget="badge"/>
+                                <field name="partner_id"/>
+                                <field name="order_mobile"/>
+                                <field name="address"/>
+                                <field name="driver_id"/>
+                                <field name="pickup_datetime"/>
+                                <field name="delivery_datetime"/>
+                                <field name="delivery_charge"/>
+                                <field name="state" widget="badge"/>
+                            </list>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_delivery_list_goldverse_simple" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.list.goldverse.simple</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_delivery_list"/>
+        <field name="priority">120</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="replace">
+                <list string="Pickup &amp; Delivery Jobs" class="goldverse-pickup-delivery-list">
+                    <field name="name" optional="show"/>
+                    <field name="job_type" optional="show" widget="badge"/>
+                    <field name="order_id" optional="show"/>
+                    <field name="partner_id" optional="show"/>
+                    <field name="order_mobile" optional="show"/>
+                    <field name="branch_id" optional="show"/>
+                    <field name="driver_id" optional="show"/>
+                    <field name="pickup_datetime" optional="show"/>
+                    <field name="delivery_datetime" optional="show"/>
+                    <field name="delivery_charge" optional="show"/>
+                    <field name="cash_collected" optional="hide"/>
+                    <field name="state" optional="show" widget="badge"
+                           decoration-warning="state in ('scheduled','assigned','in_transit')"
+                           decoration-success="state in ('picked_up','delivered')"
+                           decoration-danger="state in ('failed_pickup','failed_delivery','cancelled')"/>
+                </list>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_delivery_form_goldverse_simple" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.form.goldverse.simple</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_delivery_form"/>
+        <field name="priority">120</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="replace">
+                <form string="Pickup &amp; Delivery Job">
+                    <header>
+                        <button name="action_assigned" type="object" string="Assign" class="btn-primary" invisible="state not in ('scheduled','failed_pickup')"/>
+                        <button name="action_picked_up" type="object" string="Picked Up" class="btn-secondary" invisible="state not in ('scheduled','assigned')"/>
+                        <button name="action_in_transit" type="object" string="In Transit" class="alm-btn-stage" invisible="state not in ('picked_up','assigned','scheduled')"/>
+                        <button name="action_delivered" type="object" string="Delivered" class="alm-btn-success" invisible="state == 'delivered'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="scheduled,assigned,picked_up,in_transit,delivered"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group string="Laundry Order">
+                                <field name="name" readonly="1"/>
+                                <field name="job_type" widget="radio"/>
+                                <field name="order_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="order_mobile" readonly="1"/>
+                                <field name="order_email" readonly="1"/>
+                                <field name="branch_id" readonly="1"/>
+                                <field name="order_customer_type" readonly="1"/>
+                            </group>
+                            <group string="Pickup / Drop Details">
+                                <field name="zone_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                                <field name="address" required="1"/>
+                                <field name="google_maps_url" widget="url" readonly="1"/>
+                                <field name="pickup_datetime" invisible="job_type == 'delivery'"/>
+                                <field name="delivery_datetime" invisible="job_type == 'pickup'"/>
+                                <field name="delivery_charge"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Driver">
+                                <field name="driver_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                                <field name="vehicle"/>
+                                <field name="cash_collected"/>
+                                <field name="driver_collection_state"/>
+                            </group>
+                            <group string="Confirmation">
+                                <field name="delivery_otp"/>
+                                <field name="proof_receiver_name"/>
+                                <field name="order_amount_total" readonly="1"/>
+                                <field name="order_payment_status" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Proof">
+                                <group>
+                                    <field name="proof_pickup" widget="image"/>
+                                    <field name="proof_delivery" widget="image"/>
+                                    <field name="signature_photo" widget="image"/>
+                                </group>
+                            </page>
+                            <page string="Notes">
+                                <field name="remarks" nolabel="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </xpath>
+        </field>
+    </record>
+</odoo>

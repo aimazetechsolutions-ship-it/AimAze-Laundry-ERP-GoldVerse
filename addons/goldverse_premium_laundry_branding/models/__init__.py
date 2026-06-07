@@ -3,6 +3,7 @@ from . import goldverse_config
 from . import res_partner
 from . import laundry_order
 from . import laundry_order_line
+from . import pickup_delivery
 from . import laundry_payment_wizard
 from . import account_move
 from . import account_move_line
