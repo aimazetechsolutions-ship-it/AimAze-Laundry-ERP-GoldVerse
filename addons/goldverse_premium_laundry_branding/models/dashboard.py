@@ -1151,7 +1151,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     <section class="gv-kpi-grid">%s</section>
                     <section class="gv-dashboard-row gv-row-70-30">
                         <div class="gv-panel"><div class="gv-panel-head"><h2>Monthly Revenue vs Gross Profit</h2><span>%s</span></div>%s</div>
-                        <div class="gv-panel"><div class="gv-panel-head"><h2>Revenue Composition</h2><span>Actual services</span></div>%s</div>
+                        <div class="gv-panel gv-revenue-composition-panel"><div class="gv-panel-head"><h2>Revenue Composition</h2><span>Actual services</span></div>%s</div>
                     </section>
                     <section class="gv-dashboard-row gv-row-3">
                         <div class="gv-panel"><div class="gv-panel-head"><h2>Top Service Revenue</h2><span>Top 5</span></div>%s</div>

@@ -643,6 +643,17 @@
   align-items: center;
 }
 
+.gv-revenue-composition-panel .gv-donut-wrap {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 18px;
+}
+
+.gv-revenue-composition-panel .gv-donut {
+  align-self: center;
+}
+
 .gv-donut {
   position: relative;
   display: grid;
