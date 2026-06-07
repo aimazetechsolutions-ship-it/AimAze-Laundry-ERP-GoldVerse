@@ -2,6 +2,7 @@ import re
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.osv import expression
 
 
 class ResPartner(models.Model):
@@ -53,6 +54,70 @@ class ResPartner(models.Model):
         if len(mobile) != 11:
             raise ValidationError(_("%s must be exactly 11 numeric digits.") % (label or _("Mobile")))
         return True
+
+    def _goldverse_mobile_lookup_label(self):
+        self.ensure_one()
+        mobile = self._goldverse_mobile_value()
+        name = self.name or self.display_name or ""
+        return f"{mobile} - {name}" if mobile and name else mobile or name
+
+    @api.depends_context(
+        "show_address",
+        "partner_show_db_id",
+        "show_email",
+        "show_vat",
+        "lang",
+        "formatted_display_name",
+        "goldverse_mobile_lookup",
+    )
+    def _compute_display_name(self):
+        super()._compute_display_name()
+        if not self.env.context.get("goldverse_mobile_lookup"):
+            return
+        for partner in self:
+            partner.display_name = partner._goldverse_mobile_lookup_label()
+
+    @api.model
+    def name_search(self, name="", domain=None, operator="ilike", limit=100):
+        if not self.env.context.get("goldverse_mobile_lookup"):
+            return super().name_search(name=name, domain=domain, operator=operator, limit=limit)
+        domain = list(domain or [])
+        if name:
+            cleaned_name = self._goldverse_normalize_mobile(name)
+            terms = [
+                ("name", operator, name),
+                ("mobile", operator, name),
+                ("phone", operator, name),
+            ]
+            if cleaned_name and cleaned_name != name:
+                terms.extend([
+                    ("mobile", operator, cleaned_name),
+                    ("phone", operator, cleaned_name),
+                ])
+            search_domain = expression.OR([[term] for term in terms])
+            domain = expression.AND([domain, search_domain])
+        partners = self.search(domain, limit=limit)
+        return [(partner.id, partner._goldverse_mobile_lookup_label()) for partner in partners.sudo()]
+
+    @api.model
+    def default_get(self, fields_list):
+        values = super().default_get(fields_list)
+        if not self.env.context.get("goldverse_mobile_lookup"):
+            return values
+        mobile = (
+            self.env.context.get("default_mobile")
+            or self.env.context.get("default_phone")
+            or self.env.context.get("default_name")
+        )
+        cleaned_mobile = self._goldverse_clean_mobile_number(mobile)
+        if cleaned_mobile and len(cleaned_mobile) == 11:
+            if "mobile" in fields_list:
+                values.setdefault("mobile", cleaned_mobile)
+            if "phone" in fields_list:
+                values.setdefault("phone", cleaned_mobile)
+            if values.get("name") == mobile:
+                values["name"] = False
+        return values
 
     @api.model
     def _goldverse_category_from_laundry_type(self, laundry_customer_type, is_company=False):

@@ -10,6 +10,13 @@ class GoldVerseCustomerWalletReceipt(models.Model):
 
     name = fields.Char(default="New", copy=False, readonly=True, tracking=True)
     partner_id = fields.Many2one("res.partner", string="Customer", tracking=True)
+    mobile_partner_id = fields.Many2one(
+        "res.partner",
+        string="Mobile",
+        compute="_compute_mobile_partner_id",
+        inverse="_inverse_mobile_partner_id",
+        readonly=False,
+    )
     mobile = fields.Char(string="Mobile", required=True, tracking=True)
     receipt_date = fields.Date(required=True, default=fields.Date.context_today, tracking=True)
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
@@ -48,6 +55,8 @@ class GoldVerseCustomerWalletReceipt(models.Model):
     def create(self, vals_list):
         sequence = self.env["ir.sequence"].sudo()
         for vals in vals_list:
+            if vals.get("mobile_partner_id") and not vals.get("partner_id"):
+                vals["partner_id"] = vals["mobile_partner_id"]
             self._goldverse_prepare_customer_from_mobile_vals(vals)
             self._goldverse_check_required_receipt_vals(vals)
             if vals.get("name", "New") == "New":
@@ -56,9 +65,31 @@ class GoldVerseCustomerWalletReceipt(models.Model):
 
     def write(self, vals):
         vals = dict(vals)
+        if vals.get("mobile_partner_id") and not vals.get("partner_id"):
+            vals["partner_id"] = vals["mobile_partner_id"]
         if "mobile" in vals or "partner_id" in vals:
             self._goldverse_prepare_customer_from_mobile_vals(vals)
         return super().write(vals)
+
+    @api.depends("partner_id", "mobile")
+    def _compute_mobile_partner_id(self):
+        for receipt in self:
+            if receipt.partner_id:
+                receipt.mobile_partner_id = receipt.partner_id
+            elif receipt.mobile:
+                receipt.mobile_partner_id = receipt._goldverse_find_customer_by_mobile(receipt.mobile)
+            else:
+                receipt.mobile_partner_id = False
+
+    def _inverse_mobile_partner_id(self):
+        for receipt in self:
+            if receipt.mobile_partner_id:
+                receipt.partner_id = receipt.mobile_partner_id
+                receipt.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(
+                    receipt.mobile_partner_id.mobile or receipt.mobile_partner_id.phone
+                )
+            elif not receipt.mobile:
+                receipt.partner_id = False
 
     @api.constrains("amount")
     def _check_amount(self):
@@ -129,23 +160,41 @@ class GoldVerseCustomerWalletReceipt(models.Model):
             if not receipt.partner_id:
                 continue
             receipt.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(receipt.partner_id.mobile or receipt.partner_id.phone)
+            receipt.mobile_partner_id = receipt.partner_id
             if receipt.partner_id.laundry_branch_id and not receipt.branch_id:
                 receipt.branch_id = receipt.partner_id.laundry_branch_id
+
+    @api.onchange("mobile_partner_id")
+    def _onchange_mobile_partner_id(self):
+        for receipt in self:
+            if not receipt.mobile_partner_id:
+                if not receipt.mobile:
+                    receipt.partner_id = False
+                continue
+            receipt.partner_id = receipt.mobile_partner_id
+            receipt.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(
+                receipt.mobile_partner_id.mobile or receipt.mobile_partner_id.phone
+            )
+            if receipt.mobile_partner_id.laundry_branch_id and not receipt.branch_id:
+                receipt.branch_id = receipt.mobile_partner_id.laundry_branch_id
 
     @api.onchange("mobile")
     def _onchange_mobile(self):
         for receipt in self:
             if not receipt.mobile:
                 receipt.partner_id = False
+                receipt.mobile_partner_id = False
                 continue
             receipt.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(receipt.mobile)
             partner = receipt._goldverse_find_customer_by_mobile(receipt.mobile)
             if partner:
                 receipt.partner_id = partner
+                receipt.mobile_partner_id = partner
                 if partner.laundry_branch_id and not receipt.branch_id:
                     receipt.branch_id = partner.laundry_branch_id
                 continue
             receipt.partner_id = False
+            receipt.mobile_partner_id = False
             return {
                 "warning": {
                     "title": _("Customer Not Found"),
