@@ -62,10 +62,16 @@ class LaundryPaymentWizard(models.TransientModel):
     def _goldverse_default_payment_journal(self):
         company = self.env.company
         domain = [("type", "in", ("cash", "bank")), ("company_id", "=", company.id), ("name", "in", ["Cash", "IBFT"])]
-        journal = self.env["account.journal"].search(domain + [("inbound_payment_method_line_ids", "!=", False)], limit=1)
-        if journal:
-            return journal
-        return self.env["account.journal"].search(domain, limit=1)
+        cash_domain = [("type", "=", "cash"), ("company_id", "=", company.id), ("name", "=", "Cash")]
+        return (
+            self.env["account.journal"].search(cash_domain + [("inbound_payment_method_line_ids", "!=", False)], limit=1)
+            or self.env["account.journal"].search(cash_domain, limit=1)
+            or self.env["account.journal"].search(domain + [("inbound_payment_method_line_ids", "!=", False)], limit=1)
+            or self.env["account.journal"].search(domain, limit=1)
+        )
+
+    def _goldverse_default_payment_method(self):
+        return self.env["aimaze.laundry.payment.method"].search([("active", "=", True), ("name", "=", "Cash")], limit=1)
 
     def _goldverse_ensure_inbound_method_line(self):
         for wizard in self:
@@ -85,7 +91,11 @@ class LaundryPaymentWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         values = super().default_get(fields_list)
-        if "journal_id" in fields_list and not values.get("journal_id"):
+        if "payment_method_id" in fields_list:
+            method = self._goldverse_default_payment_method()
+            if method:
+                values["payment_method_id"] = method.id
+        if "journal_id" in fields_list:
             journal = self._goldverse_default_payment_journal()
             if journal:
                 values["journal_id"] = journal.id
