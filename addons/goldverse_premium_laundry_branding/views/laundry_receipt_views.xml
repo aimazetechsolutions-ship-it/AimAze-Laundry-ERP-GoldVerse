@@ -48,7 +48,7 @@
                         <img class="gv-logo" src="/goldverse_premium_laundry_branding/static/src/img/goldverse-logo.jpeg"/>
                         <div class="gv-brand">
                             GoldVerse Premium<br/>
-                            Laundry (<span t-esc="doc.branch_id.code or 'EME'"/>)
+                            Laundry (<span t-esc="doc.branch_id.name or 'EME Branch'"/>)
                         </div>
                         <div class="gv-muted">Elite Threads, Elite Care...</div>
                         <div class="gv-muted">

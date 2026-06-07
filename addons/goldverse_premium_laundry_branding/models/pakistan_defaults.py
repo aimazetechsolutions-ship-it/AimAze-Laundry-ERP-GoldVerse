@@ -1,4 +1,17 @@
-from odoo import models
+from odoo import api, models
+
+
+class AimazeLaundryBranch(models.Model):
+    _inherit = "aimaze.laundry.branch"
+
+    @api.model
+    def _goldverse_normalize_branch_name(self):
+        branches = self.sudo().search([])
+        eme_branch = branches.filtered(lambda branch: (branch.code or "").upper() == "GPL/EME")[:1]
+        branch = eme_branch or branches[:1]
+        if branch and branch.name != "EME Branch":
+            branch.write({"name": "EME Branch"})
+        return True
 
 
 class ResCompany(models.Model):

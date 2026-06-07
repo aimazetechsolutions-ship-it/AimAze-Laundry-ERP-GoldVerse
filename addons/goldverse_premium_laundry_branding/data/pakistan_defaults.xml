@@ -3,4 +3,5 @@
     <function model="res.company" name="_goldverse_apply_pakistan_defaults">
         <value model="res.company" search="[]"/>
     </function>
+    <function model="aimaze.laundry.branch" name="_goldverse_normalize_branch_name"/>
 </odoo>
