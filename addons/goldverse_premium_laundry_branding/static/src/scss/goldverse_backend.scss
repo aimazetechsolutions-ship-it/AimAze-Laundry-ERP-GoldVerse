@@ -262,6 +262,10 @@
 
 .o_form_view:has(.goldverse-command-view) {
   .o_form_sheet_bg {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
     padding: 0 !important;
     background: #f6fbfd !important;
   }
