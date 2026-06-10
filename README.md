@@ -37,3 +37,36 @@ python odoo-bin -c path\to\goldverse_premium_laundry.conf -d goldverse_premium_l
 ## Source Control Safety
 
 Do not commit live `.conf` files, database dumps, filestore data, logs, backups, or secrets. Use the provided example config as the deployment template.
+
+## Sync Workflows (local ↔ GitHub ↔ VPS)
+
+Use these scripts for both required sync flows.
+
+### 1) Local → GitHub → VPS Live
+
+```powershell
+.\scripts\sync-goldverse-local-to-vps.ps1 `
+    -VpsHost <vps-host-or-ip> `
+    -VpsUser <ssh-user> `
+    -VpsRepoPath /opt/goldverse/AimAze-Laundry-ERP-GoldVerse `
+    -ModulesToUpgrade "goldverse_premium_laundry_branding" `
+    -OdooService odoo
+```
+
+### 2) VPS Live → GitHub → local
+
+```powershell
+.\scripts\sync-goldverse-vps-to-local.ps1 `
+    -VpsHost <vps-host-or-ip> `
+    -VpsUser <ssh-user> `
+    -VpsRepoPath /opt/goldverse/AimAze-Laundry-ERP-GoldVerse `
+    -CommitVpsChanges
+```
+
+### Recommended Sequence
+
+1. Keep any production patch as commit-first in either side when possible.
+2. If change started locally:
+   local test -> local commit -> **Local → GitHub → VPS**.
+3. If change started live on VPS:
+   VPS change committed -> **VPS Live → GitHub → local**.
