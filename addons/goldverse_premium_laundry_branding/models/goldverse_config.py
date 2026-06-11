@@ -116,19 +116,30 @@ class LaundryService(models.Model):
     goldverse_net_price = fields.Monetary(string="Net Price", currency_field="currency_id")
     goldverse_search_text = fields.Char(compute="_compute_goldverse_search_text", store=True)
 
-    def _goldverse_max_master_price_code_number(self):
-        services = self.sudo().with_context(active_test=False).search([("code", "like", "GPL-MPL-%")])
-        max_number = 0
+    def _goldverse_used_master_price_code_numbers(self):
+        services = self.sudo().search([("code", "like", "GPL-MPL-%")])
+        used_numbers = set()
         for service in services:
             code = service.code or ""
             suffix = code.rsplit("-", 1)[-1]
             if suffix.isdigit():
-                max_number = max(max_number, int(suffix))
-        return max_number
+                used_numbers.add(int(suffix))
+        return used_numbers
+
+    def _goldverse_max_master_price_code_number(self):
+        used_numbers = self._goldverse_used_master_price_code_numbers()
+        return max(used_numbers) if used_numbers else 0
+
+    def _goldverse_next_master_price_number(self, reserved_numbers=None):
+        reserved_numbers = set(reserved_numbers or [])
+        used_numbers = self._goldverse_used_master_price_code_numbers() | reserved_numbers
+        next_number = 1
+        while next_number in used_numbers:
+            next_number += 1
+        return next_number
 
     def _goldverse_next_master_price_code(self):
-        max_number = self._goldverse_max_master_price_code_number()
-        return "GPL-MPL-%03d" % (max_number + 1)
+        return "GPL-MPL-%03d" % self._goldverse_next_master_price_number()
 
     @api.depends("name", "category_id.name", "goldverse_subcategory_id.name")
     def _compute_display_name(self):
@@ -291,13 +302,18 @@ class LaundryService(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        next_number = self._goldverse_max_master_price_code_number() + 1
+        reserved_numbers = set()
         seen_codes = set()
         for vals in vals_list:
             code = (vals.get("code") or "").replace("GVP", "GPL")
             if not code or code in seen_codes:
+                next_number = self._goldverse_next_master_price_number(reserved_numbers=reserved_numbers)
                 code = "GPL-MPL-%03d" % next_number
-                next_number += 1
+                reserved_numbers.add(next_number)
+            else:
+                suffix = code.rsplit("-", 1)[-1]
+                if suffix.isdigit():
+                    reserved_numbers.add(int(suffix))
             vals["code"] = code
             seen_codes.add(code)
             self._goldverse_prepare_service_values(vals)

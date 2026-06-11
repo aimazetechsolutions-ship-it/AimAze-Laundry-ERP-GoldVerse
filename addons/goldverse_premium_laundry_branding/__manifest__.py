@@ -37,6 +37,7 @@
         "views/customer_wallet_receipt_views.xml",
         "views/laundry_payment_wizard_views.xml",
         "views/account_move_line_views.xml",
+        "views/account_product_views.xml",
         "views/laundry_receipt_views.xml",
         "views/report_export_templates.xml",
         "views/dashboard_views.xml",
