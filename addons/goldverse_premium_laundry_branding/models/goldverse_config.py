@@ -1,3 +1,5 @@
+import re
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -340,9 +342,81 @@ class GoldVerseLaundryColour(models.Model):
     _order = "sequence, name"
 
     name = fields.Char(required=True)
-    code = fields.Char()
-    sequence = fields.Integer(default=10)
+    code = fields.Char(default=lambda self: self._goldverse_next_colour_code())
+    sequence = fields.Integer(default=lambda self: self._goldverse_next_colour_sequence())
     active = fields.Boolean(default=True)
+
+    def _goldverse_regular_colour_domain(self):
+        return [("sequence", "<", 999)]
+
+    def _goldverse_next_colour_sequence(self):
+        Colour = self.with_context(active_test=False).sudo()
+        last_colour = Colour.search(self._goldverse_regular_colour_domain(), order="sequence desc, id desc", limit=1)
+        if last_colour:
+            return (last_colour.sequence or 0) + 10
+        return 10
+
+    def _goldverse_next_colour_code(self):
+        next_sequence = self._goldverse_next_colour_sequence()
+        return "colour_%03d" % (next_sequence // 10)
+
+    @api.model
+    def _goldverse_colour_code_from_name(self, name):
+        code = re.sub(r"[^a-z0-9]+", "_", (name or "").strip().lower()).strip("_")
+        return code or self._goldverse_next_colour_code()
+
+    def _goldverse_is_auto_colour_code(self, code):
+        return bool(re.fullmatch(r"colour_\d+", (code or "").strip().lower()))
+
+    def _goldverse_unique_colour_code(self, code, exclude_id=False):
+        base_code = (code or self._goldverse_next_colour_code()).strip()
+        candidate = base_code
+        counter = 2
+        Colour = self.with_context(active_test=False).sudo()
+        while True:
+            domain = [("code", "=ilike", candidate)]
+            if exclude_id:
+                domain.append(("id", "!=", exclude_id))
+            if not Colour.search_count(domain):
+                return candidate
+            candidate = "%s_%s" % (base_code, counter)
+            counter += 1
+
+    @api.model
+    def _goldverse_fill_missing_colour_codes(self):
+        Colour = self.with_context(active_test=False).sudo()
+        for colour in Colour.search([], order="sequence, id"):
+            code = (colour.code or "").strip()
+            if not code or re.search(r"\s", code):
+                colour.write({"code": colour._goldverse_unique_colour_code(colour._goldverse_colour_code_from_name(colour.name), colour.id)})
+        return True
+
+    @api.onchange("name")
+    def _onchange_goldverse_colour_name(self):
+        for colour in self:
+            if colour.name and (not colour.code or colour._goldverse_is_auto_colour_code(colour.code)):
+                colour.code = colour._goldverse_unique_colour_code(colour._goldverse_colour_code_from_name(colour.name), colour.id)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        next_sequence = self._goldverse_next_colour_sequence()
+        for vals in vals_list:
+            if not vals.get("sequence"):
+                vals["sequence"] = next_sequence
+                next_sequence += 10
+            code = vals.get("code")
+            if not code or self._goldverse_is_auto_colour_code(code):
+                code = self._goldverse_colour_code_from_name(vals.get("name")) if vals.get("name") else self._goldverse_next_colour_code()
+            vals["code"] = self._goldverse_unique_colour_code(code)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        vals = dict(vals)
+        if "code" in vals and vals.get("code"):
+            vals["code"] = self._goldverse_unique_colour_code(vals["code"], self.id if len(self) == 1 else False)
+        if vals.get("name") and len(self) == 1 and (not self.code or self._goldverse_is_auto_colour_code(self.code)):
+            vals.setdefault("code", self._goldverse_unique_colour_code(self._goldverse_colour_code_from_name(vals["name"]), self.id))
+        return super().write(vals)
 
 
 class GoldVerseLaundryQcOption(models.Model):

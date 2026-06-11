@@ -23,6 +23,7 @@
         "data/customer_wallet_receipt_data.xml",
         "data/payment_method_defaults.xml",
         "data/goldverse_dropdown_data.xml",
+        "data/goldverse_colour_code_defaults.xml",
         "data/goldverse_qc_addon_data.xml",
         "data/service_line_detail_sync.xml",
         "data/order_flow_defaults.xml",

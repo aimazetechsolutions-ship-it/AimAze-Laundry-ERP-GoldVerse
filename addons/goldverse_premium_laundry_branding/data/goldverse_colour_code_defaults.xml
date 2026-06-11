@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="goldverse.laundry.colour" name="_goldverse_fill_missing_colour_codes"/>
+</odoo>
