@@ -78,19 +78,21 @@ for info in infos:
         infos_by_code[info["code"]].append(info)
 
 for code, group_infos in infos_by_code.items():
-    if code_counts.get(code, 0) <= 1:
-        continue
     keeper_infos = [info for info in group_infos if info["is_keeper"]]
     if keeper_infos:
         for info in group_infos:
-            if not info["is_keeper"] and info["is_unreferenced"]:
+            if code_counts.get(code, 0) > 1 and not info["is_keeper"] and info["is_unreferenced"]:
                 info["safe_to_delete"] = True
                 info["delete_reason"] = "duplicate code with master-price keeper"
         continue
     if all(info["is_unreferenced"] for info in group_infos):
         for info in group_infos:
             info["safe_to_delete"] = True
-            info["delete_reason"] = "duplicate code not present in GPL configuration"
+            info["delete_reason"] = (
+                "duplicate code not present in GPL configuration"
+                if code_counts.get(code, 0) > 1
+                else "unused GPL product not present in GPL configuration"
+            )
 
 keepers = [info for info in infos if info["is_keeper"]]
 candidates = [info for info in infos if info["safe_to_delete"]]
