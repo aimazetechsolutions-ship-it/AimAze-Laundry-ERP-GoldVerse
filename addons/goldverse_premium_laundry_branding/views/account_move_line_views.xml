@@ -4,7 +4,7 @@
         <field name="name">account.move.line.goldverse.aged.partner.ledger.list</field>
         <field name="model">account.move.line</field>
         <field name="arch" type="xml">
-            <list string="Aged Partner Ledger" create="0" edit="0" default_order="date asc, id asc">
+            <list string="Aged Partner Ledger" class="goldverse-totals-list" create="0" edit="0" default_order="date asc, id asc">
                 <field name="date" optional="show"/>
                 <field name="company_currency_id" column_invisible="True"/>
                 <field name="move_name" string="Journal Entry" optional="show"/>

@@ -8,6 +8,7 @@ import { onMounted, onPatched } from "@odoo/owl";
 const LEGACY_ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order";
 const ORDER_KEY_PREFIX = "goldverse_laundry_order_list_column_order_v2";
 const PINNED_FIELD_ORDER = ["name", "partner_id", "goldverse_flow_status", "priority", "payment_status"];
+const GOLDVERSE_TOTALS_CLASS = "goldverse-totals-list";
 const COLUMN_WIDTH_LIMITS = {
     "__selector__": { min: 42, max: 42 },
     "__actions__": { min: 150, max: 360 },
@@ -24,7 +25,6 @@ const COLUMN_WIDTH_LIMITS = {
 const AMOUNT_FIELD_PATTERN = /(amount|price|qty|quantity|tax|balance|charge|discount|debit|credit|total|net|gross)/i;
 const TOTALABLE_FIELD_TYPES = new Set(["float", "integer", "monetary"]);
 const TOTALABLE_MODEL_PREFIXES = ["aimaze.laundry.", "goldverse."];
-const TOTALABLE_MODELS = new Set(["account.move", "account.move.line", "account.payment"]);
 let measureContext = null;
 
 function isGoldverseLaundryList(renderer) {
@@ -34,11 +34,15 @@ function isGoldverseLaundryList(renderer) {
     );
 }
 
+function hasGoldverseTotalsClass(renderer) {
+    return renderer.props?.archInfo?.className?.includes(GOLDVERSE_TOTALS_CLASS);
+}
+
 function isGoldverseTotalsList(renderer) {
     const model = renderer.props?.list?.resModel || "";
     return (
         isGoldverseLaundryList(renderer) ||
-        TOTALABLE_MODELS.has(model) ||
+        hasGoldverseTotalsClass(renderer) ||
         TOTALABLE_MODEL_PREFIXES.some((prefix) => model.startsWith(prefix))
     );
 }
@@ -489,7 +493,7 @@ if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 4) {
         },
 
         async goldverseUpdateListTotals() {
-            const table = this.tableRef?.el || document.querySelector(".o_list_renderer table.o_list_table");
+            const table = this.tableRef?.el || this.el?.querySelector?.("table.o_list_table") || null;
             if (!table || table.closest(".o_field_x2many, .o_field_one2many") || !isGoldverseTotalsList(this)) {
                 if (table) {
                     removeTotalsFooter(table);
@@ -498,7 +502,8 @@ if (ListRenderer.prototype.__goldverseLaundryListColumnPatchVersion !== 4) {
             }
 
             const fields = totalableFields(this);
-            if (!fields.length || !totalableHeaders(table, fields).length) {
+            const records = this.props?.list?.records || [];
+            if (!records.length || !fields.length || !totalableHeaders(table, fields).length) {
                 removeTotalsFooter(table);
                 return;
             }
