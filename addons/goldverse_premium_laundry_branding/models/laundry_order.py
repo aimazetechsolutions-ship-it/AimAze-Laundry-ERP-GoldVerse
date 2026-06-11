@@ -106,6 +106,7 @@ class LaundryOrder(models.Model):
     priority = fields.Selection(default="normal")
     user_id = fields.Many2one("res.users", string="Salesperson", default=lambda self: self.env.user)
     responsible_id = fields.Many2one("hr.employee", string="Responsible Staff", default=lambda self: self._goldverse_default_responsible_employee())
+    branch_id = fields.Many2one(default=lambda self: self._goldverse_default_branch())
     expected_delivery_datetime = fields.Datetime(string="Delivery Date & Time", default=lambda self: self._goldverse_default_expected_delivery_datetime())
     warehouse_collected_datetime = fields.Datetime(string="Warehouse Collected On", readonly=True, copy=False, tracking=True)
     warehouse_received_datetime = fields.Datetime(string="Received Back From Warehouse On", readonly=True, copy=False, tracking=True)
@@ -151,8 +152,7 @@ class LaundryOrder(models.Model):
             order.mobile_partner_id = order.partner_id
 
     def _inverse_goldverse_mobile_partner_id(self):
-        for order in self:
-            order._goldverse_apply_partner_from_mobile_lookup(order.mobile_partner_id)
+        return True
 
     def _goldverse_partner_mobile_domain(self, customer_type=False):
         domain = [("customer_rank", ">", 0)]
@@ -363,8 +363,7 @@ class LaundryOrder(models.Model):
         return local_date == datetime.now(self._goldverse_delivery_timezone()).date()
 
     def _goldverse_validate_order_date_today_value(self, value):
-        if not self._goldverse_is_today_order_date(value):
-            raise ValidationError(_("Order Date must be today's date. Past or future dates are not allowed."))
+        return True
 
     def _goldverse_now_order_date(self):
         return fields.Datetime.now()
@@ -397,6 +396,14 @@ class LaundryOrder(models.Model):
             "company_id": self.env.company.id,
             "work_email": self.env.user.email or self.env.user.login,
         })
+
+    def _goldverse_default_branch(self):
+        Branch = self.env["aimaze.laundry.branch"].sudo()
+        return (
+            Branch.search([("name", "=", "EME Branch")], limit=1)
+            or Branch.search([("name", "ilike", "EME")], limit=1)
+            or Branch.search([], limit=1)
+        )
 
     @api.onchange("partner_id")
     def _onchange_partner_id(self):
@@ -453,9 +460,7 @@ class LaundryOrder(models.Model):
 
     @api.onchange("order_date")
     def _onchange_goldverse_order_date(self):
-        for order in self:
-            if order.order_date and not order._goldverse_is_today_order_date(order.order_date):
-                order.order_date = order._goldverse_now_order_date()
+        return
 
     @api.model
     def default_get(self, fields_list):
@@ -466,6 +471,10 @@ class LaundryOrder(models.Model):
             values["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
         values.setdefault("priority", "normal")
         values.setdefault("user_id", self.env.user.id)
+        if "branch_id" in fields_list and not values.get("branch_id"):
+            branch = self._goldverse_default_branch()
+            if branch:
+                values["branch_id"] = branch.id
         if "responsible_id" in fields_list and not values.get("responsible_id"):
             employee = self._goldverse_default_responsible_employee()
             if employee:
@@ -478,6 +487,10 @@ class LaundryOrder(models.Model):
             vals["mobile"] = self.env["res.partner"]._goldverse_clean_mobile_number(vals["mobile"])
         if vals.get("customer_type") == "b2b":
             vals["source"] = "corporate_contract"
+        if not vals.get("branch_id"):
+            branch = self._goldverse_default_branch()
+            if branch:
+                vals["branch_id"] = branch.id
         if not vals.get("order_date"):
             vals["order_date"] = self._goldverse_now_order_date()
         else:
@@ -499,10 +512,13 @@ class LaundryOrder(models.Model):
 
         if partner:
             vals["partner_id"] = partner.id
-            vals["mobile_partner_id"] = partner.id
+            vals.pop("mobile_partner_id", None)
             vals.setdefault("mobile", partner.mobile or partner.phone)
             vals.setdefault("email", partner.email)
             vals.setdefault("customer_type", partner.goldverse_customer_category or "b2c")
+        elif "mobile_partner_id" in vals and not vals.get("mobile_partner_id"):
+            vals.update({"partner_id": False, "mobile": False, "email": False})
+            vals.pop("mobile_partner_id", None)
         return vals
 
     def _goldverse_validate_required_order_values(self, vals):
@@ -582,8 +598,9 @@ class LaundryOrder(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        for vals in vals_list:
-            self._goldverse_prepare_required_order_values(vals)
+        for index, vals in enumerate(vals_list):
+            vals = self._goldverse_prepare_required_order_values(vals)
+            vals_list[index] = vals
             vals.setdefault("priority", "normal")
             vals.setdefault("user_id", self.env.user.id)
             if not vals.get("responsible_id"):
