@@ -645,21 +645,42 @@
     },
     {
       "code": "713001",
-      "name": "Electricity Charges",
+      "name": "Electricity & Water Charges - Outlets",
       "account_type": "expense",
       "reconcile": false,
       "active": true
     },
     {
       "code": "713002",
-      "name": "Water & Other Utility Charges",
+      "name": "Electricity & Water Charges - Warehouse",
       "account_type": "expense",
       "reconcile": false,
       "active": true
     },
     {
       "code": "713003",
-      "name": "Telephone & Internet Charges",
+      "name": "Telephone & Internet Charges - Outlets",
+      "account_type": "expense",
+      "reconcile": false,
+      "active": true
+    },
+    {
+      "code": "713004",
+      "name": "Telephone & Internet Charges - Warehouse",
+      "account_type": "expense",
+      "reconcile": false,
+      "active": true
+    },
+    {
+      "code": "713005",
+      "name": "Gas, Water, Other Utility Charges - Outlets",
+      "account_type": "expense",
+      "reconcile": false,
+      "active": true
+    },
+    {
+      "code": "713006",
+      "name": "Gas, Water, Other Utility Charges - Warehouse",
       "account_type": "expense",
       "reconcile": false,
       "active": true
