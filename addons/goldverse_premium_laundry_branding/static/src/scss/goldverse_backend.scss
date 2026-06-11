@@ -735,6 +735,10 @@
   align-items: stretch;
 
   div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: start;
+    column-gap: 8px;
     justify-content: space-between;
     border: 1px solid var(--gv-border-soft);
     border-radius: 14px;
@@ -744,6 +748,8 @@
 
   span {
     flex: 1;
+    white-space: normal;
+    line-height: 1.35;
   }
 
   strong {
@@ -760,19 +766,18 @@
 
 .gv-bar-row {
   display: grid;
-  grid-template-columns: minmax(90px, 1.2fr) minmax(90px, 2fr) minmax(115px, auto);
+  grid-template-columns: minmax(160px, 1.45fr) minmax(95px, 1.65fr) minmax(115px, auto);
   gap: 10px;
-  align-items: center;
+  align-items: start;
   padding: 9px 0;
   border-bottom: 1px solid var(--gv-border-soft);
 }
 
 .gv-bar-label {
-  overflow: hidden;
   color: #0f172a;
   font-weight: 850;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 .gv-bar-track {

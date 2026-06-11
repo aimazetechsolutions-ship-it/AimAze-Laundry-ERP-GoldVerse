@@ -642,6 +642,24 @@ class LaundryExecutiveDashboard(models.TransientModel):
             grouped[label] += -line.balance
         return sorted(grouped.items(), key=lambda item: item[1], reverse=True)
 
+    def _gv_service_label_from_order_line(self, line):
+        service_name = (line.service_id.display_name or "").strip()
+        category_name = ((line.goldverse_category_id or line.service_id.category_id).display_name or "").strip()
+        subcategory_name = ((line.goldverse_subcategory_id or line.service_id.goldverse_subcategory_id).display_name or "").strip()
+        parts = [part for part in (category_name, subcategory_name, service_name) if part]
+        return " / ".join(parts)
+
+    def _gv_service_label_from_invoice_line(self, line):
+        service_name = ((line.product_id.display_name if line.product_id else "") or line.name or "").strip()
+        category_name = ""
+        subcategory_name = ""
+        if line.product_id and hasattr(line.product_id, "goldverse_subcategory_id"):
+            subcategory_name = (line.product_id.goldverse_subcategory_id.display_name or "").strip()
+        if line.product_id and line.product_id.categ_id:
+            category_name = (line.product_id.categ_id.display_name or "").strip()
+        parts = [part for part in (category_name, subcategory_name, service_name) if part]
+        return " / ".join(parts)
+
     def _gv_month_starts(self, date_from, date_to):
         cursor = date_from.replace(day=1)
         while cursor <= date_to:
@@ -1006,15 +1024,15 @@ class LaundryExecutiveDashboard(models.TransientModel):
         orders = self.env["aimaze.laundry.order"].sudo().search(self._gv_order_domain(date_from, date_to))
         previous_orders = self.env["aimaze.laundry.order"].sudo().search(self._gv_order_domain(previous_from, previous_to))
         order_lines = self._gv_order_lines(date_from, date_to)
-        top_services = self._gv_group_order_lines(order_lines, lambda line: line.service_id.display_name)
+        top_services = self._gv_group_order_lines(order_lines, self._gv_service_label_from_order_line)
         top_categories = self._gv_group_order_lines(order_lines, lambda line: (line.goldverse_category_id or line.service_id.category_id).display_name)
         top_subcategories = self._gv_group_order_lines(
             order_lines,
             lambda line: (line.goldverse_subcategory_id or line.service_id.goldverse_subcategory_id).display_name,
         )
-        service_composition = self._gv_group_order_lines(order_lines, lambda line: line.service_id.display_name)
+        service_composition = self._gv_group_order_lines(order_lines, self._gv_service_label_from_order_line)
         if not top_services:
-            top_services = self._gv_group_invoice_income_lines(invoices, lambda line: line.product_id.display_name or line.name)
+            top_services = self._gv_group_invoice_income_lines(invoices, self._gv_service_label_from_invoice_line)
         if not top_categories:
             top_categories = self._gv_group_invoice_income_lines(
                 invoices,

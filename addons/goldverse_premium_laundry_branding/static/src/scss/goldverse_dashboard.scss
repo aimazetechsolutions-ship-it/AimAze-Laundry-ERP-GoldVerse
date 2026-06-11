@@ -491,10 +491,19 @@
 }
 
 .o_goldverse_dashboard .gv-donut-legend div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: start;
+  column-gap: 8px;
   border: 1px solid var(--gv-border);
   border-radius: 14px;
   padding: 10px 12px;
   background: #f8fafc;
+}
+
+.o_goldverse_dashboard .gv-donut-legend span {
+  white-space: normal;
+  line-height: 1.35;
 }
 
 .o_goldverse_dashboard .gv-donut-legend strong,
@@ -505,10 +514,16 @@
 }
 
 .o_goldverse_dashboard .gv-bar-row {
-  grid-template-columns: minmax(90px, 1.1fr) minmax(110px, 2fr) minmax(116px, auto);
+  grid-template-columns: minmax(160px, 1.45fr) minmax(95px, 1.65fr) minmax(116px, auto);
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--gv-border);
+  align-items: start;
+}
+
+.o_goldverse_dashboard .gv-bar-label {
+  white-space: normal;
+  line-height: 1.35;
 }
 
 .o_goldverse_dashboard .gv-bar-track {
