@@ -142,6 +142,16 @@
         <field name="context">{'active_test': True}</field>
     </record>
 
+    <record id="action_goldverse_master_price_list_readonly" model="ir.actions.act_window">
+        <field name="name">GPL Master Price List</field>
+        <field name="res_model">aimaze.laundry.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_goldverse_master_price_list"/>
+        <field name="search_view_id" ref="view_laundry_service_search_goldverse"/>
+        <field name="domain">[('active', '=', True)]</field>
+        <field name="context">{'active_test': True, 'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+
     <record id="view_laundry_account_config_list_goldverse_delivery_income" model="ir.ui.view">
         <field name="name">aimaze.laundry.account.config.list.goldverse.delivery.income</field>
         <field name="model">aimaze.laundry.account.config</field>
@@ -315,6 +325,12 @@
         <field name="sequence">22</field>
     </record>
     <menuitem id="menu_goldverse_master_price_list" name="GPL Master Price List" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_master_price_list" sequence="18"/>
+    <menuitem id="menu_goldverse_master_price_list_customer_care"
+              name="GPL Master Price List"
+              parent="aimaze_laundry_management.menu_laundry_orders_root"
+              action="action_goldverse_master_price_list_readonly"
+              groups="goldverse_premium_laundry_branding.group_customer_care_executive"
+              sequence="45"/>
     <menuitem id="menu_goldverse_laundry_subcategories" name="Sub Categories" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_subcategory" sequence="21"/>
     <menuitem id="menu_goldverse_laundry_colours" name="Colours" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_colour" sequence="23"/>
     <menuitem id="menu_goldverse_laundry_qc_options" name="QC Options" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_qc_option" sequence="24"/>

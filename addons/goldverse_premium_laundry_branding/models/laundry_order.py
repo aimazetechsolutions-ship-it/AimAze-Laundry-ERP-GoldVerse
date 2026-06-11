@@ -52,6 +52,7 @@ GOLDVERSE_CREATED_ORDER_PROTECTED_WRITE_FIELDS = {
     "goldverse_pickup_delivery_note",
     "line_ids",
     "mobile",
+    "mobile_partner_id",
     "name",
     "order_date",
     "partner_id",
@@ -135,6 +136,49 @@ class LaundryOrder(models.Model):
     goldverse_can_send_lines_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
     goldverse_can_receive_lines_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
     goldverse_can_full_receive_warehouse = fields.Boolean(compute="_compute_goldverse_warehouse_line_flags")
+    mobile_partner_id = fields.Many2one(
+        "res.partner",
+        string="Mobile",
+        compute="_compute_goldverse_mobile_partner_id",
+        inverse="_inverse_goldverse_mobile_partner_id",
+        store=True,
+        readonly=False,
+    )
+
+    @api.depends("partner_id")
+    def _compute_goldverse_mobile_partner_id(self):
+        for order in self:
+            order.mobile_partner_id = order.partner_id
+
+    def _inverse_goldverse_mobile_partner_id(self):
+        for order in self:
+            order._goldverse_apply_partner_from_mobile_lookup(order.mobile_partner_id)
+
+    def _goldverse_partner_mobile_domain(self, customer_type=False):
+        domain = [("customer_rank", ">", 0)]
+        if customer_type == "b2b":
+            domain += ["|", ("is_company", "=", True), ("laundry_customer_type", "in", ["b2b", "corporate", "hotel", "salon", "gym", "restaurant"])]
+        elif customer_type == "b2c":
+            domain += ["|", ("is_company", "=", False), ("laundry_customer_type", "in", [False, "b2c", "walk_in", "individual"])]
+        return domain
+
+    def _goldverse_find_partner_by_mobile(self, mobile, customer_type=False):
+        cleaned_mobile = self.env["res.partner"]._goldverse_clean_mobile_number(mobile)
+        if not cleaned_mobile:
+            return self.env["res.partner"]
+        domain = self._goldverse_partner_mobile_domain(customer_type)
+        mobile_domain = ["|", ("mobile", "=", cleaned_mobile), ("phone", "=", cleaned_mobile)]
+        return self.env["res.partner"].sudo().search(domain + mobile_domain, limit=1)
+
+    def _goldverse_apply_partner_from_mobile_lookup(self, partner):
+        self.ensure_one()
+        if not partner:
+            return
+        self.partner_id = partner
+        self.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(partner.mobile or partner.phone)
+        self.email = partner.email
+        if not self.customer_type:
+            self.customer_type = partner.goldverse_customer_category or "b2c"
 
     @api.depends("state", "goldverse_delivered_to_customer")
     def _compute_goldverse_delivery_status(self):
@@ -359,14 +403,28 @@ class LaundryOrder(models.Model):
         super()._onchange_partner_id()
         for order in self:
             if order.partner_id:
-                order.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(order.partner_id.mobile or order.partner_id.phone)
-                order.email = order.partner_id.email
+                order.mobile_partner_id = order.partner_id
+                order._goldverse_apply_partner_from_mobile_lookup(order.partner_id)
+
+    @api.onchange("mobile_partner_id")
+    def _onchange_goldverse_mobile_partner_id(self):
+        for order in self:
+            if order.mobile_partner_id:
+                order._goldverse_apply_partner_from_mobile_lookup(order.mobile_partner_id)
+            else:
+                order.partner_id = False
+                order.mobile = False
+                order.email = False
 
     @api.onchange("mobile")
     def _onchange_goldverse_mobile(self):
         for order in self:
             if order.mobile:
                 order.mobile = self.env["res.partner"]._goldverse_clean_mobile_number(order.mobile)
+                partner = order._goldverse_find_partner_by_mobile(order.mobile, order.customer_type)
+                if partner:
+                    order.mobile_partner_id = partner
+                    order._goldverse_apply_partner_from_mobile_lookup(partner)
 
     @api.onchange("customer_type")
     def _onchange_goldverse_customer_type(self):
@@ -415,6 +473,7 @@ class LaundryOrder(models.Model):
         return values
 
     def _goldverse_prepare_required_order_values(self, vals):
+        vals = self._goldverse_apply_mobile_partner_vals(vals)
         if vals.get("mobile"):
             vals["mobile"] = self.env["res.partner"]._goldverse_clean_mobile_number(vals["mobile"])
         if vals.get("customer_type") == "b2b":
@@ -425,6 +484,25 @@ class LaundryOrder(models.Model):
             self._goldverse_validate_order_date_today_value(vals["order_date"])
         if "expected_delivery_datetime" not in vals:
             vals["expected_delivery_datetime"] = self._goldverse_default_expected_delivery_datetime()
+        return vals
+
+    def _goldverse_apply_mobile_partner_vals(self, vals):
+        vals = dict(vals)
+        Partner = self.env["res.partner"].sudo()
+        partner = Partner.browse()
+        if vals.get("mobile_partner_id"):
+            partner = Partner.browse(vals["mobile_partner_id"])
+        elif vals.get("partner_id"):
+            partner = Partner.browse(vals["partner_id"])
+        elif vals.get("mobile"):
+            partner = self._goldverse_find_partner_by_mobile(vals["mobile"], vals.get("customer_type"))
+
+        if partner:
+            vals["partner_id"] = partner.id
+            vals["mobile_partner_id"] = partner.id
+            vals.setdefault("mobile", partner.mobile or partner.phone)
+            vals.setdefault("email", partner.email)
+            vals.setdefault("customer_type", partner.goldverse_customer_category or "b2c")
         return vals
 
     def _goldverse_validate_required_order_values(self, vals):
@@ -533,6 +611,14 @@ class LaundryOrder(models.Model):
         if vals.get("mobile"):
             vals = dict(vals)
             vals["mobile"] = self.env["res.partner"]._goldverse_clean_mobile_number(vals["mobile"])
+            if len(self) == 1 and not vals.get("partner_id") and not vals.get("mobile_partner_id"):
+                partner = self._goldverse_find_partner_by_mobile(vals["mobile"], vals.get("customer_type") or self.customer_type)
+                if partner:
+                    vals["partner_id"] = partner.id
+                    vals["mobile_partner_id"] = partner.id
+                    vals.setdefault("email", partner.email)
+        if vals.get("mobile_partner_id") or vals.get("partner_id"):
+            vals = self._goldverse_apply_mobile_partner_vals(vals)
         if vals.get("customer_type") == "b2b":
             vals = dict(vals)
             vals["source"] = "corporate_contract"

@@ -47,15 +47,23 @@
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="before">
                 <xpath expr="//field[@name='customer_type']" position="move"/>
+                <field name="mobile_partner_id"
+                       string="Mobile"
+                       required="1"
+                       domain="[('customer_rank', '&gt;', 0), '|', ('mobile', '!=', False), ('phone', '!=', False)]"
+                       context="{'goldverse_mobile_lookup': True, 'default_customer_rank': 1, 'default_laundry_customer_type': customer_type, 'default_goldverse_customer_category': customer_type or 'b2c', 'default_is_company': customer_type == 'b2b', 'default_company_type': customer_type == 'b2b' and 'company' or 'person'}"
+                       options="{'no_quick_create': True}"/>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="attributes">
                 <attribute name="required">1</attribute>
                 <attribute name="domain">[('customer_rank', '&gt;', 0)]</attribute>
                 <attribute name="context">{'default_customer_rank': 1, 'default_laundry_customer_type': customer_type, 'default_is_company': customer_type == 'b2b', 'default_company_type': customer_type == 'b2b' and 'company' or 'person', 'default_phone': mobile, 'default_mobile': mobile}</attribute>
-                <attribute name="options">{'no_quick_create': True}</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}</attribute>
+                <attribute name="readonly">1</attribute>
             </xpath>
             <xpath expr="//field[@name='mobile']" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="required">0</attribute>
+                <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='email']" position="attributes">
                 <attribute name="required">0</attribute>
