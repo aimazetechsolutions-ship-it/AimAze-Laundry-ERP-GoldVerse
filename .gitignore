@@ -21,12 +21,17 @@ __pycache__/
 /backups/
 
 # Secrets and local configuration
+_private/
+**/_private/
+credentials/
+**/credentials/
 *.conf
 !*.conf.example
 .env
 .env.*
 *.key
 *.pem
+*.ppk
 *.crt
 
 # IDE / OS noise
