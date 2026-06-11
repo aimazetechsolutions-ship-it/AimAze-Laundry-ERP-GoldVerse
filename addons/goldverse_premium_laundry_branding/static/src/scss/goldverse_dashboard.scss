@@ -39,6 +39,8 @@
 }
 
 .o_goldverse_dashboard {
+  --gv-font-ui: "Aptos", "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif;
+  --gv-font-heading: "Aptos Display", "Segoe UI Variable Display", "Aptos", "Segoe UI", Arial, sans-serif;
   --gv-navy: #0f172a;
   --gv-slate: #334155;
   --gv-muted: #64748b;
@@ -61,7 +63,7 @@
     linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(238, 248, 251, 0.82)),
     linear-gradient(180deg, #f8fafc 0%, #eef8fb 100%);
   color: var(--gv-navy);
-  font-family: "Aptos", "Segoe UI Variable Text", "Segoe UI", "Trebuchet MS", Arial, sans-serif;
+  font-family: var(--gv-font-ui);
 
   .goldverse-command-toolbar.o_goldverse_filter_bar {
     display: flex;
@@ -179,8 +181,9 @@
   display: block;
   margin-bottom: 8px;
   color: #6f5aa8;
-  font-size: 12px;
-  font-weight: 900;
+  font-family: var(--gv-font-heading);
+  font-size: 11px;
+  font-weight: 680;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -188,17 +191,19 @@
 .o_goldverse_dashboard .o_goldverse_header h1 {
   margin: 0 0 7px;
   color: var(--gv-navy);
-  font-size: clamp(25px, 1.8vw, 31px);
-  font-weight: 700;
+  font-family: var(--gv-font-heading);
+  font-size: clamp(24px, 1.75vw, 29px);
+  font-weight: 640;
   letter-spacing: 0;
-  line-height: 1.16;
+  line-height: 1.2;
 }
 
 .o_goldverse_dashboard .o_goldverse_header .company-name {
   margin: 0;
-  color: #5e548f;
+  color: #b88211;
+  font-family: var(--gv-font-heading);
   font-size: 13px;
-  font-weight: 760;
+  font-weight: 600;
 }
 
 .o_goldverse_dashboard .gv-filter-pills {
@@ -243,15 +248,17 @@
 .o_goldverse_dashboard .o_goldverse_section_header h3 {
   margin: 0;
   color: var(--gv-navy);
-  font-size: 17px;
-  font-weight: 820;
+  font-family: var(--gv-font-heading);
+  font-size: 16px;
+  font-weight: 650;
   letter-spacing: 0;
+  line-height: 1.25;
 }
 
 .o_goldverse_dashboard .o_goldverse_section_header .section-tag {
   color: var(--gv-muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -355,7 +362,7 @@
   margin: 10px 0 8px;
   color: #475569;
   font-size: 10.5px;
-  font-weight: 840;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -434,14 +441,15 @@
 
 .o_goldverse_dashboard .o_goldverse_chart_title {
   color: var(--gv-navy);
-  font-size: 16px;
-  font-weight: 900;
+  font-family: var(--gv-font-heading);
+  font-size: 15px;
+  font-weight: 650;
 }
 
 .o_goldverse_dashboard .o_goldverse_chart_subtitle {
   color: var(--gv-muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .o_goldverse_dashboard .gv-line-chart {
@@ -573,7 +581,8 @@
 .o_goldverse_dashboard .o_goldverse_empty_state .empty-title {
   margin-bottom: 4px;
   color: var(--gv-slate);
-  font-weight: 900;
+  font-family: var(--gv-font-heading);
+  font-weight: 650;
 }
 
 .o_goldverse_dashboard .o_goldverse_empty_state .empty-text {
@@ -599,7 +608,7 @@
   padding: 8px;
   color: var(--gv-muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -664,8 +673,9 @@
 
 .o_goldverse_dashboard .o_goldverse_alert_title {
   color: var(--gv-navy);
+  font-family: var(--gv-font-heading);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
   letter-spacing: 0;
   text-transform: uppercase;
 }
