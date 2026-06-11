@@ -331,6 +331,9 @@
               action="action_goldverse_master_price_list_readonly"
               groups="goldverse_premium_laundry_branding.group_customer_care_executive"
               sequence="45"/>
+    <record id="goldverse_premium_laundry_branding.group_customer_care_executive" model="res.groups">
+        <field name="menu_access" eval="[(4, ref('goldverse_premium_laundry_branding.menu_goldverse_master_price_list_customer_care'))]"/>
+    </record>
     <menuitem id="menu_goldverse_laundry_subcategories" name="Sub Categories" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_subcategory" sequence="21"/>
     <menuitem id="menu_goldverse_laundry_colours" name="Colours" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_colour" sequence="23"/>
     <menuitem id="menu_goldverse_laundry_qc_options" name="QC Options" parent="aimaze_laundry_management.menu_laundry_configuration_root" action="action_goldverse_laundry_qc_option" sequence="24"/>
