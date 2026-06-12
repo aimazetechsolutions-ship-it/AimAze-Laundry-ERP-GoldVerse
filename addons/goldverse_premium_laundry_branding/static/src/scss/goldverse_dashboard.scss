@@ -272,8 +272,8 @@
 
 .o_goldverse_dashboard .gv-kpi-grid.o_goldverse_kpi_grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 18px;
   align-items: stretch;
 }
 
@@ -324,8 +324,13 @@
 }
 
 .o_goldverse_dashboard .gv-kpi-card.o_goldverse_kpi_card {
-  min-height: 0;
-  padding: 15px 18px 16px 20px;
+  min-height: 140px;
+  padding: 18px 20px 18px 22px;
+}
+
+.o_goldverse_dashboard .gv-kpi-card.o_goldverse_kpi_card[data-gv-dashboard-card="gv_top_expenses"] {
+  border-color: rgba(251, 146, 60, 0.35);
+  box-shadow: 0 16px 34px rgba(251, 146, 60, 0.12);
 }
 
 .o_goldverse_dashboard .gv-mini-card.o_goldverse_kpi_card {
@@ -359,11 +364,12 @@
   position: relative;
   z-index: 1;
   display: block;
-  margin: 10px 0 8px;
+  margin: 12px 0 10px;
   color: #475569;
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 800;
   letter-spacing: 0;
+  line-height: 1.35;
   text-transform: uppercase;
 }
 
@@ -377,7 +383,7 @@
   display: block;
   margin: 0 0 6px;
   color: var(--gv-navy);
-  font-size: 20px;
+  font-size: 23px;
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1.18;
@@ -387,7 +393,7 @@
   position: relative;
   z-index: 1;
   color: var(--gv-success);
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
   font-style: normal;
 }
@@ -411,6 +417,7 @@
   display: block;
   margin-top: 5px;
   color: var(--gv-muted);
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -701,7 +708,7 @@
   }
 
   .o_goldverse_dashboard .gv-kpi-grid.o_goldverse_kpi_grid {
-    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, minmax(220px, 1fr));
   }
 
   .o_goldverse_dashboard .o_goldverse_chart_grid,
@@ -715,6 +722,10 @@
 }
 
 @media (max-width: 900px) {
+  .o_goldverse_dashboard .gv-kpi-grid.o_goldverse_kpi_grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+
   .o_goldverse_dashboard .o_goldverse_alert_grid,
   .o_goldverse_dashboard .gv-mini-grid {
     grid-template-columns: 1fr;
