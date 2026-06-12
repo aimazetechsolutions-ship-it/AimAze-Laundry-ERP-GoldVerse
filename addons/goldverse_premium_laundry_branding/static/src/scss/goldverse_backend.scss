@@ -2495,6 +2495,19 @@
   white-space: nowrap;
 }
 
+.o_account_interactive_report .o_account_trial_balance_table .o_account_report_line.is_total td {
+  background: #eef3f7;
+  color: var(--goldverse-account-ink) !important;
+  font-weight: 760;
+}
+
+.o_account_interactive_report .o_account_trial_balance_table .o_account_report_line.is_total td.o_account_report_number,
+.o_account_interactive_report .o_account_trial_balance_table .o_account_report_line.is_total td.o_account_report_number.is_zero,
+.o_account_interactive_report .o_account_trial_balance_table .o_account_report_line.is_total td.o_account_report_number.is_negative {
+  color: var(--goldverse-account-ink) !important;
+  opacity: 1 !important;
+}
+
 .o_account_interactive_report {
   .o_account_report_sheet.o_account_aged_sheet {
     width: calc(100vw - 72px) !important;

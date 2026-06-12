@@ -32,6 +32,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
     gv_received_warehouse_orders = fields.Integer(string="Received from Warehouse", compute="_compute_goldverse_dashboard_cards")
     gv_delivered_customer_orders = fields.Integer(string="Delivered to Customers", compute="_compute_goldverse_dashboard_cards")
     gv_gross_profit = fields.Monetary(string="Gross Profit", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
+    gv_total_expenses = fields.Monetary(string="Total Exp", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_net_profit = fields.Monetary(string="Net Profit", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_top_expenses = fields.Monetary(string="Top 5 Expenses", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_receivables = fields.Monetary(string="Receivables", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
@@ -92,8 +93,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
         dashboard = self.create(
             {
                 "company_id": company.id,
-                "period_filter": "ytd",
-                "date_from": fields.Date.start_of(today, "year"),
+                "period_filter": "today",
+                "date_from": today,
                 "date_to": today,
             }
         )
@@ -130,8 +131,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 self.env.uid,
                 _("Executive Dashboard"),
                 company.id,
-                "ytd",
-                fields.Date.start_of(today, "year"),
+                "today",
+                today,
                 today,
             ),
         )
@@ -144,6 +145,20 @@ class LaundryExecutiveDashboard(models.TransientModel):
             """,
             (forced_id,),
         )
+        return True
+
+    @api.model
+    def goldverse_apply_today_dashboard_defaults(self):
+        today = fields.Date.context_today(self)
+        dashboards = self.sudo().search([])
+        if dashboards:
+            dashboards.write(
+                {
+                    "period_filter": "today",
+                    "date_from": today,
+                    "date_to": today,
+                }
+            )
         return True
 
     def _goldverse_order_ids_for_period(self):
@@ -281,6 +296,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
             return self._goldverse_action(_("Delivered to Customers"), "aimaze.laundry.order", period_order_domain + ["|", ("goldverse_actual_delivery_datetime", "!=", False), ("state", "in", ("delivered", "paid"))], "list,kanban,form")
         if card == "gv_gross_profit":
             return self._goldverse_action(_("Gross Profit Journal Items"), "account.move.line", self._goldverse_profit_domain(include_operating=False), "list,pivot,graph")
+        if card == "gv_total_expenses":
+            return self._goldverse_action(_("Total Expenses"), "account.move.line", self._goldverse_total_expense_domain(), "list,pivot,graph")
         if card == "gv_net_profit":
             return self._goldverse_action(_("Net Profit Journal Items"), "account.move.line", self._goldverse_profit_domain(include_operating=True), "list,pivot,graph")
         if card == "gv_top_expenses":
@@ -414,15 +431,24 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
     def _goldverse_top_expense_domain(self):
         self.ensure_one()
-        MoveLine = self.env["account.move.line"].sudo()
-        base_domain = self._goldverse_move_line_period_domain() + [
-            ("account_id.account_type", "in", ("expense", "expense_depreciation", "expense_direct_cost")),
-        ]
-        grouped = MoveLine.read_group(base_domain, ["balance:sum"], ["account_id"], orderby="balance desc", limit=5)
-        account_ids = [group["account_id"][0] for group in grouped if group.get("account_id")]
+        base_domain = self._goldverse_total_expense_domain()
+        account_ids = [row["account_id"] for row in self._gv_top_expense_rows(*self._gv_period_date_bounds()) if row.get("account_id")]
         return base_domain + [("account_id", "in", account_ids or [0])]
 
+    def _goldverse_total_expense_domain(self):
+        self.ensure_one()
+        return self._goldverse_move_line_period_domain() + [
+            ("account_id.account_type", "in", ("expense", "expense_depreciation", "expense_direct_cost")),
+        ]
+
     def _gv_top_expense_total(self, date_from, date_to):
+        return sum(row["value"] for row in self._gv_top_expense_rows(date_from, date_to))
+
+    def _gv_total_expense_value(self, date_from, date_to):
+        profit = self._gv_profit_values(date_from, date_to)
+        return (profit.get("direct_cost") or 0.0) + (profit.get("operating_expense") or 0.0)
+
+    def _gv_top_expense_rows(self, date_from, date_to):
         self.ensure_one()
         MoveLine = self.env["account.move.line"].sudo()
         base_domain = [
@@ -433,7 +459,19 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ("account_id.account_type", "in", ("expense", "expense_depreciation", "expense_direct_cost")),
         ]
         grouped = MoveLine.read_group(base_domain, ["balance:sum"], ["account_id"], orderby="balance desc", limit=5)
-        return sum(group.get("balance_sum", 0.0) for group in grouped)
+        rows = []
+        for group in grouped:
+            account = group.get("account_id")
+            if not account:
+                continue
+            rows.append(
+                {
+                    "account_id": account[0],
+                    "name": account[1],
+                    "value": group.get("balance_sum", 0.0),
+                }
+            )
+        return rows
 
     def action_goldverse_refresh_dashboard(self):
         self.ensure_one()
@@ -1071,8 +1109,11 @@ class LaundryExecutiveDashboard(models.TransientModel):
         revenue_trend = self._gv_trend(revenue, previous_revenue)
         order_count = len(orders) or len(invoices)
         previous_order_count = len(previous_orders) or len(previous_invoices)
+        total_expenses = self._gv_total_expense_value(date_from, date_to)
+        previous_total_expenses = self._gv_total_expense_value(previous_from, previous_to)
         top_expenses = self._gv_top_expense_total(date_from, date_to)
         previous_top_expenses = self._gv_top_expense_total(previous_from, previous_to)
+        top_expense_rows = self._gv_top_expense_rows(date_from, date_to)
         return {
             "date_from": date_from,
             "date_to": date_to,
@@ -1086,6 +1127,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "previous_orders": previous_order_count,
             "average_order_value": (revenue / order_count) if order_count else 0.0,
             "previous_aov": (previous_revenue / previous_order_count) if previous_order_count else 0.0,
+            "total_expenses": total_expenses,
+            "previous_total_expenses": previous_total_expenses,
             "customers": customers,
             "receivables": self._gv_receivable_total(),
             "collections": collections,
@@ -1099,6 +1142,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "advances": advances,
             "top_expenses": top_expenses,
             "previous_top_expenses": previous_top_expenses,
+            "top_expense_rows": top_expense_rows,
             "cost_breakdown": cost_breakdown,
             "receivable_over_60": receivable_aging["61-90 Days"] + receivable_aging["90+ Days"],
             "major_customer": {"name": major_customer.get("name") or "", "amount": major_customer.get("outstanding") or 0.0},
@@ -1120,7 +1164,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard.company_id = company
             dashboard.goldverse_company_warning = warning
             data = dashboard._gv_command_data()
-            date_label = dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])
             sales_total = data["revenue"] or 0.0
             collections = data["collections"]
             remaining_sales = sales_total
@@ -1142,8 +1185,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
             kpis = [
                 dashboard._gv_kpi_card("Total Revenue", data["revenue"], data["previous_revenue"], "fa-line-chart", "#c9a227", card_key="gv_total_revenue"),
                 dashboard._gv_kpi_card("Gross Profit", data["profit"]["gross_profit"], data["previous_profit"]["gross_profit"], "fa-trophy", "#10b981", card_key="gv_gross_profit"),
+                dashboard._gv_kpi_card("Total Exp", data["total_expenses"], data["previous_total_expenses"], "fa-arrow-circle-down", "#fb923c", card_key="gv_total_expenses"),
                 dashboard._gv_kpi_card("Net Profit", data["profit"]["net_profit"], data["previous_profit"]["net_profit"], "fa-pie-chart", "#06b6d4", card_key="gv_net_profit"),
-                dashboard._gv_kpi_card("Top 5 Expenses", data["top_expenses"], data["previous_top_expenses"], "fa-arrow-circle-down", "#fb923c", card_key="gv_top_expenses"),
                 dashboard._gv_kpi_card("Total Orders", data["orders"], data["previous_orders"], "fa-shopping-bag", "#8b5cf6", is_money=False, card_key="gv_total_orders"),
                 dashboard._gv_kpi_card("Average Order Value", data["average_order_value"], data["previous_aov"], "fa-calculator", "#f59e0b", card_key="gv_total_orders"),
                 dashboard._gv_kpi_card("Active Customers", data["customers"]["active"], 0, "fa-users", "#0ea5e9", is_money=False, card_key="gv_active_customers"),
@@ -1169,14 +1212,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
             dashboard.goldverse_command_center_html = """
                 <div class="gv-command-center">
                     <section class="gv-command-hero o_goldverse_header">
-                        <div>
-                            <span class="gv-eyebrow">Executive Analytics</span>
-                            <h1>GoldVerse Executive Command Center</h1>
-                            <p class="company-name">%s</p>
-                            <div class="gv-filter-pills">
-                                <span><i class="fa fa-calendar"></i>%s</span>
-                                <span><i class="fa fa-money"></i>%s</span>
-                            </div>
+                        <div class="gv-hero-title-wrap">
+                            <h1>GoldVerse Executive Analytics</h1>
                         </div>
                     </section>
                     %s
@@ -1208,17 +1245,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Gross Profit %% Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>%s</div>
                         <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Net Profit %% Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>%s</div>
                     </section>
+                    <section class="gv-panel o_goldverse_section o_goldverse_chart_card">
+                        <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top 5 Expenses</h2><span class="section-tag o_goldverse_chart_subtitle">Expense heads</span></div>
+                        %s
+                    </section>
                     <section class="gv-panel gv-alert-center o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Executive Alerts Center</h2><span class="section-tag">Live management signals</span></div><div class="gv-alert-grid o_goldverse_alert_grid">%s</div></section>
                 </div>
             """ % (
-                escape(company.name or dashboard.company_id.display_name),
-                escape(date_label),
-                escape((dashboard.company_id.currency_id or dashboard.env.company.currency_id).name or ""),
                 warning_html,
-                escape(date_label),
+                escape(dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])),
                 "".join(sales_cards),
                 "".join(kpis),
-                escape(date_label),
+                escape(dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])),
                 dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#c9a227"), ("gross_profit", "Gross Profit", "#10b981")]),
                 dashboard._gv_donut_chart(data["service_composition"][:6]),
                 dashboard._gv_bar_chart(data["top_services"], "Revenue"),
@@ -1233,6 +1271,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard._gv_donut_chart(data["cost_breakdown"]),
                 dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#10b981")]),
                 dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#06b6d4")]),
+                dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense"),
                 dashboard._gv_alerts(data),
             )
 
@@ -1269,6 +1308,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             direct_cost = sum(profit_lines.filtered(lambda line: line.account_id.account_type == "expense_direct_cost").mapped("balance"))
             operating_expense = sum(profit_lines.filtered(lambda line: line.account_id.account_type in ("expense", "expense_depreciation")).mapped("balance"))
             dashboard.gv_gross_profit = revenue - direct_cost
+            dashboard.gv_total_expenses = direct_cost + operating_expense
             dashboard.gv_net_profit = revenue - direct_cost - operating_expense
 
             top_expense_lines = MoveLine.search(dashboard._goldverse_top_expense_domain())
