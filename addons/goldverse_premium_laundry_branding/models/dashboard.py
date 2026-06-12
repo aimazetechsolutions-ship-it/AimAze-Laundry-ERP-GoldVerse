@@ -422,6 +422,19 @@ class LaundryExecutiveDashboard(models.TransientModel):
         account_ids = [group["account_id"][0] for group in grouped if group.get("account_id")]
         return base_domain + [("account_id", "in", account_ids or [0])]
 
+    def _gv_top_expense_total(self, date_from, date_to):
+        self.ensure_one()
+        MoveLine = self.env["account.move.line"].sudo()
+        base_domain = [
+            ("company_id", "=", self.company_id.id),
+            ("parent_state", "=", "posted"),
+            ("date", ">=", date_from),
+            ("date", "<=", date_to),
+            ("account_id.account_type", "in", ("expense", "expense_depreciation", "expense_direct_cost")),
+        ]
+        grouped = MoveLine.read_group(base_domain, ["balance:sum"], ["account_id"], orderby="balance desc", limit=5)
+        return sum(group.get("balance_sum", 0.0) for group in grouped)
+
     def action_goldverse_refresh_dashboard(self):
         self.ensure_one()
         return {
@@ -1058,6 +1071,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
         revenue_trend = self._gv_trend(revenue, previous_revenue)
         order_count = len(orders) or len(invoices)
         previous_order_count = len(previous_orders) or len(previous_invoices)
+        top_expenses = self._gv_top_expense_total(date_from, date_to)
+        previous_top_expenses = self._gv_top_expense_total(previous_from, previous_to)
         return {
             "date_from": date_from,
             "date_to": date_to,
@@ -1082,6 +1097,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "monthly": monthly,
             "receivable_aging": receivable_aging,
             "advances": advances,
+            "top_expenses": top_expenses,
+            "previous_top_expenses": previous_top_expenses,
             "cost_breakdown": cost_breakdown,
             "receivable_over_60": receivable_aging["61-90 Days"] + receivable_aging["90+ Days"],
             "major_customer": {"name": major_customer.get("name") or "", "amount": major_customer.get("outstanding") or 0.0},
@@ -1130,6 +1147,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard._gv_kpi_card("Average Order Value", data["average_order_value"], data["previous_aov"], "fa-calculator", "#f59e0b", card_key="gv_total_orders"),
                 dashboard._gv_kpi_card("Active Customers", data["customers"]["active"], 0, "fa-users", "#0ea5e9", is_money=False, card_key="gv_active_customers"),
                 dashboard._gv_kpi_card("Receivables", data["receivables"], 0, "fa-credit-card", "#ef4444", card_key="gv_receivables"),
+                dashboard._gv_kpi_card("Top 5 Expenses", data["top_expenses"], data["previous_top_expenses"], "fa-arrow-circle-down", "#fb923c", card_key="gv_top_expenses"),
                 dashboard._gv_kpi_card("Cash & Bank Collections", data["collections_total"], 0, "fa-bank", "#14b8a6", card_key="gv_cash_bank_collections"),
             ]
             customer_cards = [
