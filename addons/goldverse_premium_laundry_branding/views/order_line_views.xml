@@ -13,7 +13,7 @@
                     <field name="goldverse_subcategory_id" string="Sub Category" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="service_id" string="Service Item" domain="[('category_id', '=', goldverse_category_id), ('goldverse_subcategory_id', '=', goldverse_subcategory_id)]" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="goldverse_priority" string="Priority" required="1"/>
-                    <field name="goldverse_colour_ids" string="Colour" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
+                    <field name="goldverse_colour_ids" string="Colour" widget="many2many_tags" required="1" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="goldverse_qc_option_ids" string="QC" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="goldverse_topup_ids" string="Add On" widget="many2many_tags" required="1" options="{'no_create': True, 'no_create_edit': True}"/>
                     <field name="unit_price" column_invisible="1" force_save="1"/>

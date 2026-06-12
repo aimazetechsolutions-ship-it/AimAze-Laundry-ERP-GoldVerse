@@ -41,6 +41,7 @@ class LaundryOrderLine(models.Model):
         "line_id",
         "colour_id",
         string="Colour",
+        required=True,
     )
     goldverse_colour = fields.Selection(
         [
@@ -248,6 +249,14 @@ class LaundryOrderLine(models.Model):
         missing_lines = self.filtered(lambda line: line.service_id and not line.goldverse_topup_ids)
         if missing_lines:
             raise UserError(_("Add On is mandatory for every laundry order service line."))
+
+    @api.constrains("service_id", "goldverse_colour_ids", "goldverse_colour_id")
+    def _check_goldverse_colour_required(self):
+        missing_lines = self.filtered(
+            lambda line: line.service_id and not (line.goldverse_colour_ids or line.goldverse_colour_id)
+        )
+        if missing_lines:
+            raise UserError(_("Colour is mandatory for every laundry order service line."))
 
     @api.onchange("goldverse_discount", "quantity", "unit_price")
     def _onchange_goldverse_discount(self):
