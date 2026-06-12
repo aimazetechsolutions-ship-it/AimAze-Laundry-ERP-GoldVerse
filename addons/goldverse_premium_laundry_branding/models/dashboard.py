@@ -90,6 +90,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
     def action_goldverse_open_executive_dashboard(self):
         company = self._goldverse_find_company()
         today = fields.Date.context_today(self)
+        dashboard_menu = self.env.ref(
+            "aimaze_laundry_management.menu_laundry_executive_dashboard",
+            raise_if_not_found=False,
+        )
         dashboard = self.create(
             {
                 "company_id": company.id,
@@ -107,6 +111,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "target": "current",
             "context": {
                 "allowed_company_ids": self.env.context.get("allowed_company_ids", [company.id]),
+            },
+            "params": {
+                "menu_id": dashboard_menu.id if dashboard_menu else False,
             },
         }
 
