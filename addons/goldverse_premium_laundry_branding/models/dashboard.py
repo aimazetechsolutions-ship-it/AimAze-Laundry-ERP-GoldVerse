@@ -1143,11 +1143,11 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard._gv_kpi_card("Total Revenue", data["revenue"], data["previous_revenue"], "fa-line-chart", "#c9a227", card_key="gv_total_revenue"),
                 dashboard._gv_kpi_card("Gross Profit", data["profit"]["gross_profit"], data["previous_profit"]["gross_profit"], "fa-trophy", "#10b981", card_key="gv_gross_profit"),
                 dashboard._gv_kpi_card("Net Profit", data["profit"]["net_profit"], data["previous_profit"]["net_profit"], "fa-pie-chart", "#06b6d4", card_key="gv_net_profit"),
+                dashboard._gv_kpi_card("Top 5 Expenses", data["top_expenses"], data["previous_top_expenses"], "fa-arrow-circle-down", "#fb923c", card_key="gv_top_expenses"),
                 dashboard._gv_kpi_card("Total Orders", data["orders"], data["previous_orders"], "fa-shopping-bag", "#8b5cf6", is_money=False, card_key="gv_total_orders"),
                 dashboard._gv_kpi_card("Average Order Value", data["average_order_value"], data["previous_aov"], "fa-calculator", "#f59e0b", card_key="gv_total_orders"),
                 dashboard._gv_kpi_card("Active Customers", data["customers"]["active"], 0, "fa-users", "#0ea5e9", is_money=False, card_key="gv_active_customers"),
                 dashboard._gv_kpi_card("Receivables", data["receivables"], 0, "fa-credit-card", "#ef4444", card_key="gv_receivables"),
-                dashboard._gv_kpi_card("Top 5 Expenses", data["top_expenses"], data["previous_top_expenses"], "fa-arrow-circle-down", "#fb923c", card_key="gv_top_expenses"),
                 dashboard._gv_kpi_card("Cash & Bank Collections", data["collections_total"], 0, "fa-bank", "#14b8a6", card_key="gv_cash_bank_collections"),
             ]
             customer_cards = [
