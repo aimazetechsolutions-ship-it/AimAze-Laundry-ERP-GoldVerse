@@ -8,11 +8,10 @@ class GoldVerseLaundryReceiptPrintController(http.Controller):
         order = request.env["aimaze.laundry.order"].browse(order_id)
         if not order.exists():
             return request.not_found()
-        order.check_access_rights("read")
-        order.check_access_rule("read")
+        order.check_access("read")
 
         report_action = request.env.ref("aimaze_laundry_management.action_report_laundry_order_receipt")
-        report_html, _ = report_action._render_qweb_html(order.ids)
+        report_html, _ = report_action._render_qweb_html(report_action.report_name, order.ids)
         if isinstance(report_html, bytes):
             report_html = report_html.decode("utf-8")
 
