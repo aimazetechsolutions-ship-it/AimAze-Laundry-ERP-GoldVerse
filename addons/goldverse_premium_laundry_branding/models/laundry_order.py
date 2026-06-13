@@ -716,7 +716,7 @@ class LaundryOrder(models.Model):
         return {
             "type": "ir.actions.act_url",
             "name": _("Laundry Order Receipt"),
-            "url": "/report/pdf/aimaze_laundry_management.report_laundry_order_receipt/%s" % self.id,
+            "url": "/goldverse/laundry_order/%s/print_receipt" % self.id,
             "target": "new",
         }
 
