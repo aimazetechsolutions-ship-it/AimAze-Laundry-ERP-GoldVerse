@@ -711,8 +711,14 @@ class LaundryOrder(models.Model):
         }
 
     def action_print_receipt(self):
+        self.ensure_one()
         self._goldverse_validate_receipt_available()
-        return super().action_print_receipt()
+        return {
+            "type": "ir.actions.act_url",
+            "name": _("Laundry Order Receipt"),
+            "url": "/report/pdf/aimaze_laundry_management.report_laundry_order_receipt/%s" % self.id,
+            "target": "new",
+        }
 
     def _goldverse_check_payment_action_allowed(self):
         locked = self.filtered(lambda order: order._goldverse_is_locked())

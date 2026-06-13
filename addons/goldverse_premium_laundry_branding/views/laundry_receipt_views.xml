@@ -1,13 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="paperformat_goldverse_laundry_receipt_thermal" model="report.paperformat">
+        <field name="name">GoldVerse Laundry Receipt Thermal 80mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">80</field>
+        <field name="page_height">297</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">2</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">203</field>
+        <field name="disable_shrinking" eval="True"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_report_laundry_order_receipt" model="ir.actions.report">
+        <field name="paperformat_id" ref="goldverse_premium_laundry_branding.paperformat_goldverse_laundry_receipt_thermal"/>
+        <field name="attachment_use" eval="False"/>
+    </record>
+
     <template id="report_laundry_order_receipt_goldverse_compact" inherit_id="aimaze_laundry_management.report_laundry_order_receipt">
         <xpath expr="//t[@t-call='web.external_layout']" position="replace">
             <t t-call="web.basic_layout">
                 <style>
                     @page { size: 80mm auto; margin: 2mm; }
                     .gv-slip {
-                        width: 76mm;
-                        max-width: 76mm;
+                        width: 72mm;
+                        max-width: 72mm;
                         margin: 0 auto;
                         color: #000;
                         font-family: Arial, Helvetica, sans-serif;
