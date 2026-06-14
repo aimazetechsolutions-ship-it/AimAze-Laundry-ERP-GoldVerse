@@ -22,6 +22,8 @@ param(
 
     [string]$VpsGitUserEmail = "goldverse-vps-sync@aimazetechsolutions.local",
 
+    [string]$LogPath,
+
     [switch]$NoLocalPull,
 
     [switch]$WhatIfMode
@@ -92,37 +94,47 @@ $LocalRepoPath = (Resolve-Path $LocalRepoPath).Path
 $bundleFileRemote = "/tmp/goldverse_vps_sync.bundle"
 $bundleFileLocal = Join-Path ([System.IO.Path]::GetTempPath()) "goldverse_vps_sync.bundle"
 $vpsRemoteRef = "refs/remotes/vps-sync/$Branch"
+$transcriptStarted = $false
 
-$remoteStatusCommand = "sudo -u odoo git -C '$VpsRepoPath' status --porcelain"
-$remoteDirty = Invoke-RemoteCommand $remoteStatusCommand
-
-if ($remoteDirty) {
-    Write-Host "VPS repo has uncommitted changes:"
-    Write-Host $remoteDirty
-    if (-not $CommitVpsChanges) {
-        throw "Remote VPS repo is dirty. Use -CommitVpsChanges to auto-commit before syncing."
+if ($LogPath) {
+    $logDirectory = Split-Path -Parent $LogPath
+    if ($logDirectory) {
+        New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
     }
-
-    Write-Host "Committing VPS changes on live VPS before sync..."
-    $commitCommand = @(
-        "sudo -u odoo git -C '$VpsRepoPath' config user.name '" + $VpsGitUserName.Replace("'", "''") + "'",
-        "sudo -u odoo git -C '$VpsRepoPath' config user.email '" + $VpsGitUserEmail.Replace("'", "''") + "'",
-        "sudo -u odoo git -C '$VpsRepoPath' add -A",
-        "if ! sudo -u odoo git -C '$VpsRepoPath' diff --cached --quiet --ignore-submodules --; then sudo -u odoo git -C '$VpsRepoPath' commit -m '" + $CommitMessage.Replace("'", "''") + "'; fi"
-    ) -join "; "
-    Invoke-RemoteCommand $commitCommand
+    Start-Transcript -Path $LogPath -Force | Out-Null
+    $transcriptStarted = $true
 }
 
-Write-Host "Preparing VPS bundle for direct local sync."
-$remoteSync = @(
-    "sudo -u odoo git -C '$VpsRepoPath' checkout '$Branch'",
-    "sudo rm -f '$bundleFileRemote'",
-    "sudo -u odoo git -C '$VpsRepoPath' bundle create '$bundleFileRemote' '$Branch'",
-    "sudo chown ${VpsUser}:${VpsUser} '$bundleFileRemote'"
-) -join "; "
-Invoke-RemoteCommand $remoteSync
-
 try {
+    $remoteStatusCommand = "sudo -u odoo git -C '$VpsRepoPath' status --porcelain"
+    $remoteDirty = Invoke-RemoteCommand $remoteStatusCommand
+
+    if ($remoteDirty) {
+        Write-Host "VPS repo has uncommitted changes:"
+        Write-Host $remoteDirty
+        if (-not $CommitVpsChanges) {
+            throw "Remote VPS repo is dirty. Use -CommitVpsChanges to auto-commit before syncing."
+        }
+
+        Write-Host "Committing VPS changes on live VPS before sync..."
+        $commitCommand = @(
+            "sudo -u odoo git -C '$VpsRepoPath' config user.name '" + $VpsGitUserName.Replace("'", "''") + "'",
+            "sudo -u odoo git -C '$VpsRepoPath' config user.email '" + $VpsGitUserEmail.Replace("'", "''") + "'",
+            "sudo -u odoo git -C '$VpsRepoPath' add -A",
+            "if ! sudo -u odoo git -C '$VpsRepoPath' diff --cached --quiet --ignore-submodules --; then sudo -u odoo git -C '$VpsRepoPath' commit -m '" + $CommitMessage.Replace("'", "''") + "'; fi"
+        ) -join "; "
+        Invoke-RemoteCommand $commitCommand
+    }
+
+    Write-Host "Preparing VPS bundle for direct local sync."
+    $remoteSync = @(
+        "sudo -u odoo git -C '$VpsRepoPath' checkout '$Branch'",
+        "sudo rm -f '$bundleFileRemote'",
+        "sudo -u odoo git -C '$VpsRepoPath' bundle create '$bundleFileRemote' '$Branch'",
+        "sudo chown ${VpsUser}:${VpsUser} '$bundleFileRemote'"
+    ) -join "; "
+    Invoke-RemoteCommand $remoteSync
+
     Invoke-ScpDownload -RemotePath $bundleFileRemote -LocalPath $bundleFileLocal
 
     if ($NoLocalPull) {
@@ -148,4 +160,7 @@ finally {
         Remove-Item -LiteralPath $bundleFileLocal -Force
     }
     Invoke-RemoteCommand "sudo rm -f '$bundleFileRemote'" | Out-Null
+    if ($transcriptStarted) {
+        Stop-Transcript | Out-Null
+    }
 }
