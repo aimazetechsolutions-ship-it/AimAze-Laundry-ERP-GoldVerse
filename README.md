@@ -70,3 +70,13 @@ Use these scripts for both required sync flows.
    local test -> local commit -> **Local → GitHub → VPS**.
 3. If change started live on VPS:
    VPS change committed -> **VPS Live → GitHub → local**.
+
+## Nightly VPS Backup
+
+- Script: `scripts/goldverse_daily_backup.sh`
+- Schedule: `1:00 AM` daily on the VPS
+- Output: `/opt/odoo/backups/goldverse_daily/goldverse_premium_laundry_daily.tar.gz`
+- Behavior:
+  - first pushes any tracked live VPS repo changes to GitHub,
+  - then backs up the GoldVerse database, filestore, config, and current repo commit,
+  - overwrites the same compressed daily archive to save VPS space.
