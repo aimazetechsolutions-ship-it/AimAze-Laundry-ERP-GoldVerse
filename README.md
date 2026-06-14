@@ -60,6 +60,7 @@ Use these scripts for both required sync flows.
     -VpsHost <vps-host-or-ip> `
     -VpsUser <ssh-user> `
     -VpsRepoPath /opt/goldverse/AimAze-Laundry-ERP-GoldVerse `
+    -SshKeyPath C:\path\to\vps_key `
     -CommitVpsChanges
 ```
 
@@ -80,3 +81,9 @@ Use these scripts for both required sync flows.
   - first pushes any tracked live VPS repo changes to GitHub,
   - then backs up the GoldVerse database, filestore, config, and current repo commit,
   - overwrites the same compressed daily archive to save VPS space.
+
+## Recommended Daily Sync Order
+
+- Run `scripts/sync-goldverse-vps-to-local.ps1` from the Windows local machine before `1:00 AM`.
+- This script can auto-commit live VPS repo changes, pull them into local, and push them onward to GitHub without requiring GitHub credentials on the VPS.
+- Keep the VPS backup at `1:00 AM` so the backup remains protected even if the Windows machine is offline.
