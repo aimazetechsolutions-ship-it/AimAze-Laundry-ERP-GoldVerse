@@ -1182,6 +1182,71 @@ class LaundryExecutiveDashboard(models.TransientModel):
             remaining_sales -= ibft_sales
             credit_sales = max(remaining_sales, 0.0)
             sales_share = lambda amount: ((amount or 0.0) / sales_total * 100.0) if sales_total else 0.0
+            range_label = dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])
+            current_dt = fields.Datetime.context_timestamp(dashboard, fields.Datetime.now()) or datetime.now()
+            greeting = _("Good morning") if current_dt.hour < 12 else (_("Good afternoon") if current_dt.hour < 17 else _("Good evening"))
+            customer_filter_label = dict(dashboard._fields["gv_customer_type_filter"].selection).get(
+                dashboard.gv_customer_type_filter,
+                _("All Customers"),
+            )
+            service_filter_label = dashboard.gv_service_type_id.display_name or _("All Services")
+            branch_label = dashboard.branch_id.display_name or _("All Branches")
+            top_service_name = data["top_services"][0][0] if data["top_services"] else _("No service trend yet")
+            top_service_value = data["top_services"][0][1] if data["top_services"] else 0.0
+            collection_ratio = ((data["collections_total"] or 0.0) / sales_total * 100.0) if sales_total else 0.0
+            receivable_ratio = ((data["receivables"] or 0.0) / sales_total * 100.0) if sales_total else 0.0
+
+            def _render_points(items, empty_text):
+                clean_items = [item for item in items if item]
+                if not clean_items:
+                    clean_items = [empty_text]
+                return "".join("<li>%s</li>" % escape(item) for item in clean_items)
+
+            summary_points = [
+                _("Revenue %s across %s orders for the selected period.")
+                % (dashboard._gv_money(data["revenue"]), dashboard._gv_number(data["orders"])),
+                _("Gross profit %s with margin %.1f%% and average order value %s.")
+                % (
+                    dashboard._gv_money(data["profit"]["gross_profit"]),
+                    data["profit"]["gp_percent"],
+                    dashboard._gv_money(data["average_order_value"]),
+                ),
+                _("Collections stand at %s while receivables are %s.")
+                % (dashboard._gv_money(data["collections_total"]), dashboard._gv_money(data["receivables"])),
+            ]
+            risk_points = []
+            if data["receivable_over_60"]:
+                risk_points.append(
+                    _("Receivables older than 60 days are %s.")
+                    % dashboard._gv_money(data["receivable_over_60"])
+                )
+            if data["major_customer"]["amount"]:
+                risk_points.append(
+                    _("%s is the largest outstanding customer at %s.")
+                    % (
+                        data["major_customer"]["name"] or _("A major customer"),
+                        dashboard._gv_money(data["major_customer"]["amount"]),
+                    )
+                )
+            if data["revenue_declining"]:
+                risk_points.append(_("Revenue is trailing the previous comparison period by %s.") % dashboard._gv_percent(abs(data["revenue_trend"])))
+            if data["complaints_pending"]:
+                risk_points.append(_("%s complaint records are still open.") % dashboard._gv_number(data["complaints_pending"]))
+            focus_points = [
+                _("Top earning service is %s at %s.") % (top_service_name, dashboard._gv_money(top_service_value)) if top_service_value else "",
+                _("Credit exposure currently represents %.1f%% of recognized sales.") % sales_share(credit_sales) if sales_total else "",
+                _("Collections conversion is %.1f%% and open AR is %.1f%% of revenue.") % (collection_ratio, receivable_ratio) if sales_total else "",
+                _("Highest expense head is %s.") % data["top_expense_rows"][0]["name"] if data["top_expense_rows"] else "",
+            ]
+            quick_tags = "".join(
+                '<span class="gv-brief-tag">%s</span>'
+                % escape(tag)
+                for tag in [
+                    company.name or _("GoldVerse"),
+                    branch_label,
+                    dashboard.currency_id.name or "PKR",
+                ]
+            )
             sales_cards = [
                 dashboard._gv_sales_card("Total Sales", sales_total, "gv_total_sales", "#c9a227", icon="fa-shopping-cart"),
                 dashboard._gv_sales_card("Cash Sales", cash_sales, "gv_cash_sales", "#10b981", sales_share(cash_sales), "fa-money"),
@@ -1216,71 +1281,98 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 for name, value in sorted(data["collections"].items())
             ] or [dashboard._gv_empty_state()]
             warning_html = '<div class="gv-warning">%s</div>' % escape(warning) if warning else ""
-            dashboard.goldverse_command_center_html = """
-                <div class="gv-command-center">
-                    <section class="gv-command-hero o_goldverse_header">
-                        <div class="gv-hero-title-wrap">
+            dashboard.goldverse_command_center_html = f"""
+                <div class="gv-command-center gv-command-center-luxe">
+                    <section class="gv-brief-shell">
+                        <aside class="gv-greeting-card">
+                            <span class="gv-brief-kicker">{escape(greeting)}</span>
                             <h1>GoldVerse Executive Analytics</h1>
+                            <strong>{escape(dashboard.env.user.name or "Administrator")}</strong>
+                            <p>{escape(range_label)}</p>
+                            <div class="gv-brief-tags">{quick_tags}</div>
+                        </aside>
+                        <section class="gv-morning-brief">
+                            <div class="gv-brief-head">
+                                <span class="gv-brief-kicker">Executive management brief</span>
+                                <span class="gv-brief-meta">Customer filter: {escape(customer_filter_label)} | Service filter: {escape(service_filter_label)}</span>
+                            </div>
+                            <div class="gv-brief-grid">
+                                <div class="gv-brief-column">
+                                    <h3>Performance snapshot</h3>
+                                    <ul>{_render_points(summary_points, _("No performance summary is available yet."))}</ul>
+                                </div>
+                                <div class="gv-brief-column">
+                                    <h3>Risks</h3>
+                                    <ul>{_render_points(risk_points, _("No critical risk indicators are currently active."))}</ul>
+                                </div>
+                                <div class="gv-brief-column">
+                                    <h3>Focus actions</h3>
+                                    <ul>{_render_points(focus_points, _("Monitor revenue, collections, and cost movement through the day."))}</ul>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+                    {warning_html}
+                    <section class="gv-panel gv-sales-panel o_goldverse_section">
+                        <div class="gv-panel-head o_goldverse_section_header"><h2>Sales command view</h2><span class="section-tag">{escape(range_label)}</span></div>
+                        <div class="gv-sales-grid o_goldverse_kpi_grid">{"".join(sales_cards)}</div>
+                    </section>
+                    <section class="gv-panel gv-kpi-panel o_goldverse_section">
+                        <div class="gv-panel-head o_goldverse_section_header"><h2>Executive KPI summary</h2><span class="section-tag">Revenue, profit, orders, customers</span></div>
+                        <div class="gv-kpi-grid o_goldverse_kpi_grid">{"".join(kpis)}</div>
+                    </section>
+                    <div class="gv-section-band"><span>Revenue intelligence</span></div>
+                    <section class="gv-dashboard-row gv-row-70-30 o_goldverse_chart_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
+                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Monthly Revenue vs Gross Profit</h2><span class="section-tag o_goldverse_chart_subtitle">{escape(range_label)}</span></div>
+                            {dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#d97706"), ("gross_profit", "Gross Profit", "#059669")])}
+                        </div>
+                        <div class="gv-panel gv-revenue-composition-panel o_goldverse_section o_goldverse_chart_card">
+                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue Composition</h2><span class="section-tag o_goldverse_chart_subtitle">Actual services</span></div>
+                            {dashboard._gv_donut_chart(data["service_composition"][:6])}
                         </div>
                     </section>
-                    %s
-                    <section class="gv-panel gv-sales-panel o_goldverse_section">
-                        <div class="gv-panel-head o_goldverse_section_header"><h2>Sales</h2><span class="section-tag">%s</span></div>
-                        <div class="gv-sales-grid o_goldverse_kpi_grid">%s</div>
+                    <div class="gv-section-band"><span>Business mix</span></div>
+                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Service Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>{dashboard._gv_bar_chart(data["top_services"], "Revenue")}</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>{dashboard._gv_bar_chart(data["top_categories"], "Revenue")}</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Sub Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>{dashboard._gv_bar_chart(data["top_subcategories"], "Revenue")}</div>
                     </section>
-                    <section class="gv-kpi-grid o_goldverse_kpi_grid">%s</section>
-                    <section class="gv-dashboard-row gv-row-70-30 o_goldverse_chart_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Monthly Revenue vs Gross Profit</h2><span class="section-tag o_goldverse_chart_subtitle">%s</span></div>%s</div>
-                        <div class="gv-panel gv-revenue-composition-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue Composition</h2><span class="section-tag o_goldverse_chart_subtitle">Actual services</span></div>%s</div>
+                    <div class="gv-section-band"><span>Customer and working capital</span></div>
+                    <section class="gv-dashboard-row gv-row-60-40 o_goldverse_two_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
+                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Customers by Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 10</span></div>
+                            {dashboard._gv_bar_chart([(row["name"], row["revenue"]) for row in data["customers"]["top_rows"]], "Revenue")}
+                            {dashboard._gv_customer_table(data["customers"]["top_rows"])}
+                        </div>
+                        <div class="gv-panel o_goldverse_section">
+                            <div class="gv-panel-head o_goldverse_section_header"><h2>Customer intelligence</h2><span class="section-tag">Period quality</span></div>
+                            <div class="gv-mini-grid">{"".join(customer_cards)}</div>
+                        </div>
                     </section>
                     <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Service Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>%s</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>%s</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Sub Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>%s</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Receivable Aging</h2><span class="section-tag o_goldverse_chart_subtitle">Open AR</span></div>{dashboard._gv_donut_chart(list(data["receivable_aging"].items()))}</div>
+                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Collections</h2><span class="section-tag">Payment journals</span></div><div class="gv-mini-grid">{"".join(collection_cards)}</div></div>
+                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Customer advances</h2><span class="section-tag">AR credit balance</span></div><div class="gv-mini-grid">{"".join(advance_cards)}</div></div>
+                    </section>
+                    <div class="gv-section-band"><span>Profitability and control</span></div>
+                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue vs Cost Breakdown</h2><span class="section-tag o_goldverse_chart_subtitle">Actual accounts</span></div>{dashboard._gv_donut_chart(data["cost_breakdown"])}</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Gross Profit % Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>{dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#059669")])}</div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Net Profit % Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>{dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#7c3aed")])}</div>
                     </section>
                     <section class="gv-dashboard-row gv-row-60-40 o_goldverse_two_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Customers by Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 10</span></div>%s%s</div>
-                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Customer KPIs</h2><span class="section-tag">Period quality</span></div><div class="gv-mini-grid">%s</div></div>
+                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
+                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top 5 Expenses</h2><span class="section-tag o_goldverse_chart_subtitle">Expense heads</span></div>
+                            {dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense")}
+                        </div>
+                        <div class="gv-panel gv-alert-center o_goldverse_section">
+                            <div class="gv-panel-head o_goldverse_section_header"><h2>Executive alerts center</h2><span class="section-tag">Live management signals</span></div>
+                            <div class="gv-alert-grid o_goldverse_alert_grid">{dashboard._gv_alerts(data)}</div>
+                        </div>
                     </section>
-                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Receivable Aging</h2><span class="section-tag o_goldverse_chart_subtitle">Open AR</span></div>%s</div>
-                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Collections</h2><span class="section-tag">Payment journals</span></div><div class="gv-mini-grid">%s</div></div>
-                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Customer Advances</h2><span class="section-tag">AR credit balance</span></div><div class="gv-mini-grid">%s</div></div>
-                    </section>
-                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue vs Cost Breakdown</h2><span class="section-tag o_goldverse_chart_subtitle">Actual accounts</span></div>%s</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Gross Profit %% Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>%s</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Net Profit %% Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>%s</div>
-                    </section>
-                    <section class="gv-panel o_goldverse_section o_goldverse_chart_card">
-                        <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top 5 Expenses</h2><span class="section-tag o_goldverse_chart_subtitle">Expense heads</span></div>
-                        %s
-                    </section>
-                    <section class="gv-panel gv-alert-center o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Executive Alerts Center</h2><span class="section-tag">Live management signals</span></div><div class="gv-alert-grid o_goldverse_alert_grid">%s</div></section>
                 </div>
-            """ % (
-                warning_html,
-                escape(dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])),
-                "".join(sales_cards),
-                "".join(kpis),
-                escape(dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])),
-                dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#c9a227"), ("gross_profit", "Gross Profit", "#10b981")]),
-                dashboard._gv_donut_chart(data["service_composition"][:6]),
-                dashboard._gv_bar_chart(data["top_services"], "Revenue"),
-                dashboard._gv_bar_chart(data["top_categories"], "Revenue"),
-                dashboard._gv_bar_chart(data["top_subcategories"], "Revenue"),
-                dashboard._gv_bar_chart([(row["name"], row["revenue"]) for row in data["customers"]["top_rows"]], "Revenue"),
-                dashboard._gv_customer_table(data["customers"]["top_rows"]),
-                "".join(customer_cards),
-                dashboard._gv_donut_chart(list(data["receivable_aging"].items())),
-                "".join(collection_cards),
-                "".join(advance_cards),
-                dashboard._gv_donut_chart(data["cost_breakdown"]),
-                dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#10b981")]),
-                dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#06b6d4")]),
-                dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense"),
-                dashboard._gv_alerts(data),
-            )
+            """
 
     @api.depends("company_id", "branch_id", "date_from", "date_to")
     def _compute_goldverse_dashboard_cards(self):
