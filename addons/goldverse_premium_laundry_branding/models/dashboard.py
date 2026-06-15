@@ -509,6 +509,12 @@ class LaundryExecutiveDashboard(models.TransientModel):
         symbol = currency.symbol or currency.name or ""
         return "%s%s" % (format(value or 0.0, ",.2f"), (" " + symbol) if symbol else "")
 
+    def _gv_money_parts(self, value):
+        self.ensure_one()
+        currency = self.company_id.currency_id or self.env.company.currency_id
+        symbol = currency.symbol or currency.name or ""
+        return format(value or 0.0, ",.2f"), symbol
+
     def _gv_number(self, value):
         return format(value or 0, ",.0f")
 
@@ -893,6 +899,34 @@ class LaundryExecutiveDashboard(models.TransientModel):
             )
         return "".join(rendered)
 
+    def _gv_customer_revenue_chart(self, rows):
+        if not rows:
+            return self._gv_empty_state()
+        total = sum((row.get("revenue") or 0.0) for row in rows[:5]) or 1.0
+        max_value = max((row.get("revenue") or 0.0) for row in rows[:5]) or 1.0
+        rendered = []
+        for row in rows[:5]:
+            revenue = row.get("revenue") or 0.0
+            width = max(4.0, (revenue / max_value) * 100.0)
+            share = (revenue / total) * 100.0
+            rendered.append(
+                '<div class="gv-bar-row gv-customer-bar-row" title="%s: %s">'
+                '<div class="gv-bar-label gv-customer-bar-label"><strong>%s</strong><small>Orders: %s | Outstanding: %s</small></div>'
+                '<div class="gv-bar-track"><span style="width: %.2f%%"></span></div>'
+                '<div class="gv-bar-value">%s <em>%.1f%%</em></div></div>'
+                % (
+                    escape(row.get("name") or ""),
+                    escape(self._gv_money(revenue)),
+                    escape(row.get("name") or ""),
+                    escape(self._gv_number(row.get("orders") or 0)),
+                    escape(self._gv_money(row.get("outstanding") or 0.0)),
+                    width,
+                    escape(self._gv_money(revenue)),
+                    share,
+                )
+            )
+        return "".join(rendered)
+
     def _gv_line_chart(self, rows, series):
         if not rows or not any(any(row.get(key) for key, _label, _color in series) for row in rows):
             return self._gv_empty_state()
@@ -933,22 +967,32 @@ class LaundryExecutiveDashboard(models.TransientModel):
             return self._gv_empty_state()
         colors = ["#06b6d4", "#10b981", "#c9a227", "#f59e0b", "#8b5cf6", "#ef4444"]
         total = sum(value for _, value in rows) or 1.0
+        total_amount, total_currency = self._gv_money_parts(total)
         cursor = 0.0
         stops = []
         legend = []
         for index, (name, value) in enumerate(rows[:6]):
             pct = (value / total) * 100.0
             color = colors[index % len(colors)]
+            amount, currency = self._gv_money_parts(value)
             stops.append("%s %.2f%% %.2f%%" % (color, cursor, cursor + pct))
             cursor += pct
             legend.append(
-                '<div><i style="background:%s"></i><span>%s</span><strong>%s</strong><em>%.1f%%</em></div>'
-                % (color, escape(str(name)), escape(self._gv_money(value)), pct)
+                '<div><i style="background:%s"></i><span class="gv-donut-legend-label">%s</span>'
+                '<div class="gv-donut-legend-value"><strong class="gv-donut-legend-amount">%s%s</strong><em class="gv-donut-legend-share">%.1f%%</em></div></div>'
+                % (
+                    color,
+                    escape(str(name)),
+                    escape(amount),
+                    (" " + escape(currency)) if currency else "",
+                    pct,
+                )
             )
         return (
             '<div class="gv-donut-wrap"><div class="gv-donut" style="background: conic-gradient(%s);">'
-            '<span>%s</span></div><div class="gv-donut-legend">%s</div></div>'
-        ) % (", ".join(stops), escape(self._gv_money(total)), "".join(legend))
+            '<span class="gv-donut-total"><strong class="gv-donut-total-amount">%s</strong><small class="gv-donut-total-currency">%s</small></span>'
+            '</div><div class="gv-donut-legend">%s</div></div>'
+        ) % (", ".join(stops), escape(total_amount), escape(total_currency), "".join(legend))
 
     def _gv_click_attrs(self, card_key):
         if not card_key:
@@ -1003,7 +1047,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
         if not rows:
             return self._gv_empty_state()
         body = []
-        for row in rows[:10]:
+        for row in rows[:5]:
             body.append(
                 "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>"
                 % (
@@ -1195,6 +1239,14 @@ class LaundryExecutiveDashboard(models.TransientModel):
             top_service_value = data["top_services"][0][1] if data["top_services"] else 0.0
             collection_ratio = ((data["collections_total"] or 0.0) / sales_total * 100.0) if sales_total else 0.0
             receivable_ratio = ((data["receivables"] or 0.0) / sales_total * 100.0) if sales_total else 0.0
+            priority_label = _("Low")
+            priority_action = _("Maintain revenue visibility and keep collections disciplined.")
+            if data["receivable_over_60"] or data["revenue_declining"]:
+                priority_label = _("High")
+                priority_action = _("Recover aged receivables and protect current-period revenue.")
+            elif data["major_customer"]["amount"] or data["complaints_pending"] or credit_sales > cash_sales:
+                priority_label = _("Medium")
+                priority_action = _("Push collections and monitor customer exceptions closely.")
 
             def _render_points(items, empty_text):
                 clean_items = [item for item in items if item]
@@ -1202,18 +1254,14 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     clean_items = [empty_text]
                 return "".join("<li>%s</li>" % escape(item) for item in clean_items)
 
-            summary_points = [
-                _("Revenue %s across %s orders for the selected period.")
-                % (dashboard._gv_money(data["revenue"]), dashboard._gv_number(data["orders"])),
-                _("Gross profit %s with margin %.1f%% and average order value %s.")
-                % (
-                    dashboard._gv_money(data["profit"]["gross_profit"]),
-                    data["profit"]["gp_percent"],
-                    dashboard._gv_money(data["average_order_value"]),
-                ),
-                _("Collections stand at %s while receivables are %s.")
-                % (dashboard._gv_money(data["collections_total"]), dashboard._gv_money(data["receivables"])),
-            ]
+            brief_summary = _(
+                "Revenue %s across %s orders with gross profit %s. Priority: %s."
+            ) % (
+                dashboard._gv_money(data["revenue"]),
+                dashboard._gv_number(data["orders"]),
+                dashboard._gv_money(data["profit"]["gross_profit"]),
+                priority_action,
+            )
             risk_points = []
             if data["receivable_over_60"]:
                 risk_points.append(
@@ -1232,10 +1280,20 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 risk_points.append(_("Revenue is trailing the previous comparison period by %s.") % dashboard._gv_percent(abs(data["revenue_trend"])))
             if data["complaints_pending"]:
                 risk_points.append(_("%s complaint records are still open.") % dashboard._gv_number(data["complaints_pending"]))
+            opportunity_points = [
+                _("Gross profit margin: %.1f%%.") % data["profit"]["gp_percent"] if data["profit"]["gross_profit"] else "",
+                _("Average order value: %s.") % dashboard._gv_money(data["average_order_value"]) if data["average_order_value"] else "",
+                _("New customers added in period: %s.") % dashboard._gv_number(data["customers"]["new"]) if data["customers"]["new"] else "",
+                _("Top service contribution: %s from %s.") % (dashboard._gv_money(top_service_value), top_service_name) if top_service_value else "",
+            ]
             focus_points = [
-                _("Top earning service is %s at %s.") % (top_service_name, dashboard._gv_money(top_service_value)) if top_service_value else "",
-                _("Credit exposure currently represents %.1f%% of recognized sales.") % sales_share(credit_sales) if sales_total else "",
-                _("Collections conversion is %.1f%% and open AR is %.1f%% of revenue.") % (collection_ratio, receivable_ratio) if sales_total else "",
+                _("Recover %s from the largest outstanding customer %s.")
+                % (
+                    dashboard._gv_money(data["major_customer"]["amount"]),
+                    data["major_customer"]["name"],
+                ) if data["major_customer"]["amount"] else "",
+                _("Lift collections above the current %.1f%% revenue conversion.") % collection_ratio if sales_total else "",
+                _("Reduce credit exposure now at %.1f%% of recognized sales.") % sales_share(credit_sales) if sales_total and credit_sales else "",
                 _("Highest expense head is %s.") % data["top_expense_rows"][0]["name"] if data["top_expense_rows"] else "",
             ]
             quick_tags = "".join(
@@ -1293,20 +1351,21 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         </aside>
                         <section class="gv-morning-brief">
                             <div class="gv-brief-head">
-                                <span class="gv-brief-kicker">Executive management brief</span>
-                                <span class="gv-brief-meta">Customer filter: {escape(customer_filter_label)} | Service filter: {escape(service_filter_label)}</span>
+                                <span class="gv-brief-kicker"><i class="fa fa-coffee"></i> Executive Morning Brief</span>
+                                <span class="gv-brief-priority">Priority: {escape(priority_label)}</span>
                             </div>
+                            <p class="gv-brief-summary">{escape(brief_summary)}</p>
                             <div class="gv-brief-grid">
-                                <div class="gv-brief-column">
-                                    <h3>Performance snapshot</h3>
-                                    <ul>{_render_points(summary_points, _("No performance summary is available yet."))}</ul>
-                                </div>
-                                <div class="gv-brief-column">
-                                    <h3>Risks</h3>
+                                <div class="gv-brief-column gv-brief-column-risk">
+                                    <h3><i class="fa fa-warning"></i> Risks</h3>
                                     <ul>{_render_points(risk_points, _("No critical risk indicators are currently active."))}</ul>
                                 </div>
-                                <div class="gv-brief-column">
-                                    <h3>Focus actions</h3>
+                                <div class="gv-brief-column gv-brief-column-opportunity">
+                                    <h3><i class="fa fa-lightbulb-o"></i> Opportunities</h3>
+                                    <ul>{_render_points(opportunity_points, _("No fresh opportunity indicators are available yet."))}</ul>
+                                </div>
+                                <div class="gv-brief-column gv-brief-column-focus">
+                                    <h3><i class="fa fa-flag-checkered"></i> Focus Actions</h3>
                                     <ul>{_render_points(focus_points, _("Monitor revenue, collections, and cost movement through the day."))}</ul>
                                 </div>
                             </div>
@@ -1341,9 +1400,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     <div class="gv-section-band"><span>Customer and working capital</span></div>
                     <section class="gv-dashboard-row gv-row-60-40 o_goldverse_two_grid">
                         <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Customers by Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 10</span></div>
-                            {dashboard._gv_bar_chart([(row["name"], row["revenue"]) for row in data["customers"]["top_rows"]], "Revenue")}
-                            {dashboard._gv_customer_table(data["customers"]["top_rows"])}
+                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Customers by Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>
+                            {dashboard._gv_customer_revenue_chart(data["customers"]["top_rows"])}
                         </div>
                         <div class="gv-panel o_goldverse_section">
                             <div class="gv-panel-head o_goldverse_section_header"><h2>Customer intelligence</h2><span class="section-tag">Period quality</span></div>
@@ -1361,7 +1419,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Gross Profit % Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>{dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#059669")])}</div>
                         <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Net Profit % Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>{dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#7c3aed")])}</div>
                     </section>
-                    <section class="gv-dashboard-row gv-row-60-40 o_goldverse_two_grid">
+                    <section class="gv-dashboard-row gv-row-60-40 gv-expense-alert-row o_goldverse_two_grid">
                         <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
                             <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top 5 Expenses</h2><span class="section-tag o_goldverse_chart_subtitle">Expense heads</span></div>
                             {dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense")}
