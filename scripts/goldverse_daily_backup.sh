@@ -6,6 +6,7 @@ BACKUP_ROOT="/opt/odoo/backups/goldverse_daily"
 STAGING_DIR="$BACKUP_ROOT/current"
 ARCHIVE_PATH="$BACKUP_ROOT/goldverse_premium_laundry_daily.tar.gz"
 ARCHIVE_TMP="$ARCHIVE_PATH.tmp"
+CHECKSUM_PATH="$ARCHIVE_PATH.sha256"
 CONFIG_FILE="/etc/odoo/goldverse_premium_laundry.conf"
 DATA_DIR="/var/lib/odoo/goldverse_premium_laundry"
 FILESTORE_DIR="$DATA_DIR/filestore/goldverse_premium_laundry"
@@ -102,6 +103,8 @@ EOF
     tar -C "$STAGING_DIR" -czf "$ARCHIVE_TMP" .
     mv -f "$ARCHIVE_TMP" "$ARCHIVE_PATH"
     chmod 640 "$ARCHIVE_PATH"
+    sha256sum "$ARCHIVE_PATH" > "$CHECKSUM_PATH"
+    chmod 640 "$CHECKSUM_PATH"
 
     log "Backup completed: $ARCHIVE_PATH"
 }
