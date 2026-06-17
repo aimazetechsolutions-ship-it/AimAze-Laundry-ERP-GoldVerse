@@ -242,7 +242,8 @@ try {
     Invoke-ScpDownload -RemotePath $backupArchiveRemoteTemp -LocalPath $backupArchiveLocal
     Invoke-ScpDownload -RemotePath $backupLogRemoteTemp -LocalPath $backupLogLocal
     try {
-        Invoke-ScpDownload -RemotePath $backupChecksumRemoteTemp -LocalPath $backupChecksumLocal
+        $remoteChecksum = Invoke-RemoteCommand "cat '$backupChecksumRemoteTemp'"
+        $remoteChecksum | Set-Content -LiteralPath $backupChecksumLocal -Encoding ascii
     }
     catch {
         Write-Warning "Remote checksum download failed. A fresh checksum will be generated locally."
