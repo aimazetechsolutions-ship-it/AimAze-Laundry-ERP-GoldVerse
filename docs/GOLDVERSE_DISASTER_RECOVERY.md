@@ -11,6 +11,27 @@ GoldVerse now has four recovery layers:
 3. Local recovery cache on this machine
 4. OneDrive-backed offsite copy
 
+## One-Click Backup Health Check
+
+Use this any time you want a fast health view of the full backup chain.
+
+### Launcher
+
+- `scripts\run-goldverse-backup-health-check.bat`
+
+### PowerShell script
+
+- `scripts\check-goldverse-backup-health.ps1`
+
+### What it checks
+
+1. Windows sync task status and last result
+2. Nightly sync log freshness
+3. Local recovery cache archive/checksum/log
+4. OneDrive offsite archive/checksum/log
+5. VPS `goldverse-odoo` service state
+6. VPS backup archive/checksum/log freshness
+
 ## Nightly Automation Order
 
 1. `12:50 AM` Windows task: `GoldVerse VPS To Local Sync`
@@ -112,6 +133,6 @@ After any recovery:
 6. Dashboard opens
 7. Backup automation still exists
 
-## Remaining Limitation
+## Automation Status
 
-The Windows sync task is still tied to the current Windows user context. For full unattended execution when no user session is open, the task should be changed to run whether the user is logged on or not with saved credentials.
+The Windows sync task now runs with saved credentials in password-backed mode, so it can run in background without keeping the user session open.
