@@ -69,7 +69,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
     @api.model
     def _goldverse_default_menu_id(self, model=None, card_key=None):
         menu_candidates = []
-        if card_key in {"receivables", "advance_liability"} or model in {"account.move", "account.move.line", "account.payment"}:
+        if model == "aimaze.laundry.executive.dashboard":
+            menu_candidates.append("aimaze_laundry_management.menu_laundry_executive_dashboard")
+        elif card_key in {"receivables", "advance_liability"} or model in {"account.move", "account.move.line", "account.payment"}:
             menu_candidates.append("account.menu_finance")
         elif model in {"res.partner", "aimaze.customer.wallet"}:
             menu_candidates.append("aimaze_laundry_management.menu_laundry_customers_root")
