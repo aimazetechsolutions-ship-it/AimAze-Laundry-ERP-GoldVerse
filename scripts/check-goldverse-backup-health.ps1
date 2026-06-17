@@ -90,25 +90,36 @@ function Add-FileHealth {
 }
 
 function Invoke-VpsHealthProbe {
-    $remoteCommand = @'
-sudo bash -lc '
-service_state=$(systemctl is-active goldverse-odoo 2>/dev/null || true)
-printf "SERVICE|%s\n" "$service_state"
-for f in \
-  /opt/odoo/backups/goldverse_daily/goldverse_premium_laundry_daily.tar.gz \
-  /opt/odoo/backups/goldverse_daily/goldverse_premium_laundry_daily.tar.gz.sha256 \
-  /opt/odoo/backups/goldverse_daily/latest.log
-do
-  if [ -f "$f" ]; then
-    printf "FILE|%s|%s|%s\n" "$f" "$(stat -c %Y "$f")" "$(stat -c %s "$f")"
-  else
-    printf "FILE|%s|MISSING|0\n" "$f"
-  fi
-done
-'
+    $pythonScript = @'
+from pathlib import Path
+import subprocess
+
+paths = [
+    "/opt/odoo/backups/goldverse_daily/goldverse_premium_laundry_daily.tar.gz",
+    "/opt/odoo/backups/goldverse_daily/goldverse_premium_laundry_daily.tar.gz.sha256",
+    "/opt/odoo/backups/goldverse_daily/latest.log",
+]
+
+try:
+    state = subprocess.check_output(
+        ["systemctl", "is-active", "goldverse-odoo"],
+        text=True,
+        stderr=subprocess.DEVNULL,
+    ).strip()
+except Exception as exc:
+    state = f"error:{exc}"
+
+print(f"SERVICE|{state}")
+for path_str in paths:
+    path = Path(path_str)
+    if path.exists():
+        stat = path.stat()
+        print(f"FILE|{path_str}|{int(stat.st_mtime)}|{stat.st_size}")
+    else:
+        print(f"FILE|{path_str}|MISSING|0")
 '@
-    $sshArgs = @("-i", $SshKeyPath, "$VpsUser@$VpsHost", $remoteCommand)
-    return & ssh @sshArgs
+    $sshArgs = @("-i", $SshKeyPath, "$VpsUser@$VpsHost", "sudo python3 -")
+    return $pythonScript | & ssh @sshArgs
 }
 
 $results = New-Object 'System.Collections.Generic.List[object]'
