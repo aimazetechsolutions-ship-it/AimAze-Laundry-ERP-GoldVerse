@@ -31,7 +31,7 @@
     </record>
 
     <record id="aimaze_laundry_management.menu_aimaze_laundry_root" model="ir.ui.menu">
-        <field name="action" ref="action_goldverse_open_executive_dashboard"/>
+        <field name="action" eval="False"/>
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('base.group_system')

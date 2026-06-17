@@ -66,8 +66,37 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ("order_date", "<=", date_to),
         ]
 
+    @api.model
+    def _goldverse_default_menu_id(self, model=None, card_key=None):
+        menu_candidates = []
+        if card_key in {"receivables", "advance_liability"} or model in {"account.move", "account.move.line", "account.payment"}:
+            menu_candidates.append("account.menu_finance")
+        elif model in {"res.partner", "aimaze.customer.wallet"}:
+            menu_candidates.append("aimaze_laundry_management.menu_laundry_customers_root")
+        elif model == "aimaze.laundry.complaint":
+            menu_candidates.append("aimaze_laundry_management.menu_laundry_complaints_root")
+        elif model:
+            menu_candidates.append("aimaze_laundry_management.menu_laundry_orders_root")
+
+        menu_candidates.extend(
+            [
+                "aimaze_laundry_management.menu_laundry_executive_dashboard",
+                "aimaze_laundry_management.menu_aimaze_laundry_root",
+            ]
+        )
+
+        for xmlid in menu_candidates:
+            menu = self.env.ref(xmlid, raise_if_not_found=False)
+            if menu:
+                return menu.id
+        return False
+
     def _goldverse_action(self, name, model, domain, view_mode="list,form", context=None):
         views = [(False, mode.strip()) for mode in view_mode.split(",") if mode.strip()]
+        menu_id = self._goldverse_default_menu_id(model=model, card_key=self.env.context.get("goldverse_card"))
+        action_context = dict(context or {})
+        if menu_id:
+            action_context.setdefault("menu_id", menu_id)
         return {
             "type": "ir.actions.act_window",
             "name": name,
@@ -75,7 +104,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "view_mode": view_mode,
             "views": views,
             "domain": domain,
-            "context": context or {},
+            "context": action_context,
+            "params": {"menu_id": menu_id} if menu_id else {},
             "target": "current",
         }
 
@@ -90,10 +120,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
     def action_goldverse_open_executive_dashboard(self):
         company = self._goldverse_find_company()
         today = fields.Date.context_today(self)
-        dashboard_menu = self.env.ref(
-            "aimaze_laundry_management.menu_laundry_executive_dashboard",
-            raise_if_not_found=False,
-        )
+        dashboard_menu_id = self._goldverse_default_menu_id(model="aimaze.laundry.executive.dashboard")
         dashboard = self.create(
             {
                 "company_id": company.id,
@@ -111,10 +138,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "target": "current",
             "context": {
                 "allowed_company_ids": self.env.context.get("allowed_company_ids", [company.id]),
+                "menu_id": dashboard_menu_id,
             },
-            "params": {
-                "menu_id": dashboard_menu.id if dashboard_menu else False,
-            },
+            "params": {"menu_id": dashboard_menu_id} if dashboard_menu_id else {},
         }
 
     @api.model
