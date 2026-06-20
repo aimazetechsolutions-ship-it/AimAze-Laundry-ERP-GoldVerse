@@ -9,6 +9,7 @@ import { PivotController } from "@web/views/pivot/pivot_controller";
 import { useState } from "@odoo/owl";
 
 const REPORT_FILTER_CLASS = "goldverse-report-date-list";
+const REPORT_ACTION_IDS = new Set([628, 645, 649, 651, 665, 684, 690, 691, 692, 693, 694, 731]);
 const REPORT_FILTER_CONFIG = {
     "aimaze.laundry.order": {
         dateField: "order_date",
@@ -76,11 +77,21 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
         },
 
         get isGoldverseReportFilterView() {
+            const className =
+                this.archInfo?.className ||
+                this.props.archInfo?.className ||
+                this.props.className ||
+                "";
+            const actionId =
+                this.env?.config?.actionId ||
+                this.props.info?.actionId ||
+                this.props.actionId;
             return Boolean(
                 REPORT_FILTER_CONFIG[this.props.resModel] &&
                 (
                     this.props.context?.goldverse_report_toolbar ||
-                    this.archInfo?.className?.includes(REPORT_FILTER_CLASS)
+                    className.includes(REPORT_FILTER_CLASS) ||
+                    REPORT_ACTION_IDS.has(actionId)
                 )
             );
         },
