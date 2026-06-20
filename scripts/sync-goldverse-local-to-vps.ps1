@@ -16,9 +16,13 @@ param(
 
     [string]$ModulesToUpgrade = "goldverse_premium_laundry_branding",
 
-    [string]$OdooBin = "/opt/odoo/odoo-bin",
+    [string]$OdooBin = "/opt/odoo/odoo/odoo-bin",
 
-    [string]$OdooConfig = "/opt/odoo/config/goldverse_premium_laundry.conf",
+    [string]$OdooPython = "/opt/odoo/venv/bin/python",
+
+    [string]$OdooConfig = "/etc/odoo/goldverse_premium_laundry.conf",
+
+    [string]$OdooRunAsUser = "odoo",
 
     [string]$DbName = "goldverse_premium_laundry",
 
@@ -89,28 +93,42 @@ if ($NoRemotePull) {
 }
 
 Write-Host "== GitHub -> VPS Deployment =="
-$remoteCommands = @(
-    "set -euo pipefail",
-    "REPO_URL='$VpsRepoUrl'",
-    "APP_PATH='$VpsRepoPath'",
-    "if [ ! -d '$APP_PATH/.git' ]; then",
-    "  mkdir -p '$APP_PATH'",
-    "  git clone '$REPO_URL' '$APP_PATH'",
-    "fi",
-    "cd '$APP_PATH'",
-    "git fetch --all --prune",
-    "git checkout '$Branch'",
-    "git reset --hard 'origin/$Branch'"
-)
 
+# Build the remote command list. PS variables are interpolated directly into
+# the bash strings so we never declare bash variables like $APP_PATH — that
+# would collide with PowerShell's own $ interpolation under Set-StrictMode and
+# silently truncate the array (see git history for the prior bug).
+$remoteCommands = [System.Collections.Generic.List[string]]::new()
+$remoteCommands.Add("set -euo pipefail") | Out-Null
+$remoteCommands.Add("if [ ! -d '$VpsRepoPath/.git' ]; then mkdir -p '$VpsRepoPath' && git clone '$VpsRepoUrl' '$VpsRepoPath'; fi") | Out-Null
+$remoteCommands.Add("cd '$VpsRepoPath'") | Out-Null
+$remoteCommands.Add("git fetch --all --prune") | Out-Null
+$remoteCommands.Add("git checkout '$Branch'") | Out-Null
+$remoteCommands.Add("git reset --hard 'origin/$Branch'") | Out-Null
+
+if ($OdooService) {
+    $remoteCommands.Add("sudo systemctl stop '$OdooService'") | Out-Null
+}
 if ($ModulesToUpgrade) {
-    $remoteCommands += "$OdooBin -c '$OdooConfig' -d '$DbName' -u $ModulesToUpgrade --stop-after-init"
+    # Compose the upgrade command. If OdooPython is set, run odoo-bin under
+    # that interpreter; otherwise call odoo-bin directly. Run as the OdooRunAsUser
+    # (typically `odoo`) so the upgrade has write access to attachments/filestore.
+    $upgradeCore = if ($OdooPython) {
+        "$OdooPython $OdooBin -c '$OdooConfig' -d '$DbName' -u $ModulesToUpgrade --stop-after-init"
+    } else {
+        "$OdooBin -c '$OdooConfig' -d '$DbName' -u $ModulesToUpgrade --stop-after-init"
+    }
+    if ($OdooRunAsUser) {
+        $remoteCommands.Add("sudo -u $OdooRunAsUser $upgradeCore") | Out-Null
+    } else {
+        $remoteCommands.Add($upgradeCore) | Out-Null
+    }
 }
 if ($OdooService) {
-    $remoteCommands += "sudo systemctl restart '$OdooService'"
+    $remoteCommands.Add("sudo systemctl start '$OdooService'") | Out-Null
 }
 
-$remoteCommandText = ($remoteCommands -join "; ")
+$remoteCommandText = ($remoteCommands -join " && ")
 Invoke-RemoteCommand $remoteCommandText
 
 Write-Host "Local -> GitHub -> VPS flow completed for branch '$Branch'."
