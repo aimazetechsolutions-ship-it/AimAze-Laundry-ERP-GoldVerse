@@ -82,10 +82,12 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
                 this.props.archInfo?.className ||
                 this.props.className ||
                 "";
-            const actionId =
+            const rawActionId =
                 this.env?.config?.actionId ||
+                this.env?.config?.currentEmbeddedActionId ||
                 this.props.info?.actionId ||
                 this.props.actionId;
+            const actionId = Number(rawActionId);
             return Boolean(
                 REPORT_FILTER_CONFIG[this.props.resModel] &&
                 (
