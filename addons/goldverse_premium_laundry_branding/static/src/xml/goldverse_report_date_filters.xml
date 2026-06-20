@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
     <t t-inherit="web.ListView" t-inherit-mode="extension">
         <xpath expr="//t[@t-set-slot='layout-actions']/SearchBar" position="replace">
-            <t t-if="this.isGoldverseReportFilterView">
+            <t t-if="this.isGoldverseReportFilterView or this.isGoldverseReportFilterList">
                 <div class="goldverse-report-filter-shell goldverse-report-filter-shell--toolbar">
                     <div t-if="this.hasGoldversePeriodFilters" class="goldverse-report-filter-group">
                         <button type="button"
@@ -78,7 +78,7 @@
 
     <t t-inherit="web.PivotView" t-inherit-mode="extension">
         <xpath expr="//t[@t-set-slot='layout-actions']/SearchBar" position="replace">
-            <t t-if="this.isGoldverseReportFilterView">
+            <t t-if="this.isGoldverseReportFilterView or this.isGoldverseReportFilterList">
                 <div class="goldverse-report-filter-shell goldverse-report-filter-shell--toolbar">
                     <div t-if="this.hasGoldversePeriodFilters" class="goldverse-report-filter-group">
                         <button type="button"
@@ -154,7 +154,7 @@
 
     <t t-inherit="web.GraphView" t-inherit-mode="extension">
         <xpath expr="//t[@t-set-slot='layout-actions']/SearchBar" position="replace">
-            <t t-if="this.isGoldverseReportFilterView">
+            <t t-if="this.isGoldverseReportFilterView or this.isGoldverseReportFilterList">
                 <div class="goldverse-report-filter-shell goldverse-report-filter-shell--toolbar">
                     <div t-if="this.hasGoldversePeriodFilters" class="goldverse-report-filter-group">
                         <button type="button"

@@ -85,6 +85,10 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
             );
         },
 
+        get isGoldverseReportFilterList() {
+            return this.isGoldverseReportFilterView;
+        },
+
         get goldverseReportConfig() {
             return REPORT_FILTER_CONFIG[this.props.resModel] || null;
         },
