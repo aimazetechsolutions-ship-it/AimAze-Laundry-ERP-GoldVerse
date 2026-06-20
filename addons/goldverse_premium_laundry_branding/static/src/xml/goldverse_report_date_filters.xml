@@ -233,4 +233,127 @@
             </t>
         </xpath>
     </t>
+
+    <t t-inherit="web.SearchBar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_cp_searchview')]" position="replace">
+            <t t-if="visibilityState.showSearchBar">
+                <t t-if="this.isGoldverseSearchToolbar">
+                    <div class="goldverse-report-filter-shell goldverse-report-filter-shell--toolbar">
+                        <div t-if="this.hasGoldverseSearchPeriodFilters" class="goldverse-report-filter-group">
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchButtonClass('today')"
+                                    t-on-click="() => this.goldverseApplySearchPeriod('today')">
+                                Today
+                            </button>
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchButtonClass('mtd')"
+                                    t-on-click="() => this.goldverseApplySearchPeriod('mtd')">
+                                MTD
+                            </button>
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchButtonClass('ytd')"
+                                    t-on-click="() => this.goldverseApplySearchPeriod('ytd')">
+                                YTD
+                            </button>
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchButtonClass('itd')"
+                                    t-on-click="() => this.goldverseApplySearchPeriod('itd')">
+                                ITD
+                            </button>
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchButtonClass('custom')"
+                                    t-on-click="() => this.goldverseApplySearchPeriod('custom')">
+                                Custom
+                            </button>
+                        </div>
+
+                        <div t-if="this.hasGoldverseSearchCustomerFilters" class="goldverse-report-filter-group">
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchCustomerButtonClass('all')"
+                                    t-on-click="() => this.goldverseApplySearchCustomerType('all')">
+                                All Customers
+                            </button>
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchCustomerButtonClass('b2c')"
+                                    t-on-click="() => this.goldverseApplySearchCustomerType('b2c')">
+                                B2C
+                            </button>
+                            <button type="button"
+                                    t-att-class="this.goldverseSearchCustomerButtonClass('b2b')"
+                                    t-on-click="() => this.goldverseApplySearchCustomerType('b2b')">
+                                B2B
+                            </button>
+                        </div>
+
+                        <div class="goldverse-report-custom-range"
+                             t-att-class="this.goldverseSearchActivePeriod === 'custom' ? 'is-active' : ''">
+                            <t t-if="this.goldverseSearchActivePeriod === 'custom'">
+                                <input type="date" t-model="goldverseSearchToolbarState.customFrom"/>
+                                <span class="goldverse-report-custom-separator">to</span>
+                                <input type="date" t-model="goldverseSearchToolbarState.customTo"/>
+                                <button type="button" class="btn btn-secondary" t-on-click="goldverseApplySearchCustomRange">
+                                    Apply
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <span class="goldverse-report-custom-placeholder">Custom date range</span>
+                            </t>
+                        </div>
+
+                        <div class="goldverse-report-toolbar-actions">
+                            <button type="button" class="btn btn-primary" t-on-click="goldverseRefreshSearchToolbar">
+                                <i class="fa fa-refresh me-1"/>Refresh
+                            </button>
+                        </div>
+                    </div>
+                </t>
+                <div t-else="" class="o_cp_searchview d-flex input-group" role="search" t-ref="root">
+                    <Dropdown
+                        state="inputDropdownState"
+                        manual="true"
+                        noClasses="true"
+                        position="'bottom-fit'"
+                        menuClass="'o_searchview_autocomplete'"
+                        navigationOptions="inputDropdownNavOptions"
+                        onStateChanged.bind="onInputDropdownChanged"
+                        menuRef="menuRef"
+                        bottomSheet="false"
+                    >
+                        <div class="o_searchview form-control d-print-contents d-flex align-items-center py-1 border-end-0"
+                            role="search" aria-autocomplete="list">
+                            <button class="d-print-none btn border-0 p-0"
+                                role="button"
+                                aria-label="Search..."
+                                title="Search..."
+                                t-on-click="this.onClickSearchIcon"
+                            >
+                                <i class="o_searchview_icon oi oi-search me-2"
+                                    role="img"
+                                />
+                            </button>
+                            <div class="o_searchview_input_container d-flex flex-grow-1 flex-wrap gap-1 mw-100" t-ref="facetContainerRef">
+                                <t t-call="web.SearchBar.Facets"/>
+                                <input type="text"
+                                    class="o_searchview_input o_input d-print-none flex-grow-1 w-auto border-0"
+                                    accesskey="Q"
+                                    placeholder="Search..."
+                                    role="searchbox"
+                                    t-ref="autofocus"
+                                    t-on-click="onSearchClick"
+                                    t-on-input="onSearchInput"
+                                    t-on-compositionend="onCompositionEnd"
+                                />
+                            </div>
+                        </div>
+                        <t t-set-slot="content">
+                            <t t-call="web.SearchBar.QuickSearchItems"/>
+                        </t>
+                    </Dropdown>
+                    <SearchBarMenu dropdownState="searchBarDropdownState">
+                        <t t-slot="search-bar-additional-menu"/>
+                    </SearchBarMenu>
+                </div>
+            </t>
+        </xpath>
+    </t>
 </templates>
