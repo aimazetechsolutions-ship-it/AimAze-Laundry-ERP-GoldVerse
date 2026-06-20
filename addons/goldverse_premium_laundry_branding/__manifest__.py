@@ -51,6 +51,11 @@
     ],
     "assets": {
         "web.assets_backend": [
+            (
+                "before",
+                "web/static/src/webclient/menus/menu_service.js",
+                "goldverse_premium_laundry_branding/static/src/js/goldverse_menu_storage_guard.js",
+            ),
             "goldverse_premium_laundry_branding/static/src/js/goldverse_account_report_drilldown.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_dashboard_cards.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_laundry_list_columns.js",
