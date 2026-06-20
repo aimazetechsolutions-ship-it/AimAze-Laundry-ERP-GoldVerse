@@ -51,19 +51,14 @@
                             </button>
                         </div>
 
-                        <div class="goldverse-report-custom-range"
-                             t-att-class="this.goldverseSearchActivePeriod === 'custom' ? 'is-active' : ''">
-                            <t t-if="this.goldverseSearchActivePeriod === 'custom'">
-                                <input type="date" t-model="goldverseSearchToolbarState.customFrom"/>
-                                <span class="goldverse-report-custom-separator">to</span>
-                                <input type="date" t-model="goldverseSearchToolbarState.customTo"/>
-                                <button type="button" class="btn btn-secondary" t-on-click="goldverseApplySearchCustomRange">
-                                    Apply
-                                </button>
-                            </t>
-                            <t t-else="">
-                                <span class="goldverse-report-custom-placeholder">Custom date range</span>
-                            </t>
+                        <div t-if="this.goldverseSearchActivePeriod === 'custom'"
+                             class="goldverse-report-custom-range is-active">
+                            <input type="date" t-model="goldverseSearchToolbarState.customFrom"/>
+                            <span class="goldverse-report-custom-separator">to</span>
+                            <input type="date" t-model="goldverseSearchToolbarState.customTo"/>
+                            <button type="button" class="btn btn-secondary" t-on-click="goldverseApplySearchCustomRange">
+                                Apply
+                            </button>
                         </div>
 
                         <div class="goldverse-report-toolbar-actions">
