@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web.ListView" t-inherit-mode="extension">
+        <xpath expr="//t[@t-set-slot='layout-actions']/SearchBar" position="replace">
+            <t t-if="this.isGoldverseReportFilterList">
+                <div class="goldverse-report-filter-shell goldverse-report-filter-shell--toolbar">
+                    <div t-if="this.hasGoldversePeriodFilters" class="goldverse-report-filter-group">
+                        <button type="button"
+                                t-att-class="this.goldverseReportButtonClass('today')"
+                                t-on-click="() => this.goldverseApplyReportPeriod('today')">
+                            Today
+                        </button>
+                        <button type="button"
+                                t-att-class="this.goldverseReportButtonClass('mtd')"
+                                t-on-click="() => this.goldverseApplyReportPeriod('mtd')">
+                            MTD
+                        </button>
+                        <button type="button"
+                                t-att-class="this.goldverseReportButtonClass('ytd')"
+                                t-on-click="() => this.goldverseApplyReportPeriod('ytd')">
+                            YTD
+                        </button>
+                        <button type="button"
+                                t-att-class="this.goldverseReportButtonClass('custom')"
+                                t-on-click="() => this.goldverseApplyReportPeriod('custom')">
+                            Custom
+                        </button>
+                    </div>
+
+                    <div t-if="this.hasGoldverseCustomerFilters" class="goldverse-report-filter-group">
+                        <button type="button"
+                                t-att-class="this.goldverseCustomerButtonClass('all')"
+                                t-on-click="() => this.goldverseApplyCustomerType('all')">
+                            All Customers
+                        </button>
+                        <button type="button"
+                                t-att-class="this.goldverseCustomerButtonClass('b2c')"
+                                t-on-click="() => this.goldverseApplyCustomerType('b2c')">
+                            B2C
+                        </button>
+                        <button type="button"
+                                t-att-class="this.goldverseCustomerButtonClass('b2b')"
+                                t-on-click="() => this.goldverseApplyCustomerType('b2b')">
+                            B2B
+                        </button>
+                    </div>
+
+                    <div class="goldverse-report-custom-range"
+                         t-att-class="this.goldverseReportActivePeriod === 'custom' ? 'is-active' : ''">
+                        <t t-if="this.goldverseReportActivePeriod === 'custom'">
+                            <input type="date" t-model="goldverseReportFilterState.customFrom"/>
+                            <span class="goldverse-report-custom-separator">to</span>
+                            <input type="date" t-model="goldverseReportFilterState.customTo"/>
+                            <button type="button" class="btn btn-secondary" t-on-click="goldverseApplyCustomReportRange">
+                                Apply
+                            </button>
+                        </t>
+                        <t t-else="">
+                            <span class="goldverse-report-custom-placeholder">Custom date range</span>
+                        </t>
+                    </div>
+
+                    <div class="goldverse-report-toolbar-actions">
+                        <button type="button" class="btn btn-primary" t-on-click="goldverseRefreshReportList">
+                            <i class="fa fa-refresh me-1"/>Refresh
+                        </button>
+                    </div>
+                </div>
+            </t>
+            <SearchBar t-else="" toggler="searchBarToggler" autofocus="firstLoad"/>
+        </xpath>
+    </t>
+</templates>

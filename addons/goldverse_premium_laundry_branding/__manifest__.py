@@ -45,14 +45,18 @@
         "views/order_line_views.xml",
         "views/order_flow_views.xml",
         "views/pickup_delivery_views.xml",
+        "views/laundry_dashboard_filters.xml",
+        "views/laundry_dashboard_export.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "goldverse_premium_laundry_branding/static/src/js/goldverse_account_report_drilldown.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_dashboard_cards.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_laundry_list_columns.js",
+            "goldverse_premium_laundry_branding/static/src/js/goldverse_report_date_filters.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_pwa_install_prompt.js",
             "goldverse_premium_laundry_branding/static/src/xml/goldverse_account_report_drilldown.xml",
+            "goldverse_premium_laundry_branding/static/src/xml/goldverse_report_date_filters.xml",
             "goldverse_premium_laundry_branding/static/src/scss/goldverse_backend.scss",
             "goldverse_premium_laundry_branding/static/src/scss/goldverse_dashboard.scss",
         ],

@@ -152,7 +152,7 @@
         <field name="name">aimaze.laundry.order.warehouse.pending.list</field>
         <field name="model">aimaze.laundry.order</field>
         <field name="arch" type="xml">
-            <list string="Warehouse Pending Orders">
+            <list string="Warehouse Pending Orders" class="goldverse-report-date-list">
                 <field name="name"/>
                 <field name="barcode"/>
                 <field name="partner_id"/>
@@ -186,7 +186,7 @@
         <field name="name">aimaze.laundry.order.customer.delivery.pending.list</field>
         <field name="model">aimaze.laundry.order</field>
         <field name="arch" type="xml">
-            <list string="Pending Delivery to Customer" create="0">
+            <list string="Pending Delivery to Customer" create="0" class="goldverse-report-date-list">
                 <field name="name"/>
                 <field name="barcode"/>
                 <field name="partner_id"/>
@@ -244,7 +244,7 @@
         <field name="name">aimaze.laundry.order.warehouse.movement.list</field>
         <field name="model">aimaze.laundry.order</field>
         <field name="arch" type="xml">
-            <list string="Warehouse Movement Report" create="0">
+            <list string="Warehouse Movement Report" create="0" class="goldverse-report-date-list">
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="mobile"/>

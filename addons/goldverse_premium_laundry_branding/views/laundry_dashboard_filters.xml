@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_order_search_goldverse_dashboard_filters" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.search.goldverse.dashboard.filters</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='today']" position="after">
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('order_date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('order_date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('order_date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('order_date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Custom" name="gv_custom" date="order_date"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('customer_type', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('customer_type', '=', 'b2b')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_laundry_delivery_search_goldverse_report" model="ir.ui.view">
+        <field name="name">aimaze.laundry.delivery.search.goldverse.report</field>
+        <field name="model">aimaze.laundry.delivery</field>
+        <field name="arch" type="xml">
+            <search string="Delivery Report Search">
+                <field name="name"/>
+                <field name="order_id"/>
+                <field name="partner_id"/>
+                <field name="driver_id"/>
+                <field name="branch_id"/>
+                <field name="pickup_datetime"/>
+                <field name="state"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('pickup_datetime', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                 ('pickup_datetime', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('pickup_datetime', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('pickup_datetime', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('pickup_datetime', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('pickup_datetime', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Custom" name="gv_custom" date="pickup_datetime"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('order_id.customer_type', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('order_id.customer_type', '=', 'b2b')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_inventory_usage_search_goldverse_report" model="ir.ui.view">
+        <field name="name">aimaze.laundry.inventory.usage.search.goldverse.report</field>
+        <field name="model">aimaze.laundry.inventory.usage</field>
+        <field name="arch" type="xml">
+            <search string="Inventory Usage Report Search">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="order_id"/>
+                <field name="product_id"/>
+                <field name="branch_id"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Custom" name="gv_custom" date="date"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('order_id.customer_type', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('order_id.customer_type', '=', 'b2b')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_staff_task_search_goldverse_report" model="ir.ui.view">
+        <field name="name">aimaze.laundry.staff.task.search.goldverse.report</field>
+        <field name="model">aimaze.laundry.staff.task</field>
+        <field name="arch" type="xml">
+            <search string="Staff Task Report Search">
+                <field name="employee_id"/>
+                <field name="order_id"/>
+                <field name="start_time"/>
+                <field name="branch_id"/>
+                <field name="process_stage"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('start_time', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                 ('start_time', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('start_time', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('start_time', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('start_time', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('start_time', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Custom" name="gv_custom" date="start_time"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('order_id.customer_type', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('order_id.customer_type', '=', 'b2b')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_branch_profitability_search_goldverse_report" model="ir.ui.view">
+        <field name="name">aimaze.laundry.branch.profitability.search.goldverse.report</field>
+        <field name="model">aimaze.laundry.branch.profitability</field>
+        <field name="arch" type="xml">
+            <search string="Branch Profitability Report Search">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('date_from', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                 ('date_from', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('date_from', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('date_from', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('date_from', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
+                                 ('date_from', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Custom" name="gv_custom" date="date_from"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_account_payment_search_goldverse_report" model="ir.ui.view">
+        <field name="name">account.payment.search.goldverse.report</field>
+        <field name="model">account.payment</field>
+        <field name="arch" type="xml">
+            <search string="Payment Report Search">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="journal_id"/>
+                <field name="date"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Custom" name="gv_custom" date="date"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('partner_id.goldverse_customer_category', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('partner_id.goldverse_customer_category', '=', 'b2b')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_wallet_transaction_search_goldverse_report" model="ir.ui.view">
+        <field name="name">aimaze.customer.wallet.transaction.search.goldverse.report</field>
+        <field name="model">aimaze.customer.wallet.transaction</field>
+        <field name="arch" type="xml">
+            <search string="Wallet Report Search">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="order_id"/>
+                <field name="branch_id"/>
+                <field name="date"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Custom" name="gv_custom" date="date"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('partner_id.goldverse_customer_category', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('partner_id.goldverse_customer_category', '=', 'b2b')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_account_move_line_search_goldverse_report" model="ir.ui.view">
+        <field name="name">account.move.line.search.goldverse.report</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <search string="Customer Ledger Report Search">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="move_id"/>
+                <field name="journal_id"/>
+                <field name="account_id"/>
+                <filter string="Today"
+                        name="today"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="MTD"
+                        name="gv_mtd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="YTD"
+                        name="gv_ytd"
+                        domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d')),
+                                 ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Custom" name="gv_custom" date="date"/>
+                <separator/>
+                <filter string="All Customers" name="gv_all_customers" domain="[]"/>
+                <filter string="B2C" name="gv_b2c" domain="[('partner_id.goldverse_customer_category', '=', 'b2c')]"/>
+                <filter string="B2B" name="gv_b2b" domain="[('partner_id.goldverse_customer_category', '=', 'b2b')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_laundry_order_list_goldverse_report_filters" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.list.goldverse.report.filters</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="inherit_id" ref="aimaze_laundry_management.view_laundry_order_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="class" add="goldverse-report-date-list" separator=" "/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_dashboard" model="ir.actions.act_window">
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_outstanding_receivables" model="ir.actions.act_window">
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_delivery" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_laundry_delivery_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_inventory_usage" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_inventory_usage_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_staff_task" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_staff_task_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_branch_profitability" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
+        <field name="search_view_id" ref="view_branch_profitability_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_advance_liability_report" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_account_payment_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_wallet_liability_report" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_wallet_transaction_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_branch_collection_report" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_account_payment_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_payment_method_report" model="ir.actions.act_window">
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_account_payment_search_goldverse_report"/>
+    </record>
+
+    <record id="aimaze_laundry_management.action_laundry_customer_ledger_report" model="ir.actions.act_window">
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="view_account_move_line_search_goldverse_report"/>
+    </record>
+</odoo>
