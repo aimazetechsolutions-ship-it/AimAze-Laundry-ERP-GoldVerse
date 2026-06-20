@@ -45,6 +45,7 @@
         "views/order_line_views.xml",
         "views/order_flow_views.xml",
         "views/pickup_delivery_views.xml",
+        "views/sales_register_views.xml",
         "views/laundry_dashboard_filters.xml",
         "views/laundry_dashboard_export.xml",
     ],

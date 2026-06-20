@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_goldverse_sales_register_list" model="ir.ui.view">
+        <field name="name">aimaze.laundry.order.list.goldverse.sales.register</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="arch" type="xml">
+            <list string="Sales Register"
+                  class="goldverse-report-date-list"
+                  create="0"
+                  delete="0"
+                  default_order="order_date desc, id desc">
+                <field name="branch_id" string="Branch"/>
+                <field name="customer_type" string="Customer Type"/>
+                <field name="mobile" string="Mobile"/>
+                <field name="partner_id" string="Customer"/>
+                <field name="order_date" string="Order Date"/>
+                <field name="name" string="Order No."/>
+                <field name="invoice_id" string="Invoice No." optional="show"/>
+                <field name="total_qty" string="Total Qty"/>
+                <field name="amount_total" string="Amount Total"/>
+                <field name="discount_amount" string="Discount"/>
+                <field name="net_balance_amount" string="Net Balance Amount"/>
+                <field name="goldverse_report_payment_date" string="Payment Date"/>
+                <field name="goldverse_report_cash_received" string="Cash Received"/>
+                <field name="goldverse_report_ibft_received" string="IBFT Received"/>
+                <field name="balance_amount" string="Balance Due"/>
+                <field name="payment_status" string="Payment Status"/>
+                <field name="goldverse_flow_status" string="State"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_goldverse_sales_register_report" model="ir.actions.act_window">
+        <field name="name">Sales Register</field>
+        <field name="res_model">aimaze.laundry.order</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="view_id" ref="view_goldverse_sales_register_list"/>
+        <field name="domain">[('name', '!=', 'New'), ('state', '!=', 'cancelled')]</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+    </record>
+
+    <record id="aimaze_laundry_management.menu_laundry_sales_reports" model="ir.ui.menu">
+        <field name="name">Sales Register</field>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('goldverse_premium_laundry_branding.action_goldverse_sales_register_report')"/>
+        <field name="sequence">10</field>
+    </record>
+</odoo>

@@ -8,6 +8,7 @@ from odoo.exceptions import UserError, ValidationError
 
 GOLDVERSE_DELIVERY_TZ = "Asia/Karachi"
 GOLDVERSE_DRAFT_ORDER_MARKER = "__GOLDVERSE_DRAFT__"
+GOLDVERSE_POSTED_PAYMENT_STATES = ("paid", "posted", "in_process", "reconciled")
 GOLDVERSE_LOCKED_ORDER_ALLOWED_WRITE_FIELDS = {
     "access_token",
     "access_url",
@@ -145,6 +146,23 @@ class LaundryOrder(models.Model):
         store=True,
         readonly=False,
     )
+    goldverse_report_payment_date = fields.Date(
+        string="Payment Date",
+        compute="_compute_goldverse_report_payment_fields",
+        store=True,
+    )
+    goldverse_report_cash_received = fields.Monetary(
+        string="Cash Received",
+        compute="_compute_goldverse_report_payment_fields",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_report_ibft_received = fields.Monetary(
+        string="IBFT Received",
+        compute="_compute_goldverse_report_payment_fields",
+        store=True,
+        currency_field="currency_id",
+    )
 
     @api.depends("partner_id")
     def _compute_goldverse_mobile_partner_id(self):
@@ -189,6 +207,32 @@ class LaundryOrder(models.Model):
                 order.goldverse_delivery_status = "delivered"
             else:
                 order.goldverse_delivery_status = "undelivered"
+
+    @api.depends(
+        "payment_ids.amount",
+        "payment_ids.date",
+        "payment_ids.state",
+        "payment_ids.journal_id",
+        "payment_ids.journal_id.type",
+        "payment_ids.journal_id.name",
+        "payment_ids.journal_id.code",
+    )
+    def _compute_goldverse_report_payment_fields(self):
+        for order in self:
+            posted_payments = order.payment_ids.filtered(
+                lambda payment: payment.state in GOLDVERSE_POSTED_PAYMENT_STATES
+            )
+            order.goldverse_report_payment_date = max(posted_payments.mapped("date")) if posted_payments else False
+            order.goldverse_report_cash_received = sum(
+                posted_payments.filtered(lambda payment: payment.journal_id.type == "cash").mapped("amount")
+            )
+            order.goldverse_report_ibft_received = sum(
+                posted_payments.filtered(
+                    lambda payment: payment.journal_id.type == "bank"
+                    or "IBFT" in (payment.journal_id.code or "").upper()
+                    or "IBFT" in (payment.journal_id.name or "").upper()
+                ).mapped("amount")
+            )
 
     @api.depends(
         "state",
