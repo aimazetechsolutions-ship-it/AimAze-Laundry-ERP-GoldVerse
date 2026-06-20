@@ -3,7 +3,9 @@
 import { _t } from "@web/core/l10n/translation";
 import { useBus } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
+import { GraphController } from "@web/views/graph/graph_controller";
 import { ListController } from "@web/views/list/list_controller";
+import { PivotController } from "@web/views/pivot/pivot_controller";
 import { useState } from "@odoo/owl";
 
 const REPORT_FILTER_CLASS = "goldverse-report-date-list";
@@ -37,6 +39,7 @@ const PERIOD_FILTER_NAMES = {
     today: "today",
     mtd: "gv_mtd",
     ytd: "gv_ytd",
+    itd: "gv_itd",
 };
 const CUSTOMER_FILTER_NAMES = {
     all: "gv_all_customers",
@@ -53,9 +56,12 @@ function currentDateValue() {
     return new Date().toISOString().slice(0, 10);
 }
 
-if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
-    patch(ListController.prototype, {
-        __goldverseReportDateFilterPatchVersion: 1,
+function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
+    if (ControllerClass.prototype.__goldverseReportDateFilterPatchVersion) {
+        return;
+    }
+    patch(ControllerClass.prototype, {
+        __goldverseReportDateFilterPatchVersion: patchVersion,
 
         setup() {
             super.setup(...arguments);
@@ -69,7 +75,7 @@ if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
             this.goldverseSyncReportFilterState();
         },
 
-        get isGoldverseReportFilterList() {
+        get isGoldverseReportFilterView() {
             return Boolean(
                 REPORT_FILTER_CONFIG[this.props.resModel] &&
                 (
@@ -125,7 +131,7 @@ if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
         },
 
         goldverseSyncReportFilterState() {
-            if (!this.isGoldverseReportFilterList || !this.env.searchModel) {
+            if (!this.isGoldverseReportFilterView || !this.env.searchModel) {
                 return;
             }
 
@@ -189,7 +195,7 @@ if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
         },
 
         goldverseApplyReportPeriod(period) {
-            if (!this.isGoldverseReportFilterList || !this.env.searchModel) {
+            if (!this.isGoldverseReportFilterView || !this.env.searchModel) {
                 return;
             }
 
@@ -226,7 +232,7 @@ if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
         },
 
         goldverseApplyCustomerType(customerType) {
-            if (!this.isGoldverseReportFilterList || !this.env.searchModel || !this.hasGoldverseCustomerFilters) {
+            if (!this.isGoldverseReportFilterView || !this.env.searchModel || !this.hasGoldverseCustomerFilters) {
                 return;
             }
 
@@ -239,7 +245,7 @@ if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
         },
 
         goldverseApplyCustomReportRange() {
-            if (!this.isGoldverseReportFilterList || !this.env.searchModel) {
+            if (!this.isGoldverseReportFilterView || !this.env.searchModel) {
                 return;
             }
 
@@ -269,10 +275,14 @@ if (!ListController.prototype.__goldverseReportDateFilterPatchVersion) {
         },
 
         async goldverseRefreshReportList() {
-            if (!this.isGoldverseReportFilterList || !this.model?.load) {
+            if (!this.isGoldverseReportFilterView || !this.model?.load) {
                 return;
             }
             await this.model.load();
         },
     });
 }
+
+applyGoldverseReportControllerPatch(ListController, 2);
+applyGoldverseReportControllerPatch(PivotController, 2);
+applyGoldverseReportControllerPatch(GraphController, 2);
