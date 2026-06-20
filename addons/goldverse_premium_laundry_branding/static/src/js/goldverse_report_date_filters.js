@@ -1,10 +1,13 @@
 /** @odoo-module **/
 
+import { serializeDate, serializeDateTime } from "@web/core/l10n/dates";
 import { _t } from "@web/core/l10n/translation";
 import { useBus } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
 import { SearchBar } from "@web/search/search_bar/search_bar";
 import { useState } from "@odoo/owl";
+
+const { DateTime } = luxon;
 
 const REPORT_ACTION_IDS = new Set([628, 645, 649, 651, 665, 684, 690, 691, 692, 693, 694, 731]);
 const REPORT_FILTER_CONFIG = {
@@ -51,7 +54,22 @@ function normalizeDateValue(value) {
 }
 
 function currentDateValue() {
-    return new Date().toISOString().slice(0, 10);
+    return DateTime.local().toISODate();
+}
+
+function buildReportDateBounds(fieldType, fromValue, toValue) {
+    if (fieldType === "datetime") {
+        const fromDateTime = DateTime.fromISO(fromValue).startOf("day");
+        const toDateTime = DateTime.fromISO(toValue).endOf("day");
+        return {
+            from: serializeDateTime(fromDateTime),
+            to: serializeDateTime(toDateTime),
+        };
+    }
+    return {
+        from: serializeDate(DateTime.fromISO(fromValue)),
+        to: serializeDate(DateTime.fromISO(toValue)),
+    };
 }
 
 function getSearchItemByName(searchModel, name) {
@@ -118,6 +136,11 @@ patch(SearchBar.prototype, {
         return Object.values(CUSTOMER_FILTER_NAMES).every((name) =>
             Boolean(getSearchItemByName(this.env.searchModel, name))
         );
+    },
+
+    get goldverseSearchDateFieldType() {
+        const dateField = this.goldverseSearchReportConfig?.dateField;
+        return dateField ? this.env.searchModel?.searchViewFields?.[dateField]?.type : null;
     },
 
     goldverseSearchButtonClass(period) {
@@ -259,13 +282,15 @@ patch(SearchBar.prototype, {
             return;
         }
 
+        const fieldType = this.goldverseSearchDateFieldType || "datetime";
+        const bounds = buildReportDateBounds(fieldType, fromValue, toValue);
         this.goldverseClearSearchDateFilters();
         this.env.searchModel.createNewFilters([
             {
                 description: `${CUSTOM_FILTER_PREFIX}${fromValue}|${toValue}`,
                 domain: [
-                    [this.goldverseSearchReportConfig.dateField, ">=", `${fromValue} 00:00:00`],
-                    [this.goldverseSearchReportConfig.dateField, "<=", `${toValue} 23:59:59`],
+                    [this.goldverseSearchReportConfig.dateField, ">=", bounds.from],
+                    [this.goldverseSearchReportConfig.dateField, "<=", bounds.to],
                 ],
                 invisible: "True",
             },
