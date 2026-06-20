@@ -3,6 +3,7 @@
 import { browser } from "@web/core/browser/browser";
 
 const GUARDED_KEYS = new Set(["webclient_menus", "webclient_menus_version"]);
+const STORAGE_GUARD_FLAG = "__goldverseMenuStorageGuardApplied";
 
 function isQuotaExceeded(error) {
     return Boolean(
@@ -15,20 +16,22 @@ function isQuotaExceeded(error) {
     );
 }
 
-const originalSetItem = browser.localStorage?.setItem?.bind(browser.localStorage);
+function guardMenuStorage(storage, originalSetItem) {
+    if (!storage || !originalSetItem || storage[STORAGE_GUARD_FLAG]) {
+        return;
+    }
 
-if (originalSetItem && !browser.localStorage.__goldverseMenuStorageGuardApplied) {
-    browser.localStorage.setItem = function (key, value) {
+    const guardedSetItem = function (key, value) {
         try {
-            return originalSetItem(key, value);
+            return originalSetItem.call(this, key, value);
         } catch (error) {
             if (!GUARDED_KEYS.has(key) || !isQuotaExceeded(error)) {
                 throw error;
             }
             try {
-                browser.localStorage.removeItem("webclient_menus");
-                browser.localStorage.removeItem("webclient_menus_version");
-                return originalSetItem(key, value);
+                this.removeItem("webclient_menus");
+                this.removeItem("webclient_menus_version");
+                return originalSetItem.call(this, key, value);
             } catch (retryError) {
                 if (!isQuotaExceeded(retryError)) {
                     throw retryError;
@@ -38,5 +41,26 @@ if (originalSetItem && !browser.localStorage.__goldverseMenuStorageGuardApplied)
             }
         }
     };
-    browser.localStorage.__goldverseMenuStorageGuardApplied = true;
+
+    try {
+        Object.defineProperty(storage, "setItem", {
+            value: guardedSetItem,
+            configurable: true,
+            writable: true,
+        });
+    } catch {
+        storage.setItem = guardedSetItem;
+    }
+    storage[STORAGE_GUARD_FLAG] = true;
+}
+
+const storagePrototype = globalThis.Storage?.prototype;
+if (storagePrototype?.setItem && !storagePrototype[STORAGE_GUARD_FLAG]) {
+    const originalPrototypeSetItem = storagePrototype.setItem;
+    guardMenuStorage(storagePrototype, originalPrototypeSetItem);
+}
+
+const originalStorageSetItem = browser.localStorage?.setItem;
+if (originalStorageSetItem) {
+    guardMenuStorage(browser.localStorage, originalStorageSetItem);
 }
