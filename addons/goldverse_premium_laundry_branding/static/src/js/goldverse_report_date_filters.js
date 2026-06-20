@@ -67,6 +67,7 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
         setup() {
             super.setup(...arguments);
             this.goldverseReportFilterState = useState({
+                toolbarEnabled: false,
                 period: "",
                 customerType: "",
                 customFrom: "",
@@ -77,6 +78,13 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
         },
 
         get isGoldverseReportFilterView() {
+            return Boolean(
+                REPORT_FILTER_CONFIG[this.props.resModel] &&
+                this.goldverseReportFilterState.toolbarEnabled
+            );
+        },
+
+        goldverseComputeToolbarEnabled() {
             const className =
                 this.archInfo?.className ||
                 this.props.archInfo?.className ||
@@ -154,7 +162,9 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
         },
 
         goldverseSyncReportFilterState() {
-            if (!this.isGoldverseReportFilterView || !this.env.searchModel) {
+            this.goldverseReportFilterState.toolbarEnabled = this.goldverseComputeToolbarEnabled();
+
+            if (!this.goldverseReportFilterState.toolbarEnabled || !this.env.searchModel) {
                 return;
             }
 
