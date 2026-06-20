@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_goldverse_laundry_dashboard_pdf">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page" style="font-size:11px; color:#102a43;">
+                    <div style="border-bottom:3px solid #7c4dff; padding-bottom:10px; margin-bottom:14px;">
+                        <h2 style="color:#4a148c; font-size:20px; font-weight:800; margin:0;">Laundry Dashboard Export</h2>
+                        <div style="color:#6b778c;">GoldVerse Premium Laundry</div>
+                    </div>
+                    <table class="table table-sm" style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f3eaff;">
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Order No.</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Barcode</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Customer</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Mobile</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Branch</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Delivery Date &amp; Time</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px;">Actual Delivery</th>
+                                <th style="border:1px solid #d8c8f5; padding:6px; text-align:right;">Amount Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="doc">
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.name"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.barcode"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.partner_id"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.mobile"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.branch_id"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.expected_delivery_datetime"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px;"><span t-field="doc.goldverse_actual_delivery_datetime"/></td>
+                                <td style="border:1px solid #e6dafa; padding:5px; text-align:right;"><span t-field="doc.amount_total"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f3eaff; font-weight:700;">
+                                <td colspan="7" style="border:1px solid #d8c8f5; padding:6px;">Grand Total</td>
+                                <td style="border:1px solid #d8c8f5; padding:6px; text-align:right;">
+                                    <span t-out="sum(d.amount_total for d in docs)" t-options="{'widget': 'monetary', 'display_currency': docs[:1].currency_id}"/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_goldverse_laundry_dashboard_pdf" model="ir.actions.report">
+        <field name="name">Export PDF</field>
+        <field name="model">aimaze.laundry.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">goldverse_premium_laundry_branding.report_goldverse_laundry_dashboard_pdf</field>
+        <field name="report_file">goldverse_premium_laundry_branding.report_goldverse_laundry_dashboard_pdf</field>
+        <field name="binding_model_id" ref="aimaze_laundry_management.model_aimaze_laundry_order"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
