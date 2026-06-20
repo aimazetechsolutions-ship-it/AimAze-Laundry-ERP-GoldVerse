@@ -96,11 +96,19 @@ function removeCustomFilterItems(searchModel) {
     if (!customItems.length) {
         return;
     }
-    const customIds = new Set(customItems.map((item) => item.id));
-    searchModel.query = (searchModel.query || []).filter((entry) => !customIds.has(entry.searchItemId));
-    for (const item of customItems) {
-        delete searchModel.searchItems[item.id];
+    const customGroupIds = new Set(customItems.map((item) => item.groupId));
+    searchModel.blockNotification = true;
+    try {
+        for (const groupId of customGroupIds) {
+            searchModel.deactivateGroup(groupId);
+        }
+        for (const item of customItems) {
+            delete searchModel.searchItems[item.id];
+        }
+    } finally {
+        searchModel.blockNotification = false;
     }
+    searchModel._notify();
 }
 
 patch(SearchBar.prototype, {
