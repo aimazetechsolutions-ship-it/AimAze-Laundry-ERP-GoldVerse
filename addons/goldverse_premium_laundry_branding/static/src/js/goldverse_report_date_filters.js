@@ -88,6 +88,21 @@ function getActiveQueryEntries(searchModel, item) {
     return (searchModel?.query || []).filter((entry) => entry.searchItemId === item.id);
 }
 
+function removeCustomFilterItems(searchModel) {
+    if (!searchModel) {
+        return;
+    }
+    const customItems = getCustomFilterItems(searchModel);
+    if (!customItems.length) {
+        return;
+    }
+    const customIds = new Set(customItems.map((item) => item.id));
+    searchModel.query = (searchModel.query || []).filter((entry) => !customIds.has(entry.searchItemId));
+    for (const item of customItems) {
+        delete searchModel.searchItems[item.id];
+    }
+}
+
 patch(SearchBar.prototype, {
     setup() {
         super.setup(...arguments);
@@ -209,11 +224,7 @@ patch(SearchBar.prototype, {
             }
         }
 
-        for (const item of getCustomFilterItems(this.env.searchModel)) {
-            if (getActiveQueryEntries(this.env.searchModel, item).length) {
-                this.env.searchModel.deactivateGroup(item.groupId);
-            }
-        }
+        removeCustomFilterItems(this.env.searchModel);
     },
 
     goldverseApplySearchPeriod(period) {
