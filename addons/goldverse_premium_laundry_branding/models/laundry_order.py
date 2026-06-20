@@ -163,6 +163,36 @@ class LaundryOrder(models.Model):
         store=True,
         currency_field="currency_id",
     )
+    goldverse_report_base_price = fields.Monetary(
+        string="Base Price",
+        compute="_compute_goldverse_report_amount_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_report_discount = fields.Monetary(
+        string="Discount",
+        compute="_compute_goldverse_report_amount_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_report_net_price = fields.Monetary(
+        string="Net Price",
+        compute="_compute_goldverse_report_amount_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_report_priority_charges = fields.Monetary(
+        string="Priority Charges",
+        compute="_compute_goldverse_report_amount_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
+    goldverse_report_total_excl_tax = fields.Monetary(
+        string="Total Excl. Tax",
+        compute="_compute_goldverse_report_amount_breakdown",
+        store=True,
+        currency_field="currency_id",
+    )
 
     @api.depends("partner_id")
     def _compute_goldverse_mobile_partner_id(self):
@@ -233,6 +263,31 @@ class LaundryOrder(models.Model):
                     or "IBFT" in (payment.journal_id.name or "").upper()
                 ).mapped("amount")
             )
+
+    @api.depends(
+        "line_ids.quantity",
+        "line_ids.goldverse_base_price",
+        "line_ids.goldverse_discount_amount",
+        "line_ids.goldverse_net_price",
+        "line_ids.goldverse_priority_charge",
+        "line_ids.price_subtotal",
+        "delivery_charge",
+        "amount_total",
+    )
+    def _compute_goldverse_report_amount_breakdown(self):
+        for order in self:
+            lines = order.line_ids
+            order.goldverse_report_base_price = sum(
+                (line.goldverse_base_price or 0.0) * (line.quantity or 0.0)
+                for line in lines
+            )
+            order.goldverse_report_discount = sum(lines.mapped("goldverse_discount_amount"))
+            order.goldverse_report_net_price = sum(
+                (line.goldverse_net_price or 0.0) * (line.quantity or 0.0)
+                for line in lines
+            )
+            order.goldverse_report_priority_charges = sum(lines.mapped("goldverse_priority_charge"))
+            order.goldverse_report_total_excl_tax = sum(lines.mapped("price_subtotal"))
 
     @api.depends(
         "state",

@@ -9,23 +9,27 @@
                   create="0"
                   delete="0"
                   default_order="order_date desc, id desc">
-                <field name="branch_id" string="Branch"/>
-                <field name="customer_type" string="Customer Type"/>
-                <field name="mobile" string="Mobile"/>
-                <field name="partner_id" string="Customer"/>
-                <field name="order_date" string="Order Date"/>
-                <field name="name" string="Order No."/>
+                <field name="branch_id" string="Branch" optional="show"/>
+                <field name="customer_type" string="Customer Type" optional="show"/>
+                <field name="mobile" string="Mobile" optional="show"/>
+                <field name="partner_id" string="Customer" optional="show"/>
+                <field name="order_date" string="Order Date" optional="show"/>
+                <field name="name" string="Order No." optional="show"/>
                 <field name="invoice_id" string="Invoice No." optional="show"/>
-                <field name="total_qty" string="Total Qty"/>
-                <field name="amount_total" string="Amount Total"/>
-                <field name="discount_amount" string="Discount"/>
-                <field name="net_balance_amount" string="Net Balance Amount"/>
-                <field name="goldverse_report_payment_date" string="Payment Date"/>
-                <field name="goldverse_report_cash_received" string="Cash Received"/>
-                <field name="goldverse_report_ibft_received" string="IBFT Received"/>
-                <field name="balance_amount" string="Balance Due"/>
-                <field name="payment_status" string="Payment Status"/>
-                <field name="goldverse_flow_status" string="State"/>
+                <field name="total_qty" string="Total Qty" optional="show"/>
+                <field name="goldverse_report_base_price" string="Base Price" optional="show"/>
+                <field name="goldverse_report_discount" string="Discount" optional="show"/>
+                <field name="goldverse_report_net_price" string="Net Price" optional="show"/>
+                <field name="goldverse_report_priority_charges" string="Priority Charges" optional="show"/>
+                <field name="goldverse_report_total_excl_tax" string="Total Excl. Tax" optional="show"/>
+                <field name="delivery_charge" string="Delivery Charges" optional="show"/>
+                <field name="amount_total" string="Total Amount" optional="show"/>
+                <field name="goldverse_report_payment_date" string="Payment Date" optional="show"/>
+                <field name="goldverse_report_cash_received" string="Cash Received" optional="show"/>
+                <field name="goldverse_report_ibft_received" string="IBFT Received" optional="show"/>
+                <field name="balance_amount" string="Balance Due" optional="show"/>
+                <field name="payment_status" string="Payment Status" optional="show"/>
+                <field name="goldverse_flow_status" string="State" optional="show"/>
             </list>
         </field>
     </record>
