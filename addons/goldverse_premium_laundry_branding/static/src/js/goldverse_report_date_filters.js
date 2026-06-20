@@ -9,289 +9,256 @@ import { useState } from "@odoo/owl";
 
 const { DateTime } = luxon;
 
-const REPORT_ACTION_IDS = new Set([628, 645, 649, 651, 665, 684, 690, 691, 692, 693, 694, 731]);
 const REPORT_FILTER_CONFIG = {
-    "aimaze.laundry.order": {
-        dateField: "order_date",
-    },
-    "aimaze.laundry.delivery": {
-        dateField: "pickup_datetime",
-    },
-    "aimaze.laundry.inventory.usage": {
-        dateField: "date",
-    },
-    "aimaze.laundry.staff.task": {
-        dateField: "start_time",
-    },
-    "aimaze.laundry.branch.profitability": {
-        dateField: "date_from",
-    },
-    "account.payment": {
-        dateField: "date",
-    },
-    "account.move.line": {
-        dateField: "date",
-    },
-    "aimaze.customer.wallet.transaction": {
-        dateField: "date",
-    },
+    "aimaze.laundry.order": { dateField: "order_date" },
+    "aimaze.laundry.delivery": { dateField: "pickup_datetime" },
+    "aimaze.laundry.inventory.usage": { dateField: "date" },
+    "aimaze.laundry.staff.task": { dateField: "start_time" },
+    "aimaze.laundry.branch.profitability": { dateField: "date_from" },
+    "account.payment": { dateField: "date" },
+    "account.move.line": { dateField: "date" },
+    "aimaze.customer.wallet.transaction": { dateField: "date" },
 };
+
 const PERIOD_FILTER_NAMES = {
     today: "today",
     mtd: "gv_mtd",
     ytd: "gv_ytd",
     itd: "gv_itd",
+    custom: "gv_custom_range",
 };
+const ALL_PERIOD_NAMES = Object.values(PERIOD_FILTER_NAMES);
+
 const CUSTOMER_FILTER_NAMES = {
     all: "gv_all_customers",
     b2c: "gv_b2c",
     b2b: "gv_b2b",
 };
-const CUSTOM_FILTER_PREFIX = "__goldverse_report_custom_date__:";
 
-function normalizeDateValue(value) {
-    return typeof value === "string" ? value.slice(0, 10) : "";
-}
-
-function currentDateValue() {
-    return DateTime.local().toISODate();
-}
-
-function buildReportDateBounds(fieldType, fromValue, toValue) {
-    if (fieldType === "datetime") {
-        const fromDateTime = DateTime.fromISO(fromValue).startOf("day");
-        const toDateTime = DateTime.fromISO(toValue).endOf("day");
-        return {
-            from: serializeDateTime(fromDateTime),
-            to: serializeDateTime(toDateTime),
-        };
-    }
-    return {
-        from: serializeDate(DateTime.fromISO(fromValue)),
-        to: serializeDate(DateTime.fromISO(toValue)),
-    };
-}
-
-function getSearchItemByName(searchModel, name) {
-    return searchModel?.getSearchItems((item) => item.name === name)?.find((item) => item);
-}
-
-function getCustomFilterItems(searchModel) {
-    return (
-        searchModel?.getSearchItems((item) =>
-            String(item.description || "").startsWith(CUSTOM_FILTER_PREFIX)
-        ) || []
-    );
-}
-
-function getActiveQueryEntries(searchModel, item) {
-    return (searchModel?.query || []).filter((entry) => entry.searchItemId === item.id);
-}
-
-function removeCustomFilterItems(searchModel) {
+function findSearchItemByName(searchModel, name) {
     if (!searchModel) {
+        return null;
+    }
+    return Object.values(searchModel.searchItems || {}).find((item) => item.name === name) || null;
+}
+
+function isItemActive(searchModel, item) {
+    if (!searchModel || !item) {
+        return false;
+    }
+    return (searchModel.query || []).some((entry) => entry.searchItemId === item.id);
+}
+
+function deactivateFilter(searchModel, item, { silent = false } = {}) {
+    if (!searchModel || !item) {
+        return false;
+    }
+    const index = (searchModel.query || []).findIndex((entry) => entry.searchItemId === item.id);
+    if (index === -1) {
+        return false;
+    }
+    if (silent) {
+        searchModel.query.splice(index, 1);
+        return true;
+    }
+    searchModel.toggleSearchItem(item.id);
+    return true;
+}
+
+function activateFilter(searchModel, item) {
+    if (!searchModel || !item) {
         return;
     }
-    const customItems = getCustomFilterItems(searchModel);
-    if (!customItems.length) {
-        return;
+    if (!isItemActive(searchModel, item)) {
+        searchModel.toggleSearchItem(item.id);
     }
-    const customGroupIds = new Set(customItems.map((item) => item.groupId));
-    searchModel.blockNotification = true;
-    try {
-        for (const groupId of customGroupIds) {
-            searchModel.deactivateGroup(groupId);
-        }
-        for (const item of customItems) {
-            delete searchModel.searchItems[item.id];
-        }
-    } finally {
-        searchModel.blockNotification = false;
+}
+
+function buildPeriodBounds(period) {
+    const today = DateTime.local().startOf("day");
+    if (period === "today") {
+        return { from: today, to: today };
     }
-    searchModel._notify();
+    if (period === "mtd") {
+        return { from: today.startOf("month"), to: today };
+    }
+    if (period === "ytd") {
+        return { from: today.startOf("year"), to: today };
+    }
+    return null;
+}
+
+function buildDomainForRange(dateField, fieldType, fromDateTime, toDateTime) {
+    if (!fromDateTime || !toDateTime) {
+        return [];
+    }
+    if (fieldType === "datetime") {
+        return [
+            [dateField, ">=", serializeDateTime(fromDateTime.startOf("day"))],
+            [dateField, "<=", serializeDateTime(toDateTime.endOf("day"))],
+        ];
+    }
+    return [
+        [dateField, ">=", serializeDate(fromDateTime.startOf("day"))],
+        [dateField, "<=", serializeDate(toDateTime.startOf("day"))],
+    ];
 }
 
 patch(SearchBar.prototype, {
     setup() {
         super.setup(...arguments);
-        this.goldverseSearchToolbarState = useState({
-            period: "",
-            customerType: "",
-            customFrom: "",
-            customTo: "",
+        this.goldverseToolbarState = useState({
+            period: "today",
+            customerType: "all",
+            customOpen: false,
+            customFrom: DateTime.local().toISODate(),
+            customTo: DateTime.local().toISODate(),
         });
-        useBus(this.env.searchModel, "update", () => this.goldverseSyncSearchToolbarState());
-        this.goldverseSyncSearchToolbarState();
+        useBus(this.env.searchModel, "update", () => this._goldverseSyncFromSearchModel());
+        this._goldverseSyncFromSearchModel();
+        this._goldverseBoundOutsideClick = (ev) => this._goldverseOnOutsideClick(ev);
+        document.addEventListener("mousedown", this._goldverseBoundOutsideClick, true);
     },
 
-    get goldverseSearchReportConfig() {
+    get goldverseReportConfig() {
         return REPORT_FILTER_CONFIG[this.env.searchModel?.resModel] || null;
     },
 
-    get isGoldverseSearchToolbar() {
-        if (!this.goldverseSearchReportConfig || !this.env.searchModel) {
+    get goldverseDateFieldType() {
+        const config = this.goldverseReportConfig;
+        if (!config) {
+            return "datetime";
+        }
+        const fieldDef = this.env.searchModel?.searchViewFields?.[config.dateField];
+        return fieldDef?.type || "datetime";
+    },
+
+    get isGoldverseReportToolbar() {
+        if (!this.goldverseReportConfig || !this.env.searchModel) {
             return false;
         }
-        const rawActionId =
-            this.env?.config?.actionId ||
-            this.env?.config?.currentEmbeddedActionId;
-        const actionId = Number(rawActionId);
-        const hasPeriodMarkers = ["today", "gv_mtd", "gv_ytd", "gv_itd", "gv_custom"].some(
-            (name) => Boolean(getSearchItemByName(this.env.searchModel, name))
-        );
-        const hasCustomerMarkers = ["gv_all_customers", "gv_b2c", "gv_b2b"].some(
-            (name) => Boolean(getSearchItemByName(this.env.searchModel, name))
-        );
-        return REPORT_ACTION_IDS.has(actionId) || hasPeriodMarkers || hasCustomerMarkers;
+        return ALL_PERIOD_NAMES.every((name) => Boolean(findSearchItemByName(this.env.searchModel, name)));
     },
 
-    get goldverseSearchActivePeriod() {
-        return this.goldverseSearchToolbarState.period || "today";
-    },
-
-    get hasGoldverseSearchPeriodFilters() {
-        return Object.values(PERIOD_FILTER_NAMES).every((name) =>
-            Boolean(getSearchItemByName(this.env.searchModel, name))
-        );
-    },
-
-    get hasGoldverseSearchCustomerFilters() {
+    get hasGoldverseCustomerFilters() {
         return Object.values(CUSTOMER_FILTER_NAMES).every((name) =>
-            Boolean(getSearchItemByName(this.env.searchModel, name))
+            Boolean(findSearchItemByName(this.env.searchModel, name))
         );
     },
 
-    get goldverseSearchDateFieldType() {
-        const dateField = this.goldverseSearchReportConfig?.dateField;
-        return dateField ? this.env.searchModel?.searchViewFields?.[dateField]?.type : null;
+    goldversePeriodButtonClass(period) {
+        const active = this.goldverseToolbarState.period === period;
+        return `btn ${active ? "btn-primary" : "btn-secondary"}`;
     },
 
-    goldverseSearchButtonClass(period) {
-        return `btn ${this.goldverseSearchActivePeriod === period ? "btn-primary" : "btn-secondary"}`;
+    goldverseCustomerButtonClass(customerType) {
+        const active = (this.goldverseToolbarState.customerType || "all") === customerType;
+        return `btn ${active ? "btn-primary" : "btn-secondary"}`;
     },
 
-    goldverseSearchCustomerButtonClass(customerType) {
-        const activeType = this.goldverseSearchToolbarState.customerType || "all";
-        return `btn ${activeType === customerType ? "btn-primary" : "btn-secondary"}`;
-    },
-
-    goldverseSyncSearchToolbarState() {
-        if (!this.isGoldverseSearchToolbar || !this.env.searchModel) {
+    _goldverseSyncFromSearchModel() {
+        if (!this.isGoldverseReportToolbar) {
             return;
         }
-
+        const searchModel = this.env.searchModel;
         let activePeriod = "today";
-        for (const [period, searchName] of Object.entries(PERIOD_FILTER_NAMES)) {
-            const item = getSearchItemByName(this.env.searchModel, searchName);
-            if (item && getActiveQueryEntries(this.env.searchModel, item).length) {
+        for (const [period, name] of Object.entries(PERIOD_FILTER_NAMES)) {
+            const item = findSearchItemByName(searchModel, name);
+            if (isItemActive(searchModel, item)) {
                 activePeriod = period;
                 break;
             }
         }
-
-        const customItem = activePeriod === "today" && getCustomFilterItems(this.env.searchModel).find(
-            (item) => getActiveQueryEntries(this.env.searchModel, item).length
-        );
-        if (customItem) {
-            activePeriod = "custom";
-            const marker = String(customItem.description || "").replace(CUSTOM_FILTER_PREFIX, "");
-            const [fromValue, toValue] = marker.split("|");
-            this.goldverseSearchToolbarState.customFrom = normalizeDateValue(fromValue);
-            this.goldverseSearchToolbarState.customTo = normalizeDateValue(toValue);
+        this.goldverseToolbarState.period = activePeriod;
+        if (activePeriod !== "custom") {
+            this.goldverseToolbarState.customOpen = false;
         }
 
-        this.goldverseSearchToolbarState.period = activePeriod;
-
-        for (const [customerType, searchName] of Object.entries(CUSTOMER_FILTER_NAMES)) {
-            const item = getSearchItemByName(this.env.searchModel, searchName);
-            if (item && getActiveQueryEntries(this.env.searchModel, item).length) {
-                this.goldverseSearchToolbarState.customerType = customerType;
-                return;
+        let activeCustomer = "all";
+        for (const [customerType, name] of Object.entries(CUSTOMER_FILTER_NAMES)) {
+            const item = findSearchItemByName(searchModel, name);
+            if (isItemActive(searchModel, item)) {
+                activeCustomer = customerType;
+                break;
             }
         }
-
-        this.goldverseSearchToolbarState.customerType = "all";
+        this.goldverseToolbarState.customerType = activeCustomer;
     },
 
-    goldverseClearSearchDateFilters() {
-        if (!this.env.searchModel) {
-            return;
+    _goldverseDeactivateAllPeriods({ silent = false } = {}) {
+        const searchModel = this.env.searchModel;
+        for (const name of ALL_PERIOD_NAMES) {
+            deactivateFilter(searchModel, findSearchItemByName(searchModel, name), { silent });
         }
-
-        for (const searchName of Object.values(PERIOD_FILTER_NAMES)) {
-            const item = getSearchItemByName(this.env.searchModel, searchName);
-            if (item && getActiveQueryEntries(this.env.searchModel, item).length) {
-                this.env.searchModel.toggleSearchItem(item.id);
-            }
-        }
-
-        const customDateItem = getSearchItemByName(this.env.searchModel, "gv_custom");
-        if (customDateItem) {
-            for (const entry of getActiveQueryEntries(this.env.searchModel, customDateItem)) {
-                this.env.searchModel.toggleDateFilter(customDateItem.id, entry.generatorId);
-            }
-        }
-
-        removeCustomFilterItems(this.env.searchModel);
     },
 
-    goldverseApplySearchPeriod(period) {
-        if (!this.isGoldverseSearchToolbar || !this.env.searchModel) {
+    _goldverseDeactivateAllCustomers({ silent = false } = {}) {
+        const searchModel = this.env.searchModel;
+        for (const name of Object.values(CUSTOMER_FILTER_NAMES)) {
+            deactivateFilter(searchModel, findSearchItemByName(searchModel, name), { silent });
+        }
+    },
+
+    _goldverseForceNotify(searchModel) {
+        if (typeof searchModel._notify === "function") {
+            const result = searchModel._notify();
+            if (result && typeof result.then === "function") {
+                result.then(() => {}, () => {});
+            }
             return;
         }
+        if (typeof searchModel._reset === "function") {
+            searchModel._reset();
+        }
+        searchModel.search();
+    },
 
+    goldverseSelectPeriod(period) {
+        if (!this.isGoldverseReportToolbar) {
+            return;
+        }
+        const searchModel = this.env.searchModel;
         if (period === "custom") {
-            this.goldverseSearchToolbarState.period = "custom";
-            if (!this.goldverseSearchToolbarState.customFrom) {
-                this.goldverseSearchToolbarState.customFrom = currentDateValue();
-            }
-            if (!this.goldverseSearchToolbarState.customTo) {
-                this.goldverseSearchToolbarState.customTo = this.goldverseSearchToolbarState.customFrom;
-            }
+            this.goldverseToolbarState.customOpen = !this.goldverseToolbarState.customOpen;
             return;
         }
-
-        this.goldverseClearSearchDateFilters();
-        const item = getSearchItemByName(this.env.searchModel, PERIOD_FILTER_NAMES[period]);
-        if (item) {
-            this.env.searchModel.toggleSearchItem(item.id);
-        }
-        this.goldverseSearchToolbarState.period = period;
-    },
-
-    goldverseClearSearchCustomerFilters() {
-        if (!this.env.searchModel) {
+        const targetItem = findSearchItemByName(searchModel, PERIOD_FILTER_NAMES[period]);
+        if (!targetItem) {
             return;
         }
-
-        for (const searchName of Object.values(CUSTOMER_FILTER_NAMES)) {
-            const item = getSearchItemByName(this.env.searchModel, searchName);
-            if (item && getActiveQueryEntries(this.env.searchModel, item).length) {
-                this.env.searchModel.toggleSearchItem(item.id);
+        // Reset the custom-range item's domain so a re-pick later starts clean.
+        const customItem = findSearchItemByName(searchModel, PERIOD_FILTER_NAMES.custom);
+        if (customItem) {
+            customItem.domain = "[]";
+        }
+        // Deactivate every other period in the query silently, leave target untouched.
+        for (const name of ALL_PERIOD_NAMES) {
+            if (name === PERIOD_FILTER_NAMES[period]) {
+                continue;
+            }
+            const item = findSearchItemByName(searchModel, name);
+            if (item) {
+                const idx = (searchModel.query || []).findIndex((entry) => entry.searchItemId === item.id);
+                if (idx >= 0) {
+                    searchModel.query.splice(idx, 1);
+                }
             }
         }
+        // Activate target if needed.
+        if (!isItemActive(searchModel, targetItem)) {
+            searchModel.query.push({ searchItemId: targetItem.id });
+        }
+        this._goldverseForceNotify(searchModel);
+        this.goldverseToolbarState.period = period;
+        this.goldverseToolbarState.customOpen = false;
     },
 
-    goldverseApplySearchCustomerType(customerType) {
-        if (!this.isGoldverseSearchToolbar || !this.env.searchModel || !this.hasGoldverseSearchCustomerFilters) {
+    goldverseApplyCustomRange() {
+        if (!this.isGoldverseReportToolbar || !this.goldverseReportConfig) {
             return;
         }
-
-        this.goldverseClearSearchCustomerFilters();
-        const item = getSearchItemByName(this.env.searchModel, CUSTOMER_FILTER_NAMES[customerType]);
-        if (item) {
-            this.env.searchModel.toggleSearchItem(item.id);
-        }
-        this.goldverseSearchToolbarState.customerType = customerType;
-    },
-
-    goldverseApplySearchCustomRange() {
-        if (!this.isGoldverseSearchToolbar || !this.env.searchModel || !this.goldverseSearchReportConfig) {
-            return;
-        }
-
-        const fromValue = normalizeDateValue(this.goldverseSearchToolbarState.customFrom);
-        const toValue = normalizeDateValue(this.goldverseSearchToolbarState.customTo);
+        const fromValue = this.goldverseToolbarState.customFrom;
+        const toValue = this.goldverseToolbarState.customTo;
         if (!fromValue || !toValue) {
             window.alert(_t("Please select both From and To dates."));
             return;
@@ -300,24 +267,136 @@ patch(SearchBar.prototype, {
             window.alert(_t("The From date must be earlier than or equal to the To date."));
             return;
         }
+        const fromDateTime = DateTime.fromISO(fromValue);
+        const toDateTime = DateTime.fromISO(toValue);
+        if (!fromDateTime.isValid || !toDateTime.isValid) {
+            window.alert(_t("Invalid date selection."));
+            return;
+        }
 
-        const fieldType = this.goldverseSearchDateFieldType || "datetime";
-        const bounds = buildReportDateBounds(fieldType, fromValue, toValue);
-        this.goldverseClearSearchDateFilters();
-        this.env.searchModel.createNewFilters([
-            {
-                description: `${CUSTOM_FILTER_PREFIX}${fromValue}|${toValue}`,
-                domain: [
-                    [this.goldverseSearchReportConfig.dateField, ">=", bounds.from],
-                    [this.goldverseSearchReportConfig.dateField, "<=", bounds.to],
-                ],
-                invisible: "True",
-            },
-        ]);
-        this.goldverseSearchToolbarState.period = "custom";
+        const searchModel = this.env.searchModel;
+        const customItem = findSearchItemByName(searchModel, PERIOD_FILTER_NAMES.custom);
+        if (!customItem) {
+            return;
+        }
+
+        const newDomain = buildDomainForRange(
+            this.goldverseReportConfig.dateField,
+            this.goldverseDateFieldType,
+            fromDateTime,
+            toDateTime
+        );
+
+        // Drop every other period filter silently from the query.
+        for (const name of ALL_PERIOD_NAMES) {
+            if (name === PERIOD_FILTER_NAMES.custom) {
+                continue;
+            }
+            const item = findSearchItemByName(searchModel, name);
+            if (item) {
+                const idx = (searchModel.query || []).findIndex((entry) => entry.searchItemId === item.id);
+                if (idx >= 0) {
+                    searchModel.query.splice(idx, 1);
+                }
+            }
+        }
+        // Mutate the custom-range item's domain in place.
+        customItem.domain = newDomain;
+        // Ensure the custom item is part of the active query.
+        if (!isItemActive(searchModel, customItem)) {
+            searchModel.query.push({ searchItemId: customItem.id });
+        }
+        this._goldverseForceNotify(searchModel);
+        this.goldverseToolbarState.period = "custom";
+        this.goldverseToolbarState.customOpen = false;
     },
 
-    goldverseRefreshSearchToolbar() {
-        window.location.reload();
+    goldverseClearCustomRange() {
+        const searchModel = this.env.searchModel;
+        if (!this.isGoldverseReportToolbar) {
+            return;
+        }
+        const customItem = findSearchItemByName(searchModel, PERIOD_FILTER_NAMES.custom);
+        if (customItem) {
+            customItem.domain = "[]";
+        }
+        // Drop every period entry silently from the query, then activate Today.
+        for (const name of ALL_PERIOD_NAMES) {
+            const item = findSearchItemByName(searchModel, name);
+            if (item) {
+                const idx = (searchModel.query || []).findIndex((entry) => entry.searchItemId === item.id);
+                if (idx >= 0) {
+                    searchModel.query.splice(idx, 1);
+                }
+            }
+        }
+        const todayItem = findSearchItemByName(searchModel, PERIOD_FILTER_NAMES.today);
+        if (todayItem) {
+            searchModel.query.push({ searchItemId: todayItem.id });
+        }
+        this._goldverseForceNotify(searchModel);
+        this.goldverseToolbarState.period = "today";
+        this.goldverseToolbarState.customOpen = false;
+        this.goldverseToolbarState.customFrom = DateTime.local().toISODate();
+        this.goldverseToolbarState.customTo = DateTime.local().toISODate();
+    },
+
+    goldverseSelectCustomer(customerType) {
+        if (!this.hasGoldverseCustomerFilters) {
+            return;
+        }
+        const searchModel = this.env.searchModel;
+        const targetItem = findSearchItemByName(searchModel, CUSTOMER_FILTER_NAMES[customerType]);
+        if (!targetItem) {
+            return;
+        }
+        for (const name of Object.values(CUSTOMER_FILTER_NAMES)) {
+            if (name === CUSTOMER_FILTER_NAMES[customerType]) {
+                continue;
+            }
+            const item = findSearchItemByName(searchModel, name);
+            if (item) {
+                const idx = (searchModel.query || []).findIndex((entry) => entry.searchItemId === item.id);
+                if (idx >= 0) {
+                    searchModel.query.splice(idx, 1);
+                }
+            }
+        }
+        if (!isItemActive(searchModel, targetItem)) {
+            searchModel.query.push({ searchItemId: targetItem.id });
+        }
+        this._goldverseForceNotify(searchModel);
+        this.goldverseToolbarState.customerType = customerType;
+    },
+
+    goldverseToggleCustomPanel() {
+        this.goldverseToolbarState.customOpen = !this.goldverseToolbarState.customOpen;
+    },
+
+    goldverseRefreshToolbar() {
+        if (typeof this.env.searchModel?.search === "function") {
+            this.env.searchModel.search();
+        }
+    },
+
+    _goldverseOnOutsideClick(ev) {
+        if (!this.goldverseToolbarState.customOpen) {
+            return;
+        }
+        const root = ev.target.closest(".goldverse-report-custom-pop");
+        const trigger = ev.target.closest(".goldverse-report-custom-trigger");
+        if (root || trigger) {
+            return;
+        }
+        this.goldverseToolbarState.customOpen = false;
+    },
+
+    willUnmount() {
+        if (this._goldverseBoundOutsideClick) {
+            document.removeEventListener("mousedown", this._goldverseBoundOutsideClick, true);
+        }
+        if (typeof super.willUnmount === "function") {
+            super.willUnmount(...arguments);
+        }
     },
 });

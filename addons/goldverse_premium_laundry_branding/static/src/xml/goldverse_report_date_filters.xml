@@ -3,66 +3,87 @@
     <t t-inherit="web.SearchBar" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('o_cp_searchview')]" position="replace">
             <t t-if="visibilityState.showSearchBar">
-                <t t-if="this.isGoldverseSearchToolbar">
+                <t t-if="this.isGoldverseReportToolbar">
                     <div class="goldverse-report-filter-shell goldverse-report-filter-shell--toolbar">
-                        <div t-if="this.hasGoldverseSearchPeriodFilters" class="goldverse-report-filter-group">
+                        <div class="goldverse-report-filter-group">
                             <button type="button"
-                                    t-att-class="this.goldverseSearchButtonClass('today')"
-                                    t-on-click="() => this.goldverseApplySearchPeriod('today')">
+                                    t-att-class="this.goldversePeriodButtonClass('today')"
+                                    t-on-click="() => this.goldverseSelectPeriod('today')">
                                 Today
                             </button>
                             <button type="button"
-                                    t-att-class="this.goldverseSearchButtonClass('mtd')"
-                                    t-on-click="() => this.goldverseApplySearchPeriod('mtd')">
+                                    t-att-class="this.goldversePeriodButtonClass('mtd')"
+                                    t-on-click="() => this.goldverseSelectPeriod('mtd')">
                                 MTD
                             </button>
                             <button type="button"
-                                    t-att-class="this.goldverseSearchButtonClass('ytd')"
-                                    t-on-click="() => this.goldverseApplySearchPeriod('ytd')">
+                                    t-att-class="this.goldversePeriodButtonClass('ytd')"
+                                    t-on-click="() => this.goldverseSelectPeriod('ytd')">
                                 YTD
                             </button>
                             <button type="button"
-                                    t-att-class="this.goldverseSearchButtonClass('itd')"
-                                    t-on-click="() => this.goldverseApplySearchPeriod('itd')">
+                                    t-att-class="this.goldversePeriodButtonClass('itd')"
+                                    t-on-click="() => this.goldverseSelectPeriod('itd')">
                                 ITD
                             </button>
-                            <button type="button"
-                                    t-att-class="this.goldverseSearchButtonClass('custom')"
-                                    t-on-click="() => this.goldverseApplySearchPeriod('custom')">
-                                Custom
-                            </button>
+                            <div class="goldverse-report-custom-wrap">
+                                <button type="button"
+                                        t-att-class="this.goldversePeriodButtonClass('custom') + ' goldverse-report-custom-trigger'"
+                                        t-on-click="() => this.goldverseSelectPeriod('custom')">
+                                    Custom
+                                    <i class="fa fa-caret-down ms-1"/>
+                                </button>
+                                <div t-if="this.goldverseToolbarState.customOpen"
+                                     class="goldverse-report-custom-pop">
+                                    <div class="goldverse-report-custom-pop-row">
+                                        <label class="goldverse-report-custom-pop-label">From</label>
+                                        <input type="date"
+                                               t-model="goldverseToolbarState.customFrom"/>
+                                    </div>
+                                    <div class="goldverse-report-custom-pop-row">
+                                        <label class="goldverse-report-custom-pop-label">To</label>
+                                        <input type="date"
+                                               t-model="goldverseToolbarState.customTo"/>
+                                    </div>
+                                    <div class="goldverse-report-custom-pop-actions">
+                                        <button type="button"
+                                                class="btn btn-link"
+                                                t-on-click="goldverseClearCustomRange">
+                                            Clear
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-primary"
+                                                t-on-click="goldverseApplyCustomRange">
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div t-if="this.hasGoldverseSearchCustomerFilters" class="goldverse-report-filter-group">
+                        <div t-if="this.hasGoldverseCustomerFilters"
+                             class="goldverse-report-filter-group">
                             <button type="button"
-                                    t-att-class="this.goldverseSearchCustomerButtonClass('all')"
-                                    t-on-click="() => this.goldverseApplySearchCustomerType('all')">
+                                    t-att-class="this.goldverseCustomerButtonClass('all')"
+                                    t-on-click="() => this.goldverseSelectCustomer('all')">
                                 All Customers
                             </button>
                             <button type="button"
-                                    t-att-class="this.goldverseSearchCustomerButtonClass('b2c')"
-                                    t-on-click="() => this.goldverseApplySearchCustomerType('b2c')">
+                                    t-att-class="this.goldverseCustomerButtonClass('b2c')"
+                                    t-on-click="() => this.goldverseSelectCustomer('b2c')">
                                 B2C
                             </button>
                             <button type="button"
-                                    t-att-class="this.goldverseSearchCustomerButtonClass('b2b')"
-                                    t-on-click="() => this.goldverseApplySearchCustomerType('b2b')">
+                                    t-att-class="this.goldverseCustomerButtonClass('b2b')"
+                                    t-on-click="() => this.goldverseSelectCustomer('b2b')">
                                 B2B
                             </button>
                         </div>
 
-                        <div t-if="this.goldverseSearchActivePeriod === 'custom'"
-                             class="goldverse-report-custom-range is-active">
-                            <input type="date" t-model="goldverseSearchToolbarState.customFrom"/>
-                            <span class="goldverse-report-custom-separator">to</span>
-                            <input type="date" t-model="goldverseSearchToolbarState.customTo"/>
-                            <button type="button" class="btn btn-secondary" t-on-click="goldverseApplySearchCustomRange">
-                                Apply
-                            </button>
-                        </div>
-
                         <div class="goldverse-report-toolbar-actions">
-                            <button type="button" class="btn btn-primary" t-on-click="goldverseRefreshSearchToolbar">
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    t-on-click="goldverseRefreshToolbar">
                                 <i class="fa fa-refresh me-1"/>Refresh
                             </button>
                         </div>

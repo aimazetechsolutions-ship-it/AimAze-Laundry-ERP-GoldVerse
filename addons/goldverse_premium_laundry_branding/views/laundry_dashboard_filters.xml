@@ -15,7 +15,7 @@
                         domain="[('order_date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
                                  ('order_date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="order_date"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('customer_type', '=', 'b2c')]"/>
@@ -49,7 +49,7 @@
                         domain="[('pickup_datetime', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
                                  ('pickup_datetime', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="pickup_datetime"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('order_id.customer_type', '=', 'b2c')]"/>
@@ -81,7 +81,7 @@
                         domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
                                  ('date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="date"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('order_id.customer_type', '=', 'b2c')]"/>
@@ -113,7 +113,7 @@
                         domain="[('start_time', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
                                  ('start_time', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="start_time"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('order_id.customer_type', '=', 'b2c')]"/>
@@ -144,7 +144,7 @@
                         domain="[('date_from', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d 00:00:00')),
                                  ('date_from', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="date_from"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
             </search>
         </field>
     </record>
@@ -171,7 +171,7 @@
                         domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d')),
                                  ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="date"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('partner_id.goldverse_customer_category', '=', 'b2c')]"/>
@@ -203,7 +203,7 @@
                         domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d')),
                                  ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="date"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('partner_id.goldverse_customer_category', '=', 'b2c')]"/>
@@ -235,7 +235,7 @@
                         domain="[('date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d')),
                                  ('date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="ITD" name="gv_itd" domain="[]"/>
-                <filter string="Custom" name="gv_custom" date="date"/>
+                <filter string="Custom" name="gv_custom_range" domain="[]"/>
                 <separator/>
                 <filter string="All Customers" name="gv_all_customers" domain="[]"/>
                 <filter string="B2C" name="gv_b2c" domain="[('partner_id.goldverse_customer_category', '=', 'b2c')]"/>
