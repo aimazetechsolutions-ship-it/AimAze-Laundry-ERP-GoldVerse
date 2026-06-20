@@ -88,12 +88,18 @@ function applyGoldverseReportControllerPatch(ControllerClass, patchVersion) {
                 this.props.info?.actionId ||
                 this.props.actionId;
             const actionId = Number(rawActionId);
+            const hasGoldverseSearchItems = [
+                ...Object.values(PERIOD_FILTER_NAMES),
+                ...Object.values(CUSTOMER_FILTER_NAMES),
+                "gv_custom",
+            ].some((name) => Boolean(this.goldverseGetSearchItemByName(name)));
             return Boolean(
                 REPORT_FILTER_CONFIG[this.props.resModel] &&
                 (
                     this.props.context?.goldverse_report_toolbar ||
                     className.includes(REPORT_FILTER_CLASS) ||
-                    REPORT_ACTION_IDS.has(actionId)
+                    REPORT_ACTION_IDS.has(actionId) ||
+                    hasGoldverseSearchItems
                 )
             );
         },
