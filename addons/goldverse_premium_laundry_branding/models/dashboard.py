@@ -9,6 +9,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
     _inherit = "aimaze.laundry.executive.dashboard"
     _transient_max_hours = 0
 
+    period_filter = fields.Selection(
+        [
+            ("today", "Today"),
+            ("mtd", "MTD"),
+            ("ytd", "YTD"),
+            ("itd", "ITD"),
+            ("custom", "Custom"),
+        ],
+        default="today",
+        required=True,
+        string="Period",
+    )
     gv_customer_type_filter = fields.Selection(
         [("all", "All Customers"), ("b2c", "B2C"), ("b2b", "B2B")],
         string="Customer Type",
@@ -65,6 +77,43 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ("order_date", ">=", date_from),
             ("order_date", "<=", date_to),
         ]
+
+    def _goldverse_inception_date(self):
+        self.ensure_one()
+        today = fields.Date.context_today(self)
+        company_domain = [("company_id", "=", self.company_id.id)] if self.company_id else []
+        dates = [today]
+
+        order = self.env["aimaze.laundry.order"].sudo().search(
+            company_domain + [("order_date", "!=", False)],
+            order="order_date asc",
+            limit=1,
+        )
+        if order.order_date:
+            dates.append(fields.Date.to_date(order.order_date))
+
+        move_line = self.env["account.move.line"].sudo().search(
+            company_domain + [("date", "!=", False)],
+            order="date asc",
+            limit=1,
+        )
+        if move_line.date:
+            dates.append(move_line.date)
+
+        payment = self.env["account.payment"].sudo().search(
+            company_domain + [("date", "!=", False)],
+            order="date asc",
+            limit=1,
+        )
+        if payment.date:
+            dates.append(payment.date)
+
+        return min(dates)
+
+    def _aimaze_period_bounds(self, period):
+        if period == "itd":
+            return self._goldverse_inception_date(), fields.Date.context_today(self)
+        return super()._aimaze_period_bounds(period)
 
     @api.model
     def _goldverse_default_menu_id(self, model=None, card_key=None):
@@ -1231,6 +1280,99 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "complaints_pending": self._gv_complaint_count(),
         }
 
+    # ------------------------------------------------------------------
+    # GoldVerse Command Center (HR-style premier skin)
+    # ------------------------------------------------------------------
+    GVCC_PALETTE = {
+        "mint":   {"bg": "#e6f4f0", "ink": "#0c5945", "edge": "#67c4a8", "wash": "#f0faf6"},
+        "blue":   {"bg": "#e6f0f9", "ink": "#1c4a7c", "edge": "#6ba3d6", "wash": "#eff6fc"},
+        "peach":  {"bg": "#fef0e6", "ink": "#9b4513", "edge": "#f5a878", "wash": "#fef6ee"},
+        "pink":   {"bg": "#fce7eb", "ink": "#8b2e3f", "edge": "#e687a0", "wash": "#fdf0f3"},
+        "purple": {"bg": "#ede5f5", "ink": "#4a2978", "edge": "#9e7bc4", "wash": "#f5eefd"},
+        "coral":  {"bg": "#fde2e2", "ink": "#8b1e1e", "edge": "#e58181", "wash": "#fdecec"},
+    }
+
+    def _gvcc_sparkline(self, rows, key, color):
+        """Render a 100x32 SVG sparkline polyline from monthly rows."""
+        values = [(row.get(key) or 0.0) for row in (rows or [])]
+        if len(values) < 2:
+            values = (values or [0.0]) + [0.0]
+        v_min = min(values)
+        v_max = max(values)
+        span = max(v_max - v_min, 1e-9)
+        steps = max(len(values) - 1, 1)
+        points = []
+        for i, v in enumerate(values):
+            x = (i / steps) * 100.0
+            y = 28.0 - ((v - v_min) / span) * 24.0
+            points.append("%.2f,%.2f" % (x, y))
+        return (
+            '<svg class="gvcc-spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">'
+            '<polyline fill="none" stroke="%s" stroke-width="1.6" stroke-linecap="round" '
+            'stroke-linejoin="round" points="%s"/></svg>'
+        ) % (color, " ".join(points))
+
+    def _gvcc_band(self, icon, title, meta=""):
+        return (
+            '<div class="gvcc-band"><i class="fa %s" aria-hidden="true"></i>'
+            '<span class="gvcc-band-title">%s</span>'
+            '<span class="gvcc-band-meta">%s</span></div>'
+        ) % (icon, escape(title), escape(meta or ""))
+
+    def _gvcc_hero_tile(self, label, value, color_key, icon, subtitle, card_key=False):
+        palette = self.GVCC_PALETTE.get(color_key, self.GVCC_PALETTE["blue"])
+        return (
+            '<div class="gvcc-htile gv-clickable-card" '
+            'style="--gvcc-bg:%(wash)s;--gvcc-edge:%(edge)s;--gvcc-ink:%(ink)s"%(click)s>'
+            '<p class="gvcc-htile-label"><i class="fa %(icon)s" aria-hidden="true"></i>%(label)s</p>'
+            '<p class="gvcc-htile-value">%(value)s</p>'
+            '<p class="gvcc-htile-sub">%(sub)s</p></div>'
+        ) % {
+            "wash": palette["wash"], "edge": palette["edge"], "ink": palette["ink"],
+            "click": self._gv_click_attrs(card_key), "icon": icon,
+            "label": escape(label), "value": escape(value), "sub": escape(subtitle or ""),
+        }
+
+    def _gvcc_pulse_tile(self, value, label, color_key, sub=""):
+        palette = self.GVCC_PALETTE.get(color_key, self.GVCC_PALETTE["blue"])
+        return (
+            '<div class="gvcc-ptile" style="background:%(bg)s;color:%(ink)s">'
+            '<p class="gvcc-ptile-value">%(value)s</p>'
+            '<p class="gvcc-ptile-label">%(label)s</p>'
+            '<p class="gvcc-ptile-sub">%(sub)s</p></div>'
+        ) % {
+            "bg": palette["bg"], "ink": palette["ink"],
+            "value": escape(value), "label": escape(label), "sub": escape(sub or ""),
+        }
+
+    def _gvcc_kcell(self, label, value, color_key, icon="", sub="", card_key=False):
+        palette = self.GVCC_PALETTE.get(color_key, self.GVCC_PALETTE["blue"])
+        icon_html = ('<i class="fa %s" aria-hidden="true"></i>' % icon) if icon else ""
+        sub_html = ('<p class="gvcc-kcell-sub">%s</p>' % escape(sub)) if sub else ""
+        return (
+            '<div class="gvcc-kcell gv-clickable-card"%(click)s>'
+            '<p class="gvcc-kcell-label" style="color:%(ink)s">%(icon)s%(label)s</p>'
+            '<p class="gvcc-kcell-value">%(value)s</p>%(sub)s</div>'
+        ) % {
+            "click": self._gv_click_attrs(card_key), "ink": palette["ink"], "icon": icon_html,
+            "label": escape(label), "value": escape(value), "sub": sub_html,
+        }
+
+    def _gvcc_perf_cell(self, label, value, color_key, monthly_rows, key, delta_text, delta_class, card_key=False):
+        palette = self.GVCC_PALETTE.get(color_key, self.GVCC_PALETTE["blue"])
+        return (
+            '<div class="gvcc-kcell gvcc-perf gv-clickable-card"%(click)s>'
+            '<p class="gvcc-kcell-label" style="color:%(ink)s">%(label)s</p>'
+            '<p class="gvcc-kcell-value">%(value)s</p>'
+            '%(spark)s'
+            '<p class="gvcc-perf-delta %(dcls)s">%(delta)s</p></div>'
+        ) % {
+            "click": self._gv_click_attrs(card_key), "ink": palette["ink"],
+            "label": escape(label), "value": escape(value),
+            "spark": self._gvcc_sparkline(monthly_rows, key, palette["edge"]),
+            "dcls": delta_class, "delta": escape(delta_text),
+        }
+
     @api.depends("company_id", "branch_id", "date_from", "date_to", "period_filter", "gv_customer_type_filter", "gv_service_type_id")
     def _compute_goldverse_command_center_html(self):
         for dashboard in self:
@@ -1333,130 +1475,252 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     dashboard.currency_id.name or "PKR",
                 ]
             )
-            sales_cards = [
-                dashboard._gv_sales_card("Total Sales", sales_total, "gv_total_sales", "#c9a227", icon="fa-shopping-cart"),
-                dashboard._gv_sales_card("Cash Sales", cash_sales, "gv_cash_sales", "#10b981", sales_share(cash_sales), "fa-money"),
-                dashboard._gv_sales_card("Bank Sales", bank_sales, "gv_bank_sales", "#0ea5e9", sales_share(bank_sales), "fa-bank"),
-                dashboard._gv_sales_card("IBFT Sales", ibft_sales, "gv_ibft_sales", "#8b5cf6", sales_share(ibft_sales), "fa-exchange"),
-                dashboard._gv_sales_card("Credit Sales", credit_sales, "gv_credit_sales", "#f59e0b", sales_share(credit_sales), "fa-credit-card"),
-            ]
-            kpis = [
-                dashboard._gv_kpi_card("Total Revenue", data["revenue"], data["previous_revenue"], "fa-line-chart", "#c9a227", card_key="gv_total_revenue"),
-                dashboard._gv_kpi_card("Gross Profit", data["profit"]["gross_profit"], data["previous_profit"]["gross_profit"], "fa-trophy", "#10b981", card_key="gv_gross_profit"),
-                dashboard._gv_kpi_card("Total Exp", data["total_expenses"], data["previous_total_expenses"], "fa-arrow-circle-down", "#fb923c", card_key="gv_total_expenses"),
-                dashboard._gv_kpi_card("Net Profit", data["profit"]["net_profit"], data["previous_profit"]["net_profit"], "fa-pie-chart", "#06b6d4", card_key="gv_net_profit"),
-                dashboard._gv_kpi_card("Total Orders", data["orders"], data["previous_orders"], "fa-shopping-bag", "#8b5cf6", is_money=False, card_key="gv_total_orders"),
-                dashboard._gv_kpi_card("Average Order Value", data["average_order_value"], data["previous_aov"], "fa-calculator", "#f59e0b", card_key="gv_total_orders"),
-                dashboard._gv_kpi_card("Active Customers", data["customers"]["active"], 0, "fa-users", "#0ea5e9", is_money=False, card_key="gv_active_customers"),
-                dashboard._gv_kpi_card("Receivables", data["receivables"], 0, "fa-credit-card", "#ef4444", card_key="gv_receivables"),
-                dashboard._gv_kpi_card("Cash & Bank Collections", data["collections_total"], 0, "fa-bank", "#14b8a6", card_key="gv_cash_bank_collections"),
-            ]
-            customer_cards = [
-                dashboard._gv_small_card("New Customers", data["customers"]["new"], "#06b6d4", money=False),
-                dashboard._gv_small_card("Repeat Customers", data["customers"]["repeat"], "#10b981", money=False),
-                dashboard._gv_small_card("Customer Retention", data["customers"]["retention"], "#c9a227", money=False),
-                dashboard._gv_small_card("Average Customer Spend", data["customers"]["avg_spend"], "#8b5cf6"),
-            ]
-            advance_cards = [
-                dashboard._gv_small_card("Advance Received", data["advances"]["received"], "#10b981"),
-                dashboard._gv_small_card("Advance Utilized", data["advances"]["utilized"], "#f59e0b"),
-                dashboard._gv_small_card("Advance Balance", data["advances"]["balance"], "#8b5cf6"),
-            ]
-            collection_cards = [
-                dashboard._gv_small_card(name, value, "#06b6d4")
-                for name, value in sorted(data["collections"].items())
-            ] or [dashboard._gv_empty_state()]
-            warning_html = '<div class="gv-warning">%s</div>' % escape(warning) if warning else ""
+            # ---- HR-style command-center skin ----
+            net_profit = data["profit"]["net_profit"]
+            net_profit_prev = data["previous_profit"]["net_profit"]
+            np_trend = dashboard._gv_trend(net_profit, net_profit_prev)
+            net_margin = (net_profit / sales_total * 100.0) if sales_total else 0.0
+            prev_margin = (
+                (net_profit_prev / data["previous_revenue"] * 100.0)
+                if data["previous_revenue"] else 0.0
+            )
+            aged_60_plus = (
+                data["receivable_aging"].get("61-90 Days", 0.0)
+                + data["receivable_aging"].get("90+ Days", 0.0)
+            )
+            attention_count = sum(
+                int(bool(x)) for x in (
+                    data["complaints_pending"],
+                    aged_60_plus,
+                    data["revenue_declining"],
+                    data["major_customer"]["amount"],
+                )
+            )
+
+            hero_tiles = "".join([
+                dashboard._gvcc_hero_tile(
+                    "ACTIVE CUSTOMERS",
+                    dashboard._gv_number(data["customers"]["active"]),
+                    "mint", "fa-users",
+                    _("%s new · %.1f%% retention") % (
+                        dashboard._gv_number(data["customers"]["new"]),
+                        data["customers"]["retention"] or 0.0,
+                    ),
+                    card_key="gv_active_customers",
+                ),
+                dashboard._gvcc_hero_tile(
+                    "TOTAL ORDERS",
+                    dashboard._gv_number(data["orders"]),
+                    "blue", "fa-shopping-bag",
+                    _("AOV %s") % dashboard._gv_money(data["average_order_value"]),
+                    card_key="gv_total_orders",
+                ),
+                dashboard._gvcc_hero_tile(
+                    "NET PROFIT",
+                    dashboard._gv_money(net_profit),
+                    "peach", "fa-line-chart",
+                    _("%s vs prior") % dashboard._gv_percent(np_trend),
+                    card_key="gv_net_profit",
+                ),
+                dashboard._gvcc_hero_tile(
+                    "RECEIVABLES",
+                    dashboard._gv_money(data["receivables"]),
+                    "purple", "fa-credit-card",
+                    _("%s aged 60d+") % dashboard._gv_money(aged_60_plus),
+                    card_key="gv_receivables",
+                ),
+                dashboard._gvcc_hero_tile(
+                    "NEEDS ATTENTION",
+                    dashboard._gv_number(attention_count),
+                    "coral", "fa-warning",
+                    _("%s complaints open") % dashboard._gv_number(data["complaints_pending"]),
+                ),
+            ])
+
+            pulse_tiles = "".join([
+                dashboard._gvcc_pulse_tile(
+                    dashboard._gv_number(data["orders"]), "ORDERS", "mint",
+                    _("period total"),
+                ),
+                dashboard._gvcc_pulse_tile(
+                    dashboard._gv_number(data["complaints_pending"]), "COMPLAINTS", "peach",
+                    _("action needed") if data["complaints_pending"] else _("all clear"),
+                ),
+                dashboard._gvcc_pulse_tile(
+                    dashboard._gv_money(aged_60_plus), "OVERDUE 60D+", "blue",
+                    _("recover focus") if aged_60_plus else _("no aged AR"),
+                ),
+                dashboard._gvcc_pulse_tile(
+                    dashboard._gv_number(attention_count), "ALERTS", "pink",
+                    priority_label,
+                ),
+            ])
+
+            sales_tiles = "".join([
+                dashboard._gvcc_kcell("TOTAL SALES", dashboard._gv_money(sales_total), "blue",
+                                       icon="fa-coins", sub=range_label, card_key="gv_total_sales"),
+                dashboard._gvcc_kcell("CASH", dashboard._gv_money(cash_sales), "mint",
+                                       icon="fa-money", sub="%.1f%%" % sales_share(cash_sales),
+                                       card_key="gv_cash_sales"),
+                dashboard._gvcc_kcell("BANK", dashboard._gv_money(bank_sales), "purple",
+                                       icon="fa-bank", sub="%.1f%%" % sales_share(bank_sales),
+                                       card_key="gv_bank_sales"),
+                dashboard._gvcc_kcell("IBFT", dashboard._gv_money(ibft_sales), "peach",
+                                       icon="fa-exchange", sub="%.1f%%" % sales_share(ibft_sales),
+                                       card_key="gv_ibft_sales"),
+                dashboard._gvcc_kcell("CREDIT", dashboard._gv_money(credit_sales), "coral",
+                                       icon="fa-credit-card", sub="%.1f%%" % sales_share(credit_sales),
+                                       card_key="gv_credit_sales"),
+            ])
+
+            def _delta(current, previous, is_money=True, lower_is_better=False):
+                trend = dashboard._gv_trend(current, previous)
+                up = trend >= 0
+                good = (not up) if lower_is_better else up
+                arrow = "▲" if up else "▼"
+                return ("%s %s vs prior" % (arrow, dashboard._gv_percent(trend))), ("up" if good else "down")
+
+            rev_delta, rev_cls = _delta(data["revenue"], data["previous_revenue"])
+            gp_delta, gp_cls = _delta(data["profit"]["gross_profit"], data["previous_profit"]["gross_profit"])
+            exp_delta, exp_cls = _delta(data["total_expenses"], data["previous_total_expenses"], lower_is_better=True)
+            np_delta, np_cls = _delta(net_profit, net_profit_prev)
+            aov_delta, aov_cls = _delta(data["average_order_value"], data["previous_aov"])
+            margin_trend = net_margin - prev_margin
+            margin_delta = "%s %.1f pts vs prior" % ("▲" if margin_trend >= 0 else "▼", abs(margin_trend))
+            margin_cls = "up" if margin_trend >= 0 else "down"
+
+            perf_cells = "".join([
+                dashboard._gvcc_perf_cell("REVENUE", dashboard._gv_money(data["revenue"]),
+                                           "blue", data["monthly"], "revenue",
+                                           rev_delta, rev_cls, card_key="gv_total_revenue"),
+                dashboard._gvcc_perf_cell("GROSS PROFIT", dashboard._gv_money(data["profit"]["gross_profit"]),
+                                           "mint", data["monthly"], "gross_profit",
+                                           gp_delta, gp_cls, card_key="gv_gross_profit"),
+                dashboard._gvcc_perf_cell("TOTAL EXP", dashboard._gv_money(data["total_expenses"]),
+                                           "peach", data["monthly"], "revenue",
+                                           exp_delta, exp_cls, card_key="gv_total_expenses"),
+                dashboard._gvcc_perf_cell("NET PROFIT", dashboard._gv_money(net_profit),
+                                           "purple", data["monthly"], "net_profit",
+                                           np_delta, np_cls, card_key="gv_net_profit"),
+                dashboard._gvcc_perf_cell("AVG ORDER VALUE", dashboard._gv_money(data["average_order_value"]),
+                                           "coral", data["monthly"], "revenue",
+                                           aov_delta, aov_cls, card_key="gv_total_orders"),
+                dashboard._gvcc_perf_cell("NET PROFIT MARGIN", "%.1f%%" % net_margin,
+                                           "pink", data["monthly"], "np_percent",
+                                           margin_delta, margin_cls, card_key="gv_net_profit"),
+            ])
+
+            customer_cells = "".join([
+                dashboard._gvcc_kcell("NEW", dashboard._gv_number(data["customers"]["new"]), "mint"),
+                dashboard._gvcc_kcell("REPEAT", dashboard._gv_number(data["customers"]["repeat"]), "blue"),
+                dashboard._gvcc_kcell("RETENTION", "%.1f%%" % (data["customers"]["retention"] or 0.0), "purple"),
+                dashboard._gvcc_kcell("AVG SPEND", dashboard._gv_money(data["customers"]["avg_spend"]), "peach"),
+            ])
+
+            collection_color = ["mint", "blue", "peach", "purple", "coral", "pink"]
+            collection_items = sorted(data["collections"].items()) if data["collections"] else []
+            collection_cells = "".join(
+                dashboard._gvcc_kcell(
+                    str(name).upper().replace(" COLLECTION", ""),
+                    dashboard._gv_money(value),
+                    collection_color[i % len(collection_color)],
+                )
+                for i, (name, value) in enumerate(collection_items)
+            ) or dashboard._gv_empty_state()
+
+            advance_cells = "".join([
+                dashboard._gvcc_kcell("RECEIVED", dashboard._gv_money(data["advances"]["received"]), "mint"),
+                dashboard._gvcc_kcell("UTILIZED", dashboard._gv_money(data["advances"]["utilized"]), "peach"),
+                dashboard._gvcc_kcell("BALANCE", dashboard._gv_money(data["advances"]["balance"]), "purple"),
+            ])
+
+            risks_html = _render_points(risk_points, _("No critical risk indicators are currently active."))
+            opps_html = _render_points(opportunity_points, _("No fresh opportunity indicators are available yet."))
+            focus_html = _render_points(focus_points, _("Monitor revenue, collections, and cost movement through the day."))
+
+            user_name = dashboard.env.user.name or _("Administrator")
+            warning_html = '<div class="gvcc-warning">%s</div>' % escape(warning) if warning else ""
+
             dashboard.goldverse_command_center_html = f"""
-                <div class="gv-command-center gv-command-center-luxe">
-                    <section class="gv-brief-shell">
-                        <aside class="gv-greeting-card">
-                            <span class="gv-brief-kicker">{escape(greeting)}</span>
-                            <h1>GoldVerse Executive Analytics</h1>
-                            <strong>{escape(dashboard.env.user.name or "Administrator")}</strong>
-                            <p>{escape(range_label)}</p>
-                            <div class="gv-brief-tags">{quick_tags}</div>
-                        </aside>
-                        <section class="gv-morning-brief">
-                            <div class="gv-brief-head">
-                                <span class="gv-brief-kicker"><i class="fa fa-coffee"></i> Executive Morning Brief</span>
-                                <span class="gv-brief-priority">Priority: {escape(priority_label)}</span>
+                <div class="gvcc-shell gv-command-center gv-command-center-luxe">
+                    <div class="gvcc-header">
+                        <div class="gvcc-h-left">
+                            <div class="gvcc-h-avatar"><i class="fa fa-trophy" aria-hidden="true"></i></div>
+                            <div>
+                                <p class="gvcc-h-title">Executive Command Center</p>
+                                <p class="gvcc-h-sub">{escape(user_name)} · {escape(company.name or "GoldVerse")} · {escape(branch_label)}</p>
                             </div>
-                            <p class="gv-brief-summary">{escape(brief_summary)}</p>
-                            <div class="gv-brief-grid">
-                                <div class="gv-brief-column gv-brief-column-risk">
-                                    <h3><i class="fa fa-warning"></i> Risks</h3>
-                                    <ul>{_render_points(risk_points, _("No critical risk indicators are currently active."))}</ul>
-                                </div>
-                                <div class="gv-brief-column gv-brief-column-opportunity">
-                                    <h3><i class="fa fa-lightbulb-o"></i> Opportunities</h3>
-                                    <ul>{_render_points(opportunity_points, _("No fresh opportunity indicators are available yet."))}</ul>
-                                </div>
-                                <div class="gv-brief-column gv-brief-column-focus">
-                                    <h3><i class="fa fa-flag-checkered"></i> Focus Actions</h3>
-                                    <ul>{_render_points(focus_points, _("Monitor revenue, collections, and cost movement through the day."))}</ul>
-                                </div>
-                            </div>
-                        </section>
-                    </section>
+                        </div>
+                        <div class="gvcc-h-right">
+                            <span class="gvcc-live"><span class="gvcc-live-dot"></span>{escape(_("Live"))} · {escape(range_label)}</span>
+                        </div>
+                    </div>
                     {warning_html}
-                    <section class="gv-panel gv-sales-panel o_goldverse_section">
-                        <div class="gv-panel-head o_goldverse_section_header"><h2>Sales command view</h2><span class="section-tag">{escape(range_label)}</span></div>
-                        <div class="gv-sales-grid o_goldverse_kpi_grid">{"".join(sales_cards)}</div>
-                    </section>
-                    <section class="gv-panel gv-kpi-panel o_goldverse_section">
-                        <div class="gv-panel-head o_goldverse_section_header"><h2>Executive KPI summary</h2><span class="section-tag">Revenue, profit, orders, customers</span></div>
-                        <div class="gv-kpi-grid o_goldverse_kpi_grid">{"".join(kpis)}</div>
-                    </section>
-                    <div class="gv-section-band"><span>Revenue intelligence</span></div>
-                    <section class="gv-dashboard-row gv-row-70-30 o_goldverse_chart_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Monthly Revenue vs Gross Profit</h2><span class="section-tag o_goldverse_chart_subtitle">{escape(range_label)}</span></div>
-                            {dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#d97706"), ("gross_profit", "Gross Profit", "#059669")])}
+                    <div class="gvcc-greet-row">
+                        <div class="gvcc-greet">
+                            <h3>{escape(greeting)}, <span class="gvcc-greet-name">{escape(user_name)}</span></h3>
+                            <p class="gvcc-greet-loc"><i class="fa fa-building-o" aria-hidden="true"></i>{escape(company.name or "GoldVerse")} · {escape(branch_label)}</p>
+                            <p class="gvcc-greet-brief">{escape(brief_summary)}</p>
                         </div>
-                        <div class="gv-panel gv-revenue-composition-panel o_goldverse_section o_goldverse_chart_card">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue Composition</h2><span class="section-tag o_goldverse_chart_subtitle">Actual services</span></div>
-                            {dashboard._gv_donut_chart(data["service_composition"][:6])}
+                        <div class="gvcc-pulse">
+                            <div class="gvcc-pulse-head">
+                                <span class="gvcc-pulse-title"><i class="fa fa-heartbeat" aria-hidden="true"></i>{escape(_("Live business pulse"))}</span>
+                                <span class="gvcc-pulse-meta">{escape(_("Priority"))}: {escape(priority_label)}</span>
+                            </div>
+                            <div class="gvcc-pulse-tiles">{pulse_tiles}</div>
                         </div>
-                    </section>
-                    <div class="gv-section-band"><span>Business mix</span></div>
-                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Service Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>{dashboard._gv_bar_chart(data["top_services"], "Revenue")}</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>{dashboard._gv_bar_chart(data["top_categories"], "Revenue")}</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Sub Category Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>{dashboard._gv_bar_chart(data["top_subcategories"], "Revenue")}</div>
-                    </section>
-                    <div class="gv-section-band"><span>Customer and working capital</span></div>
-                    <section class="gv-dashboard-row gv-row-60-40 o_goldverse_two_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top Customers by Revenue</h2><span class="section-tag o_goldverse_chart_subtitle">Top 5</span></div>
-                            {dashboard._gv_customer_revenue_chart(data["customers"]["top_rows"])}
-                        </div>
-                        <div class="gv-panel o_goldverse_section">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2>Customer intelligence</h2><span class="section-tag">Period quality</span></div>
-                            <div class="gv-mini-grid">{"".join(customer_cards)}</div>
-                        </div>
-                    </section>
-                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Receivable Aging</h2><span class="section-tag o_goldverse_chart_subtitle">Open AR</span></div>{dashboard._gv_donut_chart(list(data["receivable_aging"].items()))}</div>
-                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Collections</h2><span class="section-tag">Payment journals</span></div><div class="gv-mini-grid">{"".join(collection_cards)}</div></div>
-                        <div class="gv-panel o_goldverse_section"><div class="gv-panel-head o_goldverse_section_header"><h2>Customer advances</h2><span class="section-tag">AR credit balance</span></div><div class="gv-mini-grid">{"".join(advance_cards)}</div></div>
-                    </section>
-                    <div class="gv-section-band"><span>Profitability and control</span></div>
-                    <section class="gv-dashboard-row gv-row-3 o_goldverse_three_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Revenue vs Cost Breakdown</h2><span class="section-tag o_goldverse_chart_subtitle">Actual accounts</span></div>{dashboard._gv_donut_chart(data["cost_breakdown"])}</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Gross Profit % Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>{dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#059669")])}</div>
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card"><div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Net Profit % Trend</h2><span class="section-tag o_goldverse_chart_subtitle">Monthly</span></div>{dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#7c3aed")])}</div>
-                    </section>
-                    <section class="gv-dashboard-row gv-row-60-40 gv-expense-alert-row o_goldverse_two_grid">
-                        <div class="gv-panel o_goldverse_section o_goldverse_chart_card">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2 class="o_goldverse_chart_title">Top 5 Expenses</h2><span class="section-tag o_goldverse_chart_subtitle">Expense heads</span></div>
-                            {dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense")}
-                        </div>
-                        <div class="gv-panel gv-alert-center o_goldverse_section">
-                            <div class="gv-panel-head o_goldverse_section_header"><h2>Executive alerts center</h2><span class="section-tag">Live management signals</span></div>
-                            <div class="gv-alert-grid o_goldverse_alert_grid">{dashboard._gv_alerts(data)}</div>
-                        </div>
-                    </section>
+                    </div>
+                    <div class="gvcc-brief-row">
+                        <div class="gvcc-brief-col gvcc-brief-risk"><h4><i class="fa fa-warning" aria-hidden="true"></i>{escape(_("Risks"))}</h4><ul>{risks_html}</ul></div>
+                        <div class="gvcc-brief-col gvcc-brief-opp"><h4><i class="fa fa-lightbulb-o" aria-hidden="true"></i>{escape(_("Opportunities"))}</h4><ul>{opps_html}</ul></div>
+                        <div class="gvcc-brief-col gvcc-brief-focus"><h4><i class="fa fa-flag-checkered" aria-hidden="true"></i>{escape(_("Focus"))}</h4><ul>{focus_html}</ul></div>
+                    </div>
+                    <div class="gvcc-hero">{hero_tiles}</div>
+
+                    {dashboard._gvcc_band("fa-money", _("Sales command view"), range_label)}
+                    <div class="gvcc-grid gvcc-g5">{sales_tiles}</div>
+
+                    {dashboard._gvcc_band("fa-bar-chart", _("Executive KPI summary"), _("vs prior period"))}
+                    <div class="gvcc-grid gvcc-g3">{perf_cells}</div>
+
+                    {dashboard._gvcc_band("fa-line-chart", _("Revenue intelligence"), _("monthly"))}
+                    <div class="gvcc-grid gvcc-g7030">
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Monthly Revenue vs Gross Profit"))}</p>{dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#5a85f0"), ("gross_profit", "Gross Profit", "#67c4a8")])}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Sales mix"))}</p>{dashboard._gv_donut_chart(data["service_composition"][:6])}</div>
+                    </div>
+
+                    {dashboard._gvcc_band("fa-th-large", _("Business mix"), _("top 5"))}
+                    <div class="gvcc-grid gvcc-g3">
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top services"))}</p>{dashboard._gv_bar_chart(data["top_services"], "Revenue")}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top categories"))}</p>{dashboard._gv_bar_chart(data["top_categories"], "Revenue")}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top sub-categories"))}</p>{dashboard._gv_bar_chart(data["top_subcategories"], "Revenue")}</div>
+                    </div>
+
+                    {dashboard._gvcc_band("fa-users", _("Customer & working capital"), _("period quality"))}
+                    <div class="gvcc-grid gvcc-g6040">
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top customers by revenue"))}</p>{dashboard._gv_customer_revenue_chart(data["customers"]["top_rows"])}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer intelligence"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{customer_cells}</div></div>
+                    </div>
+
+                    {dashboard._gvcc_band("fa-credit-card", _("Receivables, collections & advances"), _("working capital"))}
+                    <div class="gvcc-grid gvcc-g3">
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Receivable aging"))}</p>{dashboard._gv_donut_chart(list(data["receivable_aging"].items()))}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Collections"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{collection_cells}</div></div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer advances"))}</p><div class="gvcc-grid gvcc-g3 gvcc-mini">{advance_cells}</div></div>
+                    </div>
+
+                    {dashboard._gvcc_band("fa-pie-chart", _("Profitability & control"), _("monthly trend"))}
+                    <div class="gvcc-grid gvcc-g3">
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Revenue vs cost breakdown"))}</p>{dashboard._gv_donut_chart(data["cost_breakdown"])}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Gross profit % trend"))}</p>{dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#67c4a8")])}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Net profit % trend"))}</p>{dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#9e7bc4")])}</div>
+                    </div>
+
+                    {dashboard._gvcc_band("fa-bell", _("Expenses & executive alerts"), _("live signals"))}
+                    <div class="gvcc-grid gvcc-g6040">
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top 5 expenses"))}</p>{dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense")}</div>
+                        <div class="gvcc-card gvcc-alerts-card"><p class="gvcc-card-title">{escape(_("Executive alerts"))}</p><div class="gvcc-alerts">{dashboard._gv_alerts(data)}</div></div>
+                    </div>
                 </div>
             """
 

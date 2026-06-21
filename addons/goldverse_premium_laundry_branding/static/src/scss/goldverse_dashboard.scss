@@ -992,3 +992,490 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   GoldVerse Command Center (HR-style premier skin) — .gvcc-*
+   ============================================================ */
+.o_goldverse_dashboard .gvcc-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: transparent;
+  color: #1f2937;
+  padding: 4px 0 12px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #e2e6ee;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-h-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-h-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #3c3489;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-h-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #11172a;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-h-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 1px 0 0;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-h-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 5px 11px;
+  border: 1px solid #67c4a8;
+  border-radius: 999px;
+  color: #0c5945;
+  background: #e6f4f0;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-warning {
+  background: #fef0e6;
+  color: #9b4513;
+  border: 1px solid #f5a878;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  align-items: stretch;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-row > .gvcc-greet,
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-row > .gvcc-pulse {
+  display: flex;
+  flex-direction: column;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet > :last-child {
+  margin-bottom: 0;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles {
+  flex: 1;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles > .gvcc-ptile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row .gvcc-brief-col {
+  background: #fff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row .gvcc-brief-col h4 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row .gvcc-brief-col ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #1f2937;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row .gvcc-brief-risk h4 { color: #8b1e1e; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row .gvcc-brief-opp h4 { color: #0c5945; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-row .gvcc-brief-focus h4 { color: #4a2978; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet {
+  background: #fff;
+  border: 1px solid #b3d8e5;
+  border-radius: 10px;
+  padding: 14px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: #11172a;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-name {
+  color: #1ca5b8;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-loc {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-brief {
+  font-size: 12px;
+  color: #3c4858;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-greet-brief-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-col {
+  background: #f5f8fb;
+  border: 1px solid #e2e6ee;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-col h4 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5b6b7c;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-col ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #1f2937;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-risk h4 { color: #8b1e1e; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-opp h4 { color: #0c5945; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-brief-focus h4 { color: #4a2978; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse {
+  background: #fff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  padding: 12px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #11172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-title i {
+  color: #1ca5b8;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-meta {
+  font-size: 11px;
+  color: #6b7280;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-ptile {
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-ptile-value {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.1;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-ptile-label {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin: 4px 0 1px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-ptile-sub {
+  font-size: 10px;
+  opacity: 0.8;
+  margin: 0;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-hero {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-htile {
+  background: var(--gvcc-bg, #fff);
+  border: 1px solid var(--gvcc-edge, #e2e6ee);
+  border-radius: 10px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-htile:hover {
+  transform: translateY(-1px);
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-htile-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--gvcc-ink, #11172a);
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-htile-value {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: #11172a;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-htile-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 0;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-band {
+  background: linear-gradient(90deg, #1ca5b8 0%, #5a85f0 55%, #7a5cf0 100%);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-band i {
+  font-size: 14px;
+  opacity: 0.95;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-band-title { flex: 0 0 auto; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-band-meta {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+  text-transform: none;
+  font-weight: 500;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-grid {
+  display: grid;
+  gap: 10px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g7030 { grid-template-columns: 7fr 3fr; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g6040 { grid-template-columns: 6fr 4fr; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-card {
+  background: #fff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  padding: 12px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #11172a;
+  margin: 0 0 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-kcell {
+  background: #fff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-kcell:hover { transform: translateY(-1px); }
+.o_goldverse_dashboard .gvcc-shell .gvcc-kcell-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-kcell-value {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 2px 0 0;
+  color: #11172a;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-kcell-sub {
+  font-size: 10px;
+  color: #6b7280;
+  margin: 2px 0 0;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-mini .gvcc-kcell { padding: 8px 10px; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-mini .gvcc-kcell-value { font-size: 16px; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-perf .gvcc-spark {
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin-top: 6px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-perf-delta {
+  font-size: 10px;
+  margin: 4px 0 0;
+  text-align: center;
+  color: #6b7280;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-perf-delta.up { color: #0c5945; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-perf-delta.down { color: #8b1e1e; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-card .gv-donut-wrap {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card .gv-donut {
+  justify-self: center;
+  width: 168px;
+  height: 168px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card .gv-donut-legend {
+  width: 100%;
+  order: 2;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card .gv-donut-legend-label {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card .gv-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-start;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card svg.gv-line-chart {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-card .gv-bar-row {
+  min-width: 0;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .gv-alert,
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .o_goldverse_alert {
+  background: #f5f8fb;
+  color: #11172a;
+  border: 1px solid #e2e6ee;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+  flex: 0 0 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .critical .alert-dot { background: #e58181; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .warning .alert-dot { background: #f5a878; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .positive .alert-dot { background: #67c4a8; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-alerts .info .alert-dot { background: #5a85f0; }
+@media (max-width: 1100px) {
+  .o_goldverse_dashboard .gvcc-shell .gvcc-greet-row,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-hero,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g5,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g6,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g7030,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g6040 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .o_goldverse_dashboard .gvcc-shell .gvcc-header,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-greet-row,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-hero,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-grid,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-greet-brief-cols {
+    grid-template-columns: 1fr;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
