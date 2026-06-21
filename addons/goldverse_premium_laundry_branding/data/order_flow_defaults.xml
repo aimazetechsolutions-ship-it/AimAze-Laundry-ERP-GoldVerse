@@ -12,4 +12,5 @@
     <function model="aimaze.laundry.order" name="_goldverse_reconcile_all_order_invoice_payments"/>
     <function model="account.move" name="_goldverse_configure_invoice_sequence"/>
     <function model="res.users" name="_goldverse_assign_admin_all_laundry_branches"/>
+    <function model="res.users" name="_goldverse_assign_customer_care_all_branches"/>
 </odoo>

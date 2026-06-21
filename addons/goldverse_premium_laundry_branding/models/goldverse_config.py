@@ -28,6 +28,31 @@ class ResUsers(models.Model):
         return True
 
     @api.model
+    def _goldverse_assign_customer_care_all_branches(self):
+        if "laundry_branch_ids" not in self._fields:
+            return True
+
+        branches = self.env["aimaze.laundry.branch"].sudo().search([])
+        if not branches:
+            return True
+
+        customer_care_group = self.env.ref(
+            "goldverse_premium_laundry_branding.group_customer_care_executive",
+            raise_if_not_found=False,
+        )
+        customer_care_users = customer_care_group.sudo().all_user_ids if customer_care_group else self.browse()
+        sunny_users = self.sudo().search(["|", ("login", "ilike", "sunny"), ("name", "ilike", "sunny")])
+        users = (customer_care_users | sunny_users).filtered(lambda user: not user.share)
+        if users:
+            users.sudo().write({"laundry_branch_ids": [(6, 0, branches.ids)]})
+        return True
+
+    @api.model
+    def _goldverse_assign_customer_care_eme_branch(self):
+        self._goldverse_assign_customer_care_all_branches()
+        return True
+
+    @api.model
     def _goldverse_executive_dashboard_action(self):
         return self.env.ref("goldverse_premium_laundry_branding.action_goldverse_open_executive_dashboard", raise_if_not_found=False)
 
