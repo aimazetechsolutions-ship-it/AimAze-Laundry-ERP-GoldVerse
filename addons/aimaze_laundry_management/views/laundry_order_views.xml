@@ -227,7 +227,7 @@
                 <field name="responsible_id"/>
                 <field name="driver_id"/>
                 <field name="invoice_id"/>
-                <filter string="Today" name="today" domain="[('order_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter string="Today" name="today" domain="[('order_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')), ('order_date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="Pending" name="pending" domain="[('state', 'not in', ('delivered','paid','cancelled'))]"/>
                 <filter string="Ready" name="ready" domain="[('state','=','ready')]"/>
                 <filter string="Outstanding" name="outstanding" domain="[('payment_status','!=','paid')]"/>
@@ -246,7 +246,7 @@
                     <filter string="Priority" name="group_priority" context="{'group_by':'priority'}"/>
                     <filter string="Salesperson" name="group_salesperson" context="{'group_by':'user_id'}"/>
                     <filter string="Driver" name="group_driver" context="{'group_by':'driver_id'}"/>
-                    <filter string="Order Date" name="group_order_date" context="{'group_by':'order_date'}"/>
+                    <filter string="Order Month" name="group_order_date" context="{'group_by':'order_date:month'}"/>
                 </group>
             </search>
         </field>
@@ -270,7 +270,7 @@
         <field name="model">aimaze.laundry.order</field>
         <field name="arch" type="xml">
             <graph string="Laundry Sales" type="bar">
-                <field name="branch_id"/>
+                <field name="order_date" interval="month"/>
                 <field name="amount_total" type="measure"/>
             </graph>
         </field>

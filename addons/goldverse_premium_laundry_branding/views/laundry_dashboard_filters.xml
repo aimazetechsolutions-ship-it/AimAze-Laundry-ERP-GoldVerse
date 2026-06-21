@@ -257,31 +257,31 @@
 
     <record id="aimaze_laundry_management.action_laundry_dashboard" model="ir.actions.act_window">
         <field name="view_mode">list,pivot,graph</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_outstanding_receivables" model="ir.actions.act_window">
         <field name="view_mode">list,pivot,graph,form</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_delivery" model="ir.actions.act_window">
         <field name="view_mode">list,kanban,form,activity</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_laundry_delivery_search_goldverse_report"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_inventory_usage" model="ir.actions.act_window">
         <field name="view_mode">list,form,pivot</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_inventory_usage_search_goldverse_report"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_staff_task" model="ir.actions.act_window">
         <field name="view_mode">list,form,pivot,graph</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_staff_task_search_goldverse_report"/>
     </record>
 
@@ -293,31 +293,31 @@
 
     <record id="aimaze_laundry_management.action_laundry_advance_liability_report" model="ir.actions.act_window">
         <field name="view_mode">list,form,pivot,graph</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_account_payment_search_goldverse_report"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_wallet_liability_report" model="ir.actions.act_window">
         <field name="view_mode">list,form,pivot</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_wallet_transaction_search_goldverse_report"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_branch_collection_report" model="ir.actions.act_window">
         <field name="view_mode">list,form,pivot,graph</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_account_payment_search_goldverse_report"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_payment_method_report" model="ir.actions.act_window">
         <field name="view_mode">list,pivot,graph,form</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_account_payment_search_goldverse_report"/>
     </record>
 
     <record id="aimaze_laundry_management.action_laundry_customer_ledger_report" model="ir.actions.act_window">
         <field name="view_mode">list,pivot,graph</field>
-        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1, 'search_default_gv_all_customers': 1}</field>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
         <field name="search_view_id" ref="view_account_move_line_search_goldverse_report"/>
     </record>
 </odoo>

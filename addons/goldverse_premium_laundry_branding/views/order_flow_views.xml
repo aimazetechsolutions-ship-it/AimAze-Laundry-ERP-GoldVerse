@@ -125,6 +125,7 @@
         <field name="view_mode">list,kanban,form,pivot,graph,activity</field>
         <field name="view_id" ref="aimaze_laundry_management.view_laundry_order_list"/>
         <field name="search_view_id" ref="aimaze_laundry_management.view_laundry_order_search"/>
+        <field name="context">{'goldverse_report_toolbar': 1, 'search_default_today': 1}</field>
     </record>
 
     <record id="action_laundry_order_main_list_view" model="ir.actions.act_window.view">

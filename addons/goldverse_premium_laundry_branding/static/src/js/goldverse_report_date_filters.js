@@ -5,7 +5,7 @@ import { _t } from "@web/core/l10n/translation";
 import { useBus } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
 import { SearchBar } from "@web/search/search_bar/search_bar";
-import { useState } from "@odoo/owl";
+import { onMounted, useState } from "@odoo/owl";
 
 const { DateTime } = luxon;
 
@@ -108,7 +108,7 @@ patch(SearchBar.prototype, {
     setup() {
         super.setup(...arguments);
         this.goldverseToolbarState = useState({
-            period: "today",
+            period: null,
             customerType: "all",
             customOpen: false,
             customFrom: DateTime.local().toISODate(),
@@ -116,6 +116,7 @@ patch(SearchBar.prototype, {
         });
         useBus(this.env.searchModel, "update", () => this._goldverseSyncFromSearchModel());
         this._goldverseSyncFromSearchModel();
+        onMounted(() => this._goldverseEnsureToolbarDefaultPeriod());
         this._goldverseBoundOutsideClick = (ev) => this._goldverseOnOutsideClick(ev);
         document.addEventListener("mousedown", this._goldverseBoundOutsideClick, true);
     },
@@ -156,12 +157,37 @@ patch(SearchBar.prototype, {
         return `btn ${active ? "btn-primary" : "btn-secondary"}`;
     },
 
+    _goldverseHasActivePeriod() {
+        const searchModel = this.env.searchModel;
+        return Object.values(PERIOD_FILTER_NAMES).some((name) => {
+            const item = findSearchItemByName(searchModel, name);
+            return isItemActive(searchModel, item);
+        });
+    },
+
+    _goldverseEnsureToolbarDefaultPeriod() {
+        if (!this.isGoldverseReportToolbar) {
+            return;
+        }
+        const searchModel = this.env.searchModel;
+        if (this._goldverseHasActivePeriod()) {
+            this._goldverseForceNotify(searchModel);
+            return;
+        }
+        const todayItem = findSearchItemByName(searchModel, PERIOD_FILTER_NAMES.today);
+        if (!todayItem) {
+            return;
+        }
+        searchModel.query.push({ searchItemId: todayItem.id });
+        this._goldverseForceNotify(searchModel);
+    },
+
     _goldverseSyncFromSearchModel() {
         if (!this.isGoldverseReportToolbar) {
             return;
         }
         const searchModel = this.env.searchModel;
-        let activePeriod = "today";
+        let activePeriod = null;
         for (const [period, name] of Object.entries(PERIOD_FILTER_NAMES)) {
             const item = findSearchItemByName(searchModel, name);
             if (isItemActive(searchModel, item)) {
