@@ -361,12 +361,35 @@ def _patch_order_line_breakdown(order, row):
             goldverse_refreshing_amounts=True,
         ).write(
             {
+                "goldverse_legacy_amount_override": True,
+                "goldverse_legacy_base_unit_price": line_row["amount_total"],
+                "goldverse_legacy_discount_amount": line_row["discount"],
+                "goldverse_legacy_net_unit_price": line_row["net_total"],
+                "goldverse_legacy_priority_charge": 0.0,
+                "unit_price": line_row["net_total"],
+                "discount": 0.0,
+                "goldverse_discount": "0",
+                "tax_ids": [(5, 0, 0)],
                 "goldverse_base_price": line_row["amount_total"],
                 "goldverse_discount_amount": line_row["discount"],
                 "goldverse_net_price": line_row["net_total"],
                 "goldverse_priority_charge": 0.0,
             }
         )
+
+
+def _repair_existing_order(existing_order, row):
+    _patch_order_line_breakdown(existing_order, row)
+    existing_order.with_context(
+        goldverse_allow_locked_order_write=True,
+        goldverse_skip_required_validation=True,
+    ).write(
+        {
+            "delivery_charge": 0.0,
+            "discount_amount": 0.0,
+        }
+    )
+    _patch_order_report_fields(existing_order, row)
 
 
 def _import_rows(env, workbook_path, commit=False, limit=0):
@@ -382,6 +405,7 @@ def _import_rows(env, workbook_path, commit=False, limit=0):
     created_orders = 0
     created_invoices = 0
     created_payments = 0
+    repaired_orders = 0
     skipped = 0
     imported_amounts = {
         "amount_total": 0.0,
@@ -393,11 +417,20 @@ def _import_rows(env, workbook_path, commit=False, limit=0):
     first_invoice_name = False
     last_invoice_name = False
     validation_only = not commit
+    repair_existing = os.environ.get("GOLDVERSE_LEGACY_B2C_REPAIR_EXISTING") == "1"
 
     for chunk_start in range(0, len(selected_rows), chunk_size):
         chunk_rows = selected_rows[chunk_start : chunk_start + chunk_size]
         for row in chunk_rows:
             if row["order_name"] in existing_order_names:
+                if repair_existing:
+                    existing_order = Order.search([("name", "=", row["order_name"])], limit=1)
+                    if existing_order:
+                        _repair_existing_order(existing_order, row)
+                        repaired_orders += 1
+                        for key in imported_amounts:
+                            imported_amounts[key] += row[key]
+                        continue
                 skipped += 1
                 continue
 
@@ -535,6 +568,7 @@ def _import_rows(env, workbook_path, commit=False, limit=0):
                     "created_orders": created_orders,
                     "created_invoices": created_invoices,
                     "created_payments": created_payments,
+                    "repaired_orders": repaired_orders,
                     "skipped_existing_orders": skipped,
                 },
                 sort_keys=True,
@@ -548,6 +582,7 @@ def _import_rows(env, workbook_path, commit=False, limit=0):
         "created_orders": created_orders,
         "created_invoices": created_invoices,
         "created_payments": created_payments,
+        "repaired_orders": repaired_orders,
         "skipped_existing_orders": skipped,
         "workbook_rows": len(selected_rows),
         "workbook_totals": payload["totals"],

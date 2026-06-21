@@ -86,6 +86,31 @@ class LaundryOrderLine(models.Model):
         required=True,
     )
     goldverse_discount = fields.Char(string="Discount", default="0")
+    goldverse_legacy_amount_override = fields.Boolean(
+        string="Legacy Amount Override",
+        default=False,
+        copy=False,
+    )
+    goldverse_legacy_base_unit_price = fields.Monetary(
+        string="Legacy Base Unit Price",
+        currency_field="currency_id",
+        copy=False,
+    )
+    goldverse_legacy_discount_amount = fields.Monetary(
+        string="Legacy Discount Amount",
+        currency_field="currency_id",
+        copy=False,
+    )
+    goldverse_legacy_net_unit_price = fields.Monetary(
+        string="Legacy Net Unit Price",
+        currency_field="currency_id",
+        copy=False,
+    )
+    goldverse_legacy_priority_charge = fields.Monetary(
+        string="Legacy Priority Charge",
+        currency_field="currency_id",
+        copy=False,
+    )
     goldverse_base_price = fields.Monetary(
         string="Base Price",
         compute="_compute_goldverse_price_breakdown",
@@ -280,6 +305,11 @@ class LaundryOrderLine(models.Model):
 
     def _goldverse_ensure_unit_price(self):
         for line in self:
+            if line.goldverse_legacy_amount_override:
+                expected_price = line.goldverse_legacy_net_unit_price or 0.0
+                if abs((line.unit_price or 0.0) - expected_price) > 0.0001:
+                    line.unit_price = expected_price
+                continue
             if not line.service_id:
                 continue
             expected_price = line._goldverse_priority_unit_price()
@@ -325,8 +355,14 @@ class LaundryOrderLine(models.Model):
     @api.depends("quantity", "unit_price", "goldverse_discount", "tax_ids")
     def _compute_line_amount(self):
         for line in self:
-            line.discount = line._goldverse_discount_percent()
-        return super()._compute_line_amount()
+            line.with_context(
+                goldverse_allow_locked_order_write=True,
+                goldverse_refreshing_amounts=True,
+            ).discount = line._goldverse_discount_percent()
+        return super(LaundryOrderLine, self.with_context(
+            goldverse_allow_locked_order_write=True,
+            goldverse_refreshing_amounts=True,
+        ))._compute_line_amount()
 
     @api.depends("price_subtotal", "price_tax")
     def _compute_goldverse_total_amount(self):
@@ -340,9 +376,27 @@ class LaundryOrderLine(models.Model):
         "goldverse_priority",
         "quantity",
         "unit_price",
+        "goldverse_legacy_amount_override",
+        "goldverse_legacy_base_unit_price",
+        "goldverse_legacy_discount_amount",
+        "goldverse_legacy_net_unit_price",
+        "goldverse_legacy_priority_charge",
     )
     def _compute_goldverse_price_breakdown(self):
         for line in self:
+            if line.goldverse_legacy_amount_override:
+                quantity = line.quantity or 0.0
+                base_unit = line.goldverse_legacy_base_unit_price or 0.0
+                net_unit = line.goldverse_legacy_net_unit_price or 0.0
+                line.goldverse_base_price = base_unit
+                line.goldverse_discount_amount = (
+                    line.goldverse_legacy_discount_amount
+                    if line.goldverse_legacy_discount_amount
+                    else max((base_unit - net_unit) * quantity, 0.0)
+                )
+                line.goldverse_net_price = net_unit
+                line.goldverse_priority_charge = line.goldverse_legacy_priority_charge or 0.0
+                continue
             service = line.service_id
             net_price = service.list_price if service else 0.0
             base_price = service.goldverse_base_price if service and service.goldverse_base_price else net_price
