@@ -32,6 +32,11 @@ class LaundryExecutiveDashboard(models.TransientModel):
         compute="_compute_goldverse_command_center_html",
         sanitize=False,
     )
+    goldverse_header_html = fields.Html(
+        string="GoldVerse Command Center Header",
+        compute="_compute_goldverse_header_html",
+        sanitize=False,
+    )
     goldverse_company_warning = fields.Char(compute="_compute_goldverse_command_center_html")
     gv_total_sales = fields.Monetary(string="Total Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_cash_sales = fields.Monetary(string="Cash Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
@@ -1373,6 +1378,29 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "dcls": delta_class, "delta": escape(delta_text),
         }
 
+    @api.depends("company_id", "branch_id", "date_from", "date_to", "period_filter")
+    def _compute_goldverse_header_html(self):
+        for dashboard in self:
+            company = dashboard.company_id or dashboard.env.company
+            branch_label = dashboard.branch_id.display_name or _("All Branches")
+            user_name = dashboard.env.user.name or _("Administrator")
+            range_label = dashboard.date_range_label or ""
+            dashboard.goldverse_header_html = (
+                '<div class="gvcc-toolbar-inline">'
+                '<div class="gvcc-h-avatar"><i class="fa fa-trophy" aria-hidden="true"></i></div>'
+                '<div class="gvcc-h-text">'
+                '<p class="gvcc-h-title">Executive Command Center</p>'
+                '<p class="gvcc-h-sub">%(user)s · %(company)s · %(branch)s</p>'
+                '</div>'
+                '<span class="gvcc-live"><span class="gvcc-live-dot"></span>Live · %(range)s</span>'
+                '</div>'
+            ) % {
+                "user": escape(user_name),
+                "company": escape(company.name or "GoldVerse"),
+                "branch": escape(branch_label),
+                "range": escape(range_label),
+            }
+
     @api.depends("company_id", "branch_id", "date_from", "date_to", "period_filter", "gv_customer_type_filter", "gv_service_type_id")
     def _compute_goldverse_command_center_html(self):
         for dashboard in self:
@@ -1643,18 +1671,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
             dashboard.goldverse_command_center_html = f"""
                 <div class="gvcc-shell gv-command-center gv-command-center-luxe">
-                    <div class="gvcc-header">
-                        <div class="gvcc-h-left">
-                            <div class="gvcc-h-avatar"><i class="fa fa-trophy" aria-hidden="true"></i></div>
-                            <div>
-                                <p class="gvcc-h-title">Executive Command Center</p>
-                                <p class="gvcc-h-sub">{escape(user_name)} · {escape(company.name or "GoldVerse")} · {escape(branch_label)}</p>
-                            </div>
-                        </div>
-                        <div class="gvcc-h-right">
-                            <span class="gvcc-live"><span class="gvcc-live-dot"></span>{escape(_("Live"))} · {escape(range_label)}</span>
-                        </div>
-                    </div>
                     {warning_html}
                     <div class="gvcc-greet-row">
                         <div class="gvcc-greet">

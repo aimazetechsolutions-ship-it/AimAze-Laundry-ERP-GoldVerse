@@ -1004,6 +1004,99 @@
   color: #1f2937;
   padding: 4px 0 12px;
 }
+
+/* Single-row toolbar that merges the avatar/title block, period chips,
+   live indicator, and action buttons. */
+.o_goldverse_dashboard .goldverse-command-toolbar.gvcc-toolbar-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #d8d4e6;
+  background: #f3f0fa;
+}
+.o_goldverse_dashboard .goldverse-command-toolbar.gvcc-toolbar-row .gvcc-h-title {
+  color: #26215c;
+}
+.o_goldverse_dashboard .goldverse-command-toolbar.gvcc-toolbar-row .gvcc-h-sub {
+  color: #6b6480;
+}
+.o_goldverse_dashboard .gvcc-toolbar-brand {
+  flex: 1 1 280px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.o_goldverse_dashboard .gvcc-toolbar-brand .o_field_widget,
+.o_goldverse_dashboard .gvcc-toolbar-brand .o_field_widget > * {
+  width: 100%;
+}
+.o_goldverse_dashboard .gvcc-toolbar-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.o_goldverse_dashboard .gvcc-toolbar-inline .gvcc-h-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #3c3489;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  flex: 0 0 36px;
+}
+.o_goldverse_dashboard .gvcc-toolbar-inline .gvcc-h-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.o_goldverse_dashboard .gvcc-toolbar-inline .gvcc-h-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #11172a;
+}
+.o_goldverse_dashboard .gvcc-toolbar-inline .gvcc-h-sub {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 1px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.o_goldverse_dashboard .gvcc-toolbar-inline .gvcc-live {
+  flex: 0 0 auto;
+}
+.o_goldverse_dashboard .goldverse-command-toolbar.gvcc-toolbar-row > .goldverse-command-filters {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.o_goldverse_dashboard .goldverse-command-toolbar.gvcc-toolbar-row > .goldverse-command-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.o_goldverse_dashboard .gvcc-toolbar-row .o_form_label,
+.o_goldverse_dashboard .gvcc-toolbar-brand .o_form_label {
+  display: none;
+}
+@media (max-width: 980px) {
+  .o_goldverse_dashboard .gvcc-toolbar-brand {
+    flex: 1 1 100%;
+  }
+  .o_goldverse_dashboard .goldverse-command-toolbar.gvcc-toolbar-row > .goldverse-command-actions {
+    margin-left: 0;
+  }
+}
 .o_goldverse_dashboard .gvcc-shell .gvcc-header {
   display: flex;
   align-items: center;
