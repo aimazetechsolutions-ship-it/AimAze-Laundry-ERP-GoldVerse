@@ -478,6 +478,21 @@ def _import_rows(env, workbook_path, commit=False, limit=0):
             )
             if invoice.state == "draft":
                 invoice.action_post()
+            # Force date_maturity on the AR receivable line to match the
+            # invoice date so Aged Receivable buckets reflect the real age
+            # (Odoo computes date_maturity from invoice_date + payment terms
+            # at the moment of creation; our invoice_date is rewritten later
+            # via .write(), so date_maturity stays at today otherwise).
+            invoice_date_val = _date_or_false(row["order_date"])
+            if invoice_date_val:
+                rcv_lines = invoice.line_ids.filtered(
+                    lambda line: line.account_id.account_type == "asset_receivable"
+                )
+                for rcv_line in rcv_lines:
+                    if rcv_line.date_maturity != invoice_date_val:
+                        rcv_line.with_context(check_move_validity=False).sudo().write(
+                            {"date_maturity": invoice_date_val}
+                        )
             created_invoices += 1
             if not first_invoice_name:
                 first_invoice_name = invoice.name
