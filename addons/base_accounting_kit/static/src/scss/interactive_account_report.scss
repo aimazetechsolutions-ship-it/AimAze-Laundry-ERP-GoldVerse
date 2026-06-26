@@ -46,12 +46,12 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         position: sticky;
         top: 0;
         z-index: 20;
-        min-height: 44px !important;
+        min-height: 52px !important;
         display: flex;
         align-items: center;
         justify-content: flex-start;
         gap: 0;
-        padding: 6px 14px !important;
+        padding: 8px 16px !important;
         background: #ffffff;
         border-bottom: 1px solid #d9dde5;
     }
@@ -60,7 +60,7 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     .o_account_report_filters {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         flex-wrap: wrap;
     }
 
@@ -69,43 +69,43 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     }
 
     .o_account_report_filters {
-        margin-left: 16px;
+        margin-left: 20px;
     }
 
     .o_account_report_titlebar h1 {
         margin: 0 4px 0 4px;
         color: #111827;
-        font-size: 15px !important;
+        font-size: 17px !important;
         font-weight: 500;
-        line-height: 28px !important;
+        line-height: 32px !important;
         letter-spacing: 0;
     }
 
     .o_account_report_titlebar h1 .fa {
-        margin-left: 4px;
-        font-size: 11px !important;
+        margin-left: 6px;
+        font-size: 12px !important;
         color: #111827;
     }
 
     .o_account_export_btn,
     .o_account_filter_btn,
     .o_account_filter_select {
-        min-height: 28px !important;
-        height: 28px !important;
+        min-height: 34px !important;
+        height: 34px !important;
         border: 0 !important;
-        border-radius: 4px !important;
-        padding: 0 10px !important;
+        border-radius: 5px !important;
+        padding: 0 14px !important;
         color: #111827 !important;
         background: #e9edf3 !important;
-        font-size: 12.5px !important;
+        font-size: 13.5px !important;
         font-weight: 500 !important;
-        line-height: 28px !important;
+        line-height: 34px !important;
         white-space: nowrap;
         box-shadow: none !important;
     }
 
     .o_account_export_btn {
-        min-width: 44px !important;
+        min-width: 52px !important;
     }
 
     .o_account_export_btn.btn-primary {
@@ -115,14 +115,14 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     }
 
     .o_account_export_btn.btn-light {
-        min-width: 48px !important;
+        min-width: 56px !important;
         background: #e6ebf1 !important;
         border-color: #e6ebf1 !important;
     }
 
     .o_account_filter_btn .fa {
-        margin-right: 4px;
-        font-size: 12px !important;
+        margin-right: 5px;
+        font-size: 13px !important;
     }
 
     .o_account_filter_btn.active {
@@ -137,7 +137,7 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
 
     .o_account_quick_periods {
         display: inline-flex;
-        min-height: 28px !important;
+        min-height: 34px !important;
         padding: 3px !important;
         border: 1px solid rgba(123, 104, 166, 0.2);
         border-radius: 999px;
@@ -146,16 +146,16 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
 
     .o_account_quick_period_btn {
         min-width: 0;
-        min-height: 22px !important;
-        height: 22px !important;
-        padding: 0 11px !important;
+        min-height: 28px !important;
+        height: 28px !important;
+        padding: 0 14px !important;
         border: 0;
         border-radius: 999px;
         background: transparent;
         color: #334155;
-        font-size: 12px !important;
+        font-size: 13px !important;
         font-weight: 500;
-        line-height: 22px !important;
+        line-height: 28px !important;
     }
 
     .o_account_quick_period_btn:hover,
@@ -172,7 +172,7 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     }
 
     .o_account_date_range_dropdown .o_account_filter_btn {
-        min-width: 170px !important;
+        min-width: 200px !important;
         border-radius: 999px !important;
         background: #ffffff !important;
         border: 1px solid rgba(123, 104, 166, 0.2) !important;

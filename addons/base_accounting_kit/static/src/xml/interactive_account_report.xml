@@ -58,14 +58,6 @@
                         </div>
 
                         <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
-                            <i class="fa fa-user"/>
-                            <span><t t-esc="agedAccountLabel"/></span>
-                        </button>
-                        <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
-                            <i class="fa fa-folder-open"/>
-                            <span>Partners</span>
-                        </button>
-                        <button t-if="isAgedPartnerReport" type="button" class="btn btn-light o_account_filter_btn">
                             <i class="fa fa-file"/>
                             <span>Based on Due Date</span>
                         </button>
