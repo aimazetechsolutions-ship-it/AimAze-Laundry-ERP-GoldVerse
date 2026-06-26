@@ -66,8 +66,22 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         cr = self.env.cr
         user_company = self.env.company
         user_currency = user_company.currency_id
-        ResCurrency = self.env['res.currency'].with_context(date=date_from)
         company_ids = self._context.get('company_ids') or [user_company.id]
+
+        def _convert(amount, line_currency):
+            """Odoo 19-safe currency conversion (the original report called
+            res.currency._get_conversion_rate with a balance argument, which
+            silently returns a rate, not a converted amount, breaking the
+            per-bucket sums). Use Currency._convert which exists in all
+            modern Odoo versions and returns an actual converted amount."""
+            if not line_currency or line_currency == user_currency:
+                return amount
+            try:
+                return line_currency._convert(
+                    amount, user_currency, user_company, date_from
+                )
+            except Exception:
+                return amount
         move_state = ['draft', 'posted']
         if target_move == 'posted':
             move_state = ['posted']
@@ -132,20 +146,19 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             partner_id = line.partner_id.id or False
             if partner_id not in undue_amounts:
                 undue_amounts[partner_id] = 0.0
-            line_amount = ResCurrency._get_conversion_rate(line.company_id.currency_id,
-                                               user_currency, line.balance)
+            line_amount = _convert(line.balance, line.company_id.currency_id)
             if user_currency.is_zero(line_amount):
                 continue
             for partial_line in line.matched_debit_ids:
                 if partial_line.max_date <= date_from:
-                    line_amount += ResCurrency._get_conversion_rate(
-                        partial_line.company_id.currency_id, user_currency,
-                        partial_line.amount)
+                    line_amount += _convert(
+                        partial_line.amount, partial_line.company_id.currency_id
+                    )
             for partial_line in line.matched_credit_ids:
                 if partial_line.max_date <= date_from:
-                    line_amount -= ResCurrency._get_conversion_rate(
-                        partial_line.company_id.currency_id, user_currency,
-                        partial_line.amount)
+                    line_amount -= _convert(
+                        partial_line.amount, partial_line.company_id.currency_id
+                    )
             if not self.env.company.currency_id.is_zero(line_amount):
                 undue_amounts[partner_id] += line_amount
                 lines[partner_id].append({
@@ -189,20 +202,19 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 partner_id = line.partner_id.id or False
                 if partner_id not in partners_amount:
                     partners_amount[partner_id] = 0.0
-                line_amount = ResCurrency._get_conversion_rate(line.company_id.currency_id,
-                                                   user_currency, line.balance)
+                line_amount = _convert(line.balance, line.company_id.currency_id)
                 if user_currency.is_zero(line_amount):
                     continue
                 for partial_line in line.matched_debit_ids:
                     if partial_line.max_date <= date_from:
-                        line_amount += ResCurrency._get_conversion_rate(
-                            partial_line.company_id.currency_id, user_currency,
-                            partial_line.amount)
+                        line_amount += _convert(
+                            partial_line.amount, partial_line.company_id.currency_id
+                        )
                 for partial_line in line.matched_credit_ids:
                     if partial_line.max_date <= date_from:
-                        line_amount -= ResCurrency._get_conversion_rate(
-                            partial_line.company_id.currency_id, user_currency,
-                            partial_line.amount)
+                        line_amount -= _convert(
+                            partial_line.amount, partial_line.company_id.currency_id
+                        )
 
                 if not self.env.company.currency_id.is_zero(
                         line_amount):
