@@ -583,11 +583,26 @@ class InteractiveAccountReport(models.AbstractModel):
 
     @api.model
     def _goldverse_aged_open_amount(self, line, date_to, currency):
+        """Return the line's residual amount as of date_to in `currency`.
+
+        account.move.line.matched_debit_ids holds partial reconciles where
+        THIS line is on the credit side (so the matched partner is a debit
+        that offsets it) — to compute the residual we ADD those debits to
+        the balance (a credit balance like -1000 + matched debit 1000 = 0).
+        Conversely matched_credit_ids holds partials where THIS line is on
+        the debit side, so we SUBTRACT the matched credits (invoice +1000
+        - matched credit 1000 = 0).
+
+        The previous implementation had these signs swapped, which doubled
+        the absolute balance of every reconciled line in each aging bucket
+        (per-partner totals still cancelled to the right residual but the
+        per-bucket "Total Receivable" row was inflated into the millions).
+        """
         company_currency = line.company_id.currency_id
         amount = company_currency._convert(line.balance, currency, line.company_id, date_to)
         for partial in line.matched_debit_ids:
             if partial.max_date <= date_to:
-                amount -= partial.company_id.currency_id._convert(
+                amount += partial.company_id.currency_id._convert(
                     partial.amount,
                     currency,
                     partial.company_id,
@@ -595,7 +610,7 @@ class InteractiveAccountReport(models.AbstractModel):
                 )
         for partial in line.matched_credit_ids:
             if partial.max_date <= date_to:
-                amount += partial.company_id.currency_id._convert(
+                amount -= partial.company_id.currency_id._convert(
                     partial.amount,
                     currency,
                     partial.company_id,
