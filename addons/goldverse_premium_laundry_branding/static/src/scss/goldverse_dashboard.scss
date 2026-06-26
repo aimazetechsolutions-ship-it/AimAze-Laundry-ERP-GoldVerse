@@ -1380,8 +1380,9 @@
   text-align: center;
 }
 .o_goldverse_dashboard .gvcc-shell .gvcc-band {
-  background: linear-gradient(90deg, #1ca5b8 0%, #5a85f0 55%, #7a5cf0 100%);
-  color: #fff;
+  background: #ede5f5;
+  color: #4a2978;
+  border: 1px solid #d8d4e6;
   border-radius: 8px;
   padding: 8px 14px;
   display: flex;
@@ -1395,14 +1396,14 @@
 }
 .o_goldverse_dashboard .gvcc-shell .gvcc-band i {
   font-size: 14px;
-  opacity: 0.95;
+  color: #6b48a8;
 }
 .o_goldverse_dashboard .gvcc-shell .gvcc-band-title { flex: 0 0 auto; }
 .o_goldverse_dashboard .gvcc-shell .gvcc-band-meta {
   margin-left: auto;
   font-size: 10px;
   letter-spacing: 0.1em;
-  opacity: 0.9;
+  color: #6b6480;
   text-transform: none;
   font-weight: 500;
 }
