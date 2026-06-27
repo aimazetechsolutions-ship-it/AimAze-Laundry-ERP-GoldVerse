@@ -403,16 +403,23 @@ class InteractiveAccountReport extends Component {
     }
 
     setPendingCustomStart(value) {
-        const start = value || dateString(new Date());
-        this.state.pendingDateFrom = start;
-        if (!this.state.pendingDateTo || this.state.pendingDateTo < start) {
-            this.state.pendingDateTo = start;
+        // The native <input type="date"> can fire `change` with an empty
+        // value while the user is mid-edit (e.g. they cleared the year
+        // before typing a new one, leaving an invalid composite date).
+        // The previous implementation defaulted to today in that case,
+        // silently snapping the field back as the user typed. Preserve
+        // the raw input here and validate on Apply instead.
+        this.state.pendingDateFrom = value || "";
+        if (value && this.state.pendingDateTo && this.state.pendingDateTo < value) {
+            this.state.pendingDateTo = value;
         }
     }
 
     setPendingCustomEnd(value) {
-        const end = value || this.state.pendingDateFrom || dateString(new Date());
-        this.state.pendingDateTo = end < this.state.pendingDateFrom ? this.state.pendingDateFrom : end;
+        this.state.pendingDateTo = value || "";
+        if (value && this.state.pendingDateFrom && value < this.state.pendingDateFrom) {
+            this.state.pendingDateTo = this.state.pendingDateFrom;
+        }
     }
 
     cancelCustomRange() {
@@ -422,8 +429,15 @@ class InteractiveAccountReport extends Component {
     }
 
     applyCustomRange() {
-        const start = this.state.pendingDateFrom || dateString(new Date());
-        const end = this.state.pendingDateTo && this.state.pendingDateTo >= start ? this.state.pendingDateTo : start;
+        // Fall back to the current options (or today) only if the user
+        // left the field truly blank at Apply time, not on every keystroke.
+        const start = this.state.pendingDateFrom
+            || this.options.date_from
+            || dateString(new Date());
+        const rawEnd = this.state.pendingDateTo
+            || this.options.date_to
+            || start;
+        const end = rawEnd >= start ? rawEnd : start;
         this.state.dateMenuOpen = false;
         return this.updateOptions({
             period: "custom",
