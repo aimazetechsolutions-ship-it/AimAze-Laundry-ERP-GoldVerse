@@ -504,6 +504,11 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         border-right: 0;
     }
 
+    .o_account_trial_balance_table td:has(.o_account_line_action_wrap),
+    .o_account_trial_balance_table td.o_account_trial_name_cell {
+        overflow: visible;
+    }
+
     .o_account_trial_balance_table th:first-child,
     .o_account_trial_balance_table td:first-child {
         width: 49%;
@@ -596,6 +601,10 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     .o_account_aged_table th:last-child,
     .o_account_aged_table td:last-child {
         border-right: 0;
+    }
+
+    .o_account_aged_table td:has(.o_account_line_action_wrap) {
+        overflow: visible;
     }
 
     .o_account_aged_table th:first-child,
@@ -795,6 +804,14 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     .o_account_report_table th:last-child,
     .o_account_report_table td:last-child {
         border-right: 0;
+    }
+
+    /* Cells that host the line-action kebab popup must not clip — the
+       popup is absolute-positioned and would be invisible inside an
+       overflow:hidden cell. The inner text wrapper still clips. */
+    .o_account_report_table td:has(.o_account_line_action_wrap),
+    .o_account_report_table td:has(.o_account_report_line_button) {
+        overflow: visible;
     }
 
     .o_account_report_line:hover td {
