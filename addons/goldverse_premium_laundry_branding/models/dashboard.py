@@ -1229,13 +1229,25 @@ class LaundryExecutiveDashboard(models.TransientModel):
         customers = self._gv_customer_analytics(date_from, date_to)
         advances = self._gv_advance_values(date_from, date_to)
         monthly = self._gv_monthly_profit_trend(date_from, date_to)
+        # Revenue waterfall: Direct Cost + Operating Expenses + Net Profit = Revenue.
+        # Using Gross Profit here previously double-counted Operating Expenses
+        # (OpEx is already subtracted from Gross Profit to get Net Profit), so
+        # the donut total inflated to ~2x revenue. With Net Profit the slices
+        # sum back to Revenue when the period is profitable. When the period
+        # is a loss we surface that explicitly as a "Net Loss" slice using the
+        # absolute value so the donut still renders cleanly; in that case the
+        # center totals to Direct Cost + OpEx (i.e. total spend), which equals
+        # Revenue + |Net Loss|.
         cost_breakdown = []
         if profit["direct_cost"]:
             cost_breakdown.append(("Direct Cost", profit["direct_cost"]))
         if profit["operating_expense"]:
             cost_breakdown.append(("Operating Expenses", profit["operating_expense"]))
-        if profit["gross_profit"]:
-            cost_breakdown.append(("Gross Profit", profit["gross_profit"]))
+        net_profit_value = profit.get("net_profit") or 0.0
+        if net_profit_value > 0:
+            cost_breakdown.append(("Net Profit", net_profit_value))
+        elif net_profit_value < 0:
+            cost_breakdown.append(("Net Loss", abs(net_profit_value)))
         receivable_rows = customers["top_rows"]
         major_customer = max(receivable_rows, key=lambda row: row["outstanding"], default={"name": "", "outstanding": 0.0})
         collections_total = sum(collections.values())
