@@ -1043,18 +1043,24 @@ class LaundryExecutiveDashboard(models.TransientModel):
             '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="#dbeafe"/>%s%s</svg>'
         ) % (labels, width, height, padding, height - padding, width - padding, height - padding, "".join(polylines), month_labels)
 
-    def _gv_donut_chart(self, rows):
+    def _gv_donut_chart(self, rows, center_value=None):
+        """Render a donut. By default the center shows the sum of slices;
+        pass ``center_value`` to display a different amount (e.g. Revenue
+        for a Revenue-vs-Cost breakdown where the slice sum exceeds revenue
+        because of a loss). Slice proportions and percentages still use the
+        actual slice sum so the visual stays accurate."""
         rows = [(name, value) for name, value in rows if value]
         if not rows:
             return self._gv_empty_state()
         colors = ["#06b6d4", "#10b981", "#c9a227", "#f59e0b", "#8b5cf6", "#ef4444"]
-        total = sum(value for _, value in rows) or 1.0
-        total_amount, total_currency = self._gv_money_parts(total)
+        slice_total = sum(value for _, value in rows) or 1.0
+        display_total = center_value if center_value is not None else slice_total
+        total_amount, total_currency = self._gv_money_parts(display_total)
         cursor = 0.0
         stops = []
         legend = []
         for index, (name, value) in enumerate(rows[:6]):
-            pct = (value / total) * 100.0
+            pct = (value / slice_total) * 100.0
             color = colors[index % len(colors)]
             amount, currency = self._gv_money_parts(value)
             stops.append("%s %.2f%% %.2f%%" % (color, cursor, cursor + pct))
@@ -1739,7 +1745,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
                     {dashboard._gvcc_band("fa-pie-chart", _("Profitability & control"), _("monthly trend"))}
                     <div class="gvcc-grid gvcc-g3">
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Revenue vs cost breakdown"))}</p>{dashboard._gv_donut_chart(data["cost_breakdown"])}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Revenue vs cost breakdown"))}</p>{dashboard._gv_donut_chart(data["cost_breakdown"], center_value=data["revenue"])}</div>
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Gross profit % trend"))}</p>{dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#67c4a8")])}</div>
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Net profit % trend"))}</p>{dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#9e7bc4")])}</div>
                     </div>
