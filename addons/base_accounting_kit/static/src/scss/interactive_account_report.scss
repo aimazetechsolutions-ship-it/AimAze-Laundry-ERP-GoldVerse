@@ -489,10 +489,19 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         height: 35px;
         padding: 5px 14px;
         border-bottom: 1px solid #e1e5eb;
+        border-right: 1px solid #eef1f5;
         color: #111827;
         font-size: 13px;
         line-height: 18px;
         vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .o_account_trial_balance_table th:last-child,
+    .o_account_trial_balance_table td:last-child {
+        border-right: 0;
     }
 
     .o_account_trial_balance_table th:first-child,
@@ -574,10 +583,19 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         height: 35px;
         padding: 5px 10px;
         border-bottom: 1px solid #e0e5ec;
+        border-right: 1px solid #eef1f5;
         color: #111827;
         font-size: 13px;
         line-height: 18px;
         vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .o_account_aged_table th:last-child,
+    .o_account_aged_table td:last-child {
+        border-right: 0;
     }
 
     .o_account_aged_table th:first-child,
@@ -682,17 +700,17 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
 
     .o_account_general_ledger_sheet .o_account_report_table th:nth-child(2),
     .o_account_general_ledger_sheet .o_account_report_table td:nth-child(2) {
-        width: 12%;
+        width: 11%;
     }
 
     .o_account_general_ledger_sheet .o_account_report_table th:nth-child(3),
     .o_account_general_ledger_sheet .o_account_report_table td:nth-child(3) {
-        width: 15%;
+        width: 19%;
     }
 
     .o_account_general_ledger_sheet .o_account_report_table th:nth-child(4),
     .o_account_general_ledger_sheet .o_account_report_table td:nth-child(4) {
-        width: 10%;
+        width: 7%;
     }
 
     .o_account_general_ledger_sheet .o_account_report_table th:nth-child(5),
@@ -748,22 +766,35 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
 
     .o_account_report_table th {
         height: 29px;
-        padding: 5px 8px;
+        padding: 5px 10px;
         border-bottom: 1px solid #d7dee8;
+        border-right: 1px solid #e1e5eb;
         color: #111827;
         font-size: 12px;
         font-weight: 700;
         text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .o_account_report_table td {
         height: 29px;
-        padding: 4px 8px;
+        padding: 4px 10px;
         border-bottom: 1px solid #e1e5eb;
+        border-right: 1px solid #eef1f5;
         color: #17243b;
         font-size: 13px;
         line-height: 18px;
         vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .o_account_report_table th:last-child,
+    .o_account_report_table td:last-child {
+        border-right: 0;
     }
 
     .o_account_report_line:hover td {
