@@ -87,6 +87,31 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         color: #111827;
     }
 
+    .o_account_drill_back_btn {
+        min-height: 34px !important;
+        height: 34px !important;
+        border: 0 !important;
+        border-radius: 5px !important;
+        padding: 0 14px !important;
+        color: #ffffff !important;
+        background: #7d68ad !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+        line-height: 34px !important;
+        white-space: nowrap;
+        box-shadow: none !important;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        margin-right: 4px;
+    }
+    .o_account_drill_back_btn:hover {
+        background: #6b56a0 !important;
+    }
+    .o_account_drill_back_btn .fa {
+        font-size: 12px !important;
+    }
+
     .o_account_export_btn,
     .o_account_filter_btn,
     .o_account_filter_select {

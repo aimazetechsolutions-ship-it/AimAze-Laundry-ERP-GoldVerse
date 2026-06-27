@@ -128,6 +128,7 @@ class InteractiveAccountReport extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.reportKey = this.props.action.context.report_key || "profit_and_loss";
+        this.drillBack = this.props.action.context.drill_back || null;
         const now = new Date();
         const today = dateString(now);
         const defaultPeriod = "mtd";
@@ -315,6 +316,21 @@ class InteractiveAccountReport extends Component {
         this.state.dateMenuOpen = !this.state.dateMenuOpen;
         this.state.journalMenuOpen = false;
         this.state.openLineMenuId = null;
+    }
+
+    async goBackToParent() {
+        if (!this.drillBack) {
+            return;
+        }
+        await this.action.doAction({
+            type: "ir.actions.client",
+            tag: "base_accounting_kit.interactive_account_report",
+            name: this.drillBack.label || "Report",
+            context: {
+                report_key: this.drillBack.report_key,
+                default_options: this.drillBack.options,
+            },
+        });
     }
 
     toggleJournalMenu() {
@@ -642,6 +658,11 @@ class InteractiveAccountReport extends Component {
                         account_ids: [line.account_id],
                         account_search: accountLabel,
                         display_account: "all",
+                    },
+                    drill_back: {
+                        report_key: this.reportKey,
+                        options: { ...this.state.options },
+                        label: this.report.title || this.reportKey,
                     },
                 },
             });

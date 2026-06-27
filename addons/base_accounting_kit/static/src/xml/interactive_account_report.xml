@@ -5,6 +5,10 @@
             <div class="o_account_interactive_report">
                 <header class="o_account_report_toolbar">
                     <div class="o_account_report_titlebar">
+                        <button t-if="drillBack" type="button" class="btn btn-light o_account_drill_back_btn" t-on-click="() => this.goBackToParent()" t-att-title="'Back to ' + (drillBack.label || 'previous report')">
+                            <i class="fa fa-arrow-left"/>
+                            <span>Back</span>
+                        </button>
                         <button type="button" class="btn btn-primary o_account_export_btn" t-on-click="() => this.printPdf()">PDF</button>
                         <button type="button" class="btn btn-light o_account_export_btn" t-on-click="() => this.exportXlsx()">XLSX</button>
                         <h1>
