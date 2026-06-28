@@ -6,9 +6,19 @@
         <field name="arch" type="xml">
             <form string="Customer Complaint">
                 <header>
+                    <button name="action_goldverse_close_complaint" type="object" string="Close Complaint"
+                            class="oe_highlight"
+                            invisible="state not in ('compensation','approved')"
+                            confirm="Mark this complaint as resolved and Closed?"/>
                     <field name="state" widget="statusbar" statusbar_visible="new,review,approved,compensation,closed" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
+                    <field name="goldverse_is_locked" invisible="1"/>
+                    <div class="alert alert-info mb-2"
+                         role="alert"
+                         invisible="not goldverse_is_locked">
+                        <i class="fa fa-lock"/> This complaint is in <strong><field name="state" readonly="1" nolabel="1" class="oe_inline"/></strong> state. Only a Laundry Admin can edit it.
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1" placeholder="New"/>
@@ -16,30 +26,31 @@
                     </div>
                     <group>
                         <group string="Customer &amp; Order">
-                            <field name="partner_id" required="1" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}"/>
-                            <field name="order_id" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}" domain="[('partner_id', '=', partner_id)]"/>
+                            <field name="partner_id" required="1" readonly="goldverse_is_locked" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}"/>
+                            <field name="order_id" readonly="goldverse_is_locked" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}" domain="[('partner_id', '=', partner_id)]"/>
                             <field name="branch_id" readonly="1"/>
                         </group>
                         <group string="Complaint">
-                            <field name="complaint_type" required="1"/>
-                            <field name="priority" widget="priority"/>
-                            <field name="goldverse_responsible_ids" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="complaint_type" required="1" readonly="goldverse_is_locked"/>
+                            <field name="priority" widget="priority" readonly="goldverse_is_locked"/>
+                            <field name="goldverse_responsible_ids" widget="many2many_tags" readonly="goldverse_is_locked" options="{'no_create': True, 'no_create_edit': True}"/>
                         </group>
                     </group>
                     <separator string="Description"/>
                     <field name="notes" nolabel="1" widget="text" class="gv-complaint-notes"
+                           readonly="goldverse_is_locked"
                            placeholder="What happened? Customer's exact words, items affected, expected resolution..."/>
                     <group string="Resolution" invisible="state not in ('compensation','approved','closed')">
                         <group>
-                            <field name="compensation_amount"/>
-                            <field name="refund_amount"/>
+                            <field name="compensation_amount" readonly="goldverse_is_locked"/>
+                            <field name="refund_amount" readonly="goldverse_is_locked"/>
                         </group>
                         <group>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
                     <group string="Attachment">
-                        <field name="attachment" filename="name" nolabel="1"/>
+                        <field name="attachment" filename="name" nolabel="1" readonly="goldverse_is_locked"/>
                     </group>
                 </sheet>
                 <chatter/>
