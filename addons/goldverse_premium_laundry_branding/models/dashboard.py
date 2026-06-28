@@ -1371,6 +1371,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
         order_count = len(orders) or len(invoices)
         previous_order_count = len(previous_orders) or len(previous_invoices)
         total_qty = sum(orders.mapped("line_ids.quantity")) if orders else 0.0
+        total_service_items = len(orders.mapped("line_ids")) if orders else 0
         total_expenses = self._gv_total_expense_value(date_from, date_to)
         previous_total_expenses = self._gv_total_expense_value(previous_from, previous_to)
         top_expenses = self._gv_top_expense_total(date_from, date_to)
@@ -1387,6 +1388,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "previous_profit": previous_profit,
             "orders": order_count,
             "total_qty": total_qty,
+            "total_service_items": total_service_items,
             "previous_orders": previous_order_count,
             "average_order_value": (revenue / order_count) if order_count else 0.0,
             "previous_aov": (previous_revenue / previous_order_count) if previous_order_count else 0.0,
@@ -1694,13 +1696,13 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 ),
             ])
 
-            orders_qty_palette = dashboard.GVCC_PALETTE.get("mint", dashboard.GVCC_PALETTE["blue"])
-            orders_qty_tile = (
+            items_qty_palette = dashboard.GVCC_PALETTE.get("purple", dashboard.GVCC_PALETTE["blue"])
+            items_qty_tile = (
                 '<div class="gvcc-ptile gvcc-ptile-split" style="background:%(bg)s;color:%(ink)s">'
                 '<div class="gvcc-ptile-split-col">'
-                '<p class="gvcc-ptile-value">%(orders)s</p>'
-                '<p class="gvcc-ptile-label">ORDERS</p>'
-                '<p class="gvcc-ptile-sub">%(orders_sub)s</p>'
+                '<p class="gvcc-ptile-value">%(items)s</p>'
+                '<p class="gvcc-ptile-label">SERVICE ITEMS</p>'
+                '<p class="gvcc-ptile-sub">%(items_sub)s</p>'
                 '</div>'
                 '<div class="gvcc-ptile-split-sep"></div>'
                 '<div class="gvcc-ptile-split-col">'
@@ -1710,15 +1712,19 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 '</div>'
                 '</div>'
             ) % {
-                "bg": orders_qty_palette["bg"],
-                "ink": orders_qty_palette["ink"],
-                "orders": escape(dashboard._gv_number(data["orders"])),
-                "orders_sub": escape(_("period total")),
+                "bg": items_qty_palette["bg"],
+                "ink": items_qty_palette["ink"],
+                "items": escape(dashboard._gv_number(data["total_service_items"])),
+                "items_sub": escape(_("line entries")),
                 "qty": escape(dashboard._gv_number(data["total_qty"])),
                 "qty_sub": escape(_("garments / items")),
             }
             pulse_tiles = "".join([
-                orders_qty_tile,
+                dashboard._gvcc_pulse_tile(
+                    dashboard._gv_number(data["orders"]), "ORDERS", "mint",
+                    _("period total"),
+                ),
+                items_qty_tile,
                 dashboard._gvcc_pulse_tile(
                     dashboard._gv_number(data["complaints_pending"]), "COMPLAINTS", "peach",
                     _("action needed") if data["complaints_pending"] else _("all clear"),
