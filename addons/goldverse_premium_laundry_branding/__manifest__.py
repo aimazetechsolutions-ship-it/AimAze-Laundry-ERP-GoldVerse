@@ -48,6 +48,7 @@
         "views/sales_register_views.xml",
         "views/laundry_dashboard_filters.xml",
         "views/laundry_dashboard_export.xml",
+        "views/dashboard_drill_views.xml",
     ],
     "assets": {
         "web.assets_backend": [

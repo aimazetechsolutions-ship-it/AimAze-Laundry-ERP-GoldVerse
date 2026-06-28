@@ -165,6 +165,24 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "target": "current",
         }
 
+    def _goldverse_inject_payment_drill_view(self, action):
+        view = self.env.ref(
+            "goldverse_premium_laundry_branding.view_account_payment_dashboard_tree",
+            raise_if_not_found=False,
+        )
+        if not view or not action:
+            return
+        new_views = []
+        replaced = False
+        for view_id, mode in action.get("views") or []:
+            if mode == "list" and not replaced:
+                new_views.append((view.id, "list"))
+                replaced = True
+            else:
+                new_views.append((view_id, mode))
+        if replaced:
+            action["views"] = new_views
+
     @api.model
     def _goldverse_find_company(self):
         company = self.env["res.company"].sudo().search([("name", "ilike", "GoldVerse")], limit=1)
@@ -363,13 +381,19 @@ class LaundryExecutiveDashboard(models.TransientModel):
             return self._goldverse_action(_("Total Sales"), "account.move", self._gv_invoice_domain(date_from, date_to), "list,form,pivot,graph")
         if card == "gv_cash_sales":
             date_from, date_to = self._gv_period_date_bounds()
-            return self._goldverse_action(_("Cash Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "cash"), "list,form,pivot,graph")
+            action = self._goldverse_action(_("Cash Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "cash"), "list,form,pivot,graph")
+            self._goldverse_inject_payment_drill_view(action)
+            return action
         if card == "gv_bank_sales":
             date_from, date_to = self._gv_period_date_bounds()
-            return self._goldverse_action(_("Bank Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "bank"), "list,form,pivot,graph")
+            action = self._goldverse_action(_("Bank Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "bank"), "list,form,pivot,graph")
+            self._goldverse_inject_payment_drill_view(action)
+            return action
         if card == "gv_ibft_sales":
             date_from, date_to = self._gv_period_date_bounds()
-            return self._goldverse_action(_("IBFT Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "ibft"), "list,form,pivot,graph")
+            action = self._goldverse_action(_("IBFT Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "ibft"), "list,form,pivot,graph")
+            self._goldverse_inject_payment_drill_view(action)
+            return action
         if card == "gv_credit_sales":
             date_from, date_to = self._gv_period_date_bounds()
             return self._goldverse_action(_("Credit Sales"), "account.move", self._gv_invoice_domain(date_from, date_to) + [("amount_residual", ">", 0)], "list,form,pivot,graph")
