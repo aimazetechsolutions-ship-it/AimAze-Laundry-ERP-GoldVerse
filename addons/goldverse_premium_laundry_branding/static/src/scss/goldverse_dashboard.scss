@@ -1309,9 +1309,10 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
-.o_goldverse_dashboard .gvcc-shell .gvcc-ptile-split {
-  display: flex;
-  flex-direction: row;
+.o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles > .gvcc-ptile.gvcc-ptile-split,
+.o_goldverse_dashboard .gvcc-shell .gvcc-ptile.gvcc-ptile-split {
+  display: flex !important;
+  flex-direction: row !important;
   align-items: stretch;
   justify-content: space-between;
   gap: 8px;
