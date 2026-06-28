@@ -17,7 +17,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ("itd", "ITD"),
             ("custom", "Custom"),
         ],
-        default="today",
+        default="itd",
         required=True,
         string="Period",
     )
@@ -198,11 +198,16 @@ class LaundryExecutiveDashboard(models.TransientModel):
         dashboard = self.create(
             {
                 "company_id": company.id,
-                "period_filter": "today",
+                "period_filter": "itd",
                 "date_from": today,
                 "date_to": today,
             }
         )
+        try:
+            dashboard.date_from = dashboard._goldverse_inception_date()
+            dashboard.date_to = today
+        except Exception:
+            pass
         return {
             "type": "ir.actions.act_window",
             "name": _("Executive Dashboard"),
@@ -238,7 +243,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 self.env.uid,
                 _("Executive Dashboard"),
                 company.id,
-                "today",
+                "itd",
                 today,
                 today,
             ),
@@ -258,11 +263,15 @@ class LaundryExecutiveDashboard(models.TransientModel):
     def goldverse_apply_today_dashboard_defaults(self):
         today = fields.Date.context_today(self)
         dashboards = self.sudo().search([])
-        if dashboards:
-            dashboards.write(
+        for dashboard in dashboards:
+            try:
+                inception = dashboard._goldverse_inception_date()
+            except Exception:
+                inception = today
+            dashboard.write(
                 {
-                    "period_filter": "today",
-                    "date_from": today,
+                    "period_filter": "itd",
+                    "date_from": inception,
                     "date_to": today,
                 }
             )

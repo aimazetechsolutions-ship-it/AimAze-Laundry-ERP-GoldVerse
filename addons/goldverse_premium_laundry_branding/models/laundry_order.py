@@ -772,6 +772,21 @@ class LaundryOrder(models.Model):
                 "Customer '%s' is BLOCKED and cannot place new laundry orders. Ask a Laundry Admin to unblock the customer first."
             ) % (partner.display_name or partner.name or ""))
 
+    @api.onchange("mobile_partner_id", "partner_id")
+    def _onchange_goldverse_warn_if_partner_blocked(self):
+        partner = self.mobile_partner_id or self.partner_id
+        if not partner or not partner.goldverse_is_blocked:
+            return
+        reason = partner.goldverse_block_reason and (" Reason: %s." % partner.goldverse_block_reason) or ""
+        return {
+            "warning": {
+                "title": _("Customer Blocked"),
+                "message": _(
+                    "Customer '%s' is BLOCKED and cannot place new laundry orders.%s\n\nPick a different customer, or ask a Laundry Admin to unblock this customer first."
+                ) % (partner.display_name or partner.name or "", reason),
+            }
+        }
+
     @api.model_create_multi
     def create(self, vals_list):
         for index, vals in enumerate(vals_list):
