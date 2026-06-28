@@ -31,7 +31,7 @@
         <field name="inherit_id" ref="account.view_invoice_tree"/>
         <field name="priority">99</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_id']" position="after">
+            <xpath expr="//field[@name='invoice_date_due']" position="after">
                 <field name="aimaze_laundry_order_id" string="Laundry Order" optional="show"/>
             </xpath>
         </field>
