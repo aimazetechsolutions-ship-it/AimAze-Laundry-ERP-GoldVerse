@@ -75,6 +75,12 @@ class AccountPayment(models.Model):
         readonly=True,
         copy=False,
     )
+    goldverse_laundry_order_date = fields.Datetime(
+        related="aimaze_laundry_order_id.order_date",
+        string="Order Date",
+        readonly=True,
+        store=False,
+    )
 
     def _goldverse_book_excess_to_income(self):
         """If this inbound payment left the partner with a credit AR residual,

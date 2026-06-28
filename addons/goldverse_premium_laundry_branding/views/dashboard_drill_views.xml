@@ -9,6 +9,7 @@
                 <field name="date"/>
                 <field name="name"/>
                 <field name="aimaze_laundry_order_id" string="Order No." optional="show"/>
+                <field name="goldverse_laundry_order_date" string="Order Date" widget="datetime" optional="show"/>
                 <field name="journal_id"/>
                 <field name="payment_method_line_id"/>
                 <field name="partner_id" string="Customer"/>
