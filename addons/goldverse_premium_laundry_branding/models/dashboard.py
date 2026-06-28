@@ -51,7 +51,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
     gv_gross_profit = fields.Monetary(string="Gross Profit", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_total_expenses = fields.Monetary(string="Total Exp", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_net_profit = fields.Monetary(string="Net Profit", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
-    gv_top_expenses = fields.Monetary(string="Top 5 Expenses", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
+    gv_top_expenses = fields.Monetary(string="Top 10 Expenses", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_receivables = fields.Monetary(string="Receivables", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_advances_payables = fields.Monetary(string="Advances Payables", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_cash_sales_share_label = fields.Char(string="Cash Sales Share", compute="_compute_goldverse_dashboard_cards")
@@ -423,7 +423,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
         if card == "gv_net_profit":
             return self._goldverse_action(_("Net Profit Journal Items"), "account.move.line", self._goldverse_profit_domain(include_operating=True), "list,pivot,graph")
         if card == "gv_top_expenses":
-            return self._goldverse_action(_("Top 5 Expenses"), "account.move.line", self._goldverse_top_expense_domain(), "list,pivot,graph")
+            return self._goldverse_action(_("Top 10 Expenses"), "account.move.line", self._goldverse_top_expense_domain(), "list,pivot,graph")
         if card == "gv_receivables":
             return self._goldverse_action(_("Receivables"), "account.move.line", self._goldverse_receivable_domain(), "list,pivot,graph")
         if card == "gv_advances_payables":
@@ -580,7 +580,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ("date", "<=", date_to),
             ("account_id.account_type", "in", ("expense", "expense_depreciation", "expense_direct_cost")),
         ]
-        grouped = MoveLine.read_group(base_domain, ["balance:sum"], ["account_id"], orderby="balance desc", limit=5)
+        grouped = MoveLine.read_group(base_domain, ["balance:sum"], ["account_id"], orderby="balance desc", limit=10)
         rows = []
         for group in grouped:
             account = group.get("account_id")
@@ -1003,13 +1003,14 @@ class LaundryExecutiveDashboard(models.TransientModel):
             '</div>'
         )
 
-    def _gv_bar_chart(self, rows, label="Revenue"):
+    def _gv_bar_chart(self, rows, label="Revenue", limit=5):
         if not rows:
             return self._gv_empty_state()
-        total = sum(value for _, value in rows) or 1.0
-        max_value = max(value for _, value in rows) or 1.0
+        slice_ = rows[:limit]
+        total = sum(value for _, value in slice_) or 1.0
+        max_value = max(value for _, value in slice_) or 1.0
         rendered = []
-        for name, value in rows[:5]:
+        for name, value in slice_:
             width = max(4.0, (value / max_value) * 100.0)
             share = (value / total) * 100.0
             rendered.append(
@@ -1771,16 +1772,29 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard._gvcc_kcell("AVG SPEND", dashboard._gv_money(data["customers"]["avg_spend"]), "peach"),
             ])
 
-            collection_color = ["mint", "blue", "peach", "purple", "coral", "pink"]
-            collection_items = sorted(data["collections"].items()) if data["collections"] else []
+            collection_buckets = [
+                ("CASH", "Cash Collection", "mint", "gv_cash_sales"),
+                ("BANK", "Bank Collection", "blue", "gv_bank_sales"),
+                ("IBFT", "IBFT Collection", "peach", "gv_ibft_sales"),
+            ]
             collection_cells = "".join(
                 dashboard._gvcc_kcell(
-                    str(name).upper().replace(" COLLECTION", ""),
-                    dashboard._gv_money(value),
-                    collection_color[i % len(collection_color)],
+                    label,
+                    dashboard._gv_money(data["collections"].get(key, 0.0)),
+                    color,
+                    card_key=card_key,
                 )
-                for i, (name, value) in enumerate(collection_items)
-            ) or dashboard._gv_empty_state()
+                for label, key, color, card_key in collection_buckets
+            )
+            extra_keys = sorted(k for k in (data["collections"] or {}).keys() if k not in ("Cash Collection", "Bank Collection", "IBFT Collection"))
+            extra_palette = ["purple", "coral", "pink"]
+            for idx, key in enumerate(extra_keys):
+                collection_cells += dashboard._gvcc_kcell(
+                    str(key).upper().replace(" COLLECTION", ""),
+                    dashboard._gv_money(data["collections"].get(key, 0.0)),
+                    extra_palette[idx % len(extra_palette)],
+                    card_key="gv_cash_bank_collections",
+                )
 
             advance_cells = "".join([
                 dashboard._gvcc_kcell("RECEIVED", dashboard._gv_money(data["advances"]["received"]), "mint"),
@@ -1867,7 +1881,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
                     {dashboard._gvcc_band("fa-bell", _("Expenses & executive alerts"), _("live signals"))}
                     <div class="gvcc-grid gvcc-g6040">
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top 5 expenses"))}</p>{dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense")}</div>
+                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_top_expenses")}><p class="gvcc-card-title">{escape(_("Top 10 expenses"))}</p>{dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense", limit=10)}</div>
                         <div class="gvcc-card gvcc-alerts-card"><p class="gvcc-card-title">{escape(_("Executive alerts"))}</p><div class="gvcc-alerts">{dashboard._gv_alerts(data)}</div></div>
                     </div>
                 </div>
