@@ -50,7 +50,7 @@
                 <field name="mobile_partner_id"
                        string="Mobile"
                        required="1"
-                       domain="[('customer_rank', '&gt;', 0), '|', ('mobile', '!=', False), ('phone', '!=', False)]"
+                       domain="[('customer_rank', '&gt;', 0), ('goldverse_is_blocked', '=', False), '|', ('mobile', '!=', False), ('phone', '!=', False)]"
                        context="{'goldverse_mobile_lookup': True, 'default_customer_rank': 1, 'default_laundry_customer_type': customer_type, 'default_goldverse_customer_category': customer_type or 'b2c', 'default_is_company': customer_type == 'b2b', 'default_company_type': customer_type == 'b2b' and 'company' or 'person'}"
                        options="{'no_quick_create': True}"/>
             </xpath>
