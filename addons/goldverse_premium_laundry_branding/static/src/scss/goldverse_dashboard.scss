@@ -1471,6 +1471,28 @@
   white-space: nowrap;
 }
 .o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-out-due { color: #8b1e1e; font-weight: 600; }
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tfoot tr.gv-top10-total-row td {
+  background: #f0ecf7;
+  border-top: 2px solid #c8bce1;
+  border-bottom: none;
+  font-weight: 700;
+  color: #4a2978;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tfoot tr.gv-top10-total-row .gv-top10-total-label {
+  text-align: right;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #4a2978;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tfoot tr.gv-top10-total-row .gv-top10-num {
+  font-size: 13px;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tfoot tr.gv-top10-total-row:hover td {
+  background: #f0ecf7;
+}
 .o_goldverse_dashboard .gvcc-shell .gvcc-top10-row .gv-top10-table .gv-top10-name { max-width: 220px; }
 .o_goldverse_dashboard .gvcc-shell .gvcc-card {
   background: #fff;

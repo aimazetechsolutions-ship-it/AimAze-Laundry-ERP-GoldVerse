@@ -1053,7 +1053,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
             return self._gv_empty_state()
         amount_key = "outstanding" if mode == "outstanding" else "revenue"
         amount_label = "Outstanding" if mode == "outstanding" else "Revenue"
-        total_amount = sum((row.get(amount_key) or 0.0) for row in slice_) or 1.0
+        total_amount_raw = sum((row.get(amount_key) or 0.0) for row in slice_)
+        total_orders = sum((row.get("orders") or 0) for row in slice_)
+        total_amount = total_amount_raw or 1.0
         body_rows = []
         for idx, row in enumerate(slice_, start=1):
             amount = row.get(amount_key) or 0.0
@@ -1079,6 +1081,21 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     share,
                 )
             )
+        total_amount_cls = "gv-top10-num"
+        if mode == "outstanding" and total_amount_raw > 0:
+            total_amount_cls = "gv-top10-num gv-top10-out-due"
+        total_row = (
+            '<tr class="gv-top10-total-row">'
+            '<td colspan="2" class="gv-top10-total-label">Top 10 Total</td>'
+            '<td class="gv-top10-num">%s</td>'
+            '<td class="%s">%s</td>'
+            '<td class="gv-top10-share">100.0%%</td>'
+            '</tr>'
+        ) % (
+            escape(self._gv_number(total_orders)),
+            total_amount_cls,
+            escape(self._gv_money(total_amount_raw)),
+        )
         return (
             '<div class="gv-top10-table-wrap"><table class="gv-top10-table">'
             '<thead><tr>'
@@ -1087,8 +1104,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
             '<th class="gv-top10-num">Orders</th>'
             '<th class="gv-top10-num">%s</th>'
             '<th class="gv-top10-share">Share</th>'
-            '</tr></thead><tbody>%s</tbody></table></div>'
-        ) % (escape(amount_label), "".join(body_rows))
+            '</tr></thead><tbody>%s</tbody>'
+            '<tfoot>%s</tfoot>'
+            '</table></div>'
+        ) % (escape(amount_label), "".join(body_rows), total_row)
 
     def _gv_line_chart(self, rows, series):
         if not rows or not any(any(row.get(key) for key, _label, _color in series) for row in rows):
