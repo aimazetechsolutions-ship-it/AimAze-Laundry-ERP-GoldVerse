@@ -193,6 +193,62 @@ class LaundryOrder(models.Model):
         store=True,
         currency_field="currency_id",
     )
+    goldverse_partner_outstanding_balance = fields.Monetary(
+        string="Customer Previous Outstanding",
+        compute="_compute_goldverse_partner_outstanding_balance",
+        currency_field="currency_id",
+        help="Sum of unpaid posted customer invoice residuals for this partner, excluding the current order's invoice.",
+    )
+    goldverse_partner_outstanding_count = fields.Integer(
+        string="Outstanding Invoice Count",
+        compute="_compute_goldverse_partner_outstanding_balance",
+    )
+
+    @api.depends("partner_id", "invoice_id", "invoice_id.payment_state", "company_id")
+    def _compute_goldverse_partner_outstanding_balance(self):
+        AccountMove = self.env["account.move"].sudo()
+        for order in self:
+            partner = order.partner_id.commercial_partner_id or order.partner_id
+            if not partner:
+                order.goldverse_partner_outstanding_balance = 0.0
+                order.goldverse_partner_outstanding_count = 0
+                continue
+            domain = [
+                ("move_type", "in", ("out_invoice", "out_refund")),
+                ("state", "=", "posted"),
+                ("payment_state", "in", ("not_paid", "partial", "in_payment")),
+                ("partner_id.commercial_partner_id", "=", partner.id),
+            ]
+            if order.company_id:
+                domain.append(("company_id", "=", order.company_id.id))
+            if order.invoice_id:
+                domain.append(("id", "!=", order.invoice_id.id))
+            unpaid = AccountMove.search(domain)
+            order.goldverse_partner_outstanding_balance = sum(unpaid.mapped("amount_residual"))
+            order.goldverse_partner_outstanding_count = len(unpaid)
+
+    def action_goldverse_open_partner_outstanding(self):
+        self.ensure_one()
+        partner = self.partner_id.commercial_partner_id or self.partner_id
+        domain = [
+            ("move_type", "in", ("out_invoice", "out_refund")),
+            ("state", "=", "posted"),
+            ("payment_state", "in", ("not_paid", "partial", "in_payment")),
+            ("partner_id.commercial_partner_id", "=", partner.id),
+        ]
+        if self.company_id:
+            domain.append(("company_id", "=", self.company_id.id))
+        if self.invoice_id:
+            domain.append(("id", "!=", self.invoice_id.id))
+        return {
+            "type": "ir.actions.act_window",
+            "name": "%s — Outstanding Invoices" % (partner.display_name or ""),
+            "res_model": "account.move",
+            "view_mode": "list,form",
+            "domain": domain,
+            "context": {"create": False},
+            "target": "current",
+        }
 
     @api.depends("partner_id")
     def _compute_goldverse_mobile_partner_id(self):

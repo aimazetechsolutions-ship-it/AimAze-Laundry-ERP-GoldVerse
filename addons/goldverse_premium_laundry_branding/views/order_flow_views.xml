@@ -89,6 +89,30 @@
             <xpath expr="//field[@name='expected_delivery_datetime']" position="after">
                 <field name="goldverse_actual_delivery_datetime" readonly="1"/>
             </xpath>
+            <xpath expr="//sheet" position="inside">
+                <field name="goldverse_partner_outstanding_balance" invisible="1"/>
+                <field name="goldverse_partner_outstanding_count" invisible="1"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning gv-outstanding-alert mb-0"
+                     role="alert"
+                     invisible="not partner_id or goldverse_partner_outstanding_balance &lt;= 0">
+                    <strong><i class="fa fa-exclamation-triangle"/> Customer has previous outstanding balance:</strong>
+                    <span class="ms-1">
+                        <field name="goldverse_partner_outstanding_balance" readonly="1" nolabel="1" class="oe_inline"/>
+                    </span>
+                    <span class="ms-2 text-muted">across</span>
+                    <span class="ms-1">
+                        <field name="goldverse_partner_outstanding_count" readonly="1" nolabel="1" class="oe_inline"/>
+                    </span>
+                    <span class="ms-1 text-muted">unpaid invoice(s).</span>
+                    <button name="action_goldverse_open_partner_outstanding"
+                            type="object"
+                            string="View &amp; Recover"
+                            class="btn btn-sm btn-warning ms-3"
+                            invisible="goldverse_partner_outstanding_balance &lt;= 0"/>
+                </div>
+            </xpath>
         </field>
     </record>
 
