@@ -1774,8 +1774,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
             collection_buckets = [
                 ("CASH", "Cash Collection", "mint", "gv_cash_sales"),
-                ("BANK", "Bank Collection", "blue", "gv_bank_sales"),
                 ("IBFT", "IBFT Collection", "peach", "gv_ibft_sales"),
+                ("BANK", "Bank Collection", "blue", "gv_bank_sales"),
             ]
             collection_cells = "".join(
                 dashboard._gvcc_kcell(
@@ -1787,7 +1787,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 for label, key, color, card_key in collection_buckets
             )
             extra_keys = sorted(k for k in (data["collections"] or {}).keys() if k not in ("Cash Collection", "Bank Collection", "IBFT Collection"))
-            extra_palette = ["purple", "coral", "pink"]
+            extra_palette = ["coral", "pink"]
             for idx, key in enumerate(extra_keys):
                 collection_cells += dashboard._gvcc_kcell(
                     str(key).upper().replace(" COLLECTION", ""),
@@ -1795,6 +1795,13 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     extra_palette[idx % len(extra_palette)],
                     card_key="gv_cash_bank_collections",
                 )
+            collection_total_value = sum((data["collections"] or {}).values()) or 0.0
+            collection_cells += dashboard._gvcc_kcell(
+                "TOTAL",
+                dashboard._gv_money(collection_total_value),
+                "purple",
+                card_key="gv_cash_bank_collections",
+            )
 
             advance_cells = "".join([
                 dashboard._gvcc_kcell("RECEIVED", dashboard._gv_money(data["advances"]["received"]), "mint"),
