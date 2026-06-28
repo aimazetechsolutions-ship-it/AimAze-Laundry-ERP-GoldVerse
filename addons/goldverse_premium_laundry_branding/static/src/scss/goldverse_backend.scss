@@ -3186,3 +3186,77 @@
 .gv-customer-locked-form .o_form_button_cancel {
   display: inline-block !important;
 }
+
+/* === Mobile responsive: general backend tweaks for phones === */
+@media (max-width: 768px) {
+  /* Forms: collapse two-column groups to single column */
+  .o_form_view .o_inner_group,
+  .o_form_view .o_group {
+    grid-template-columns: 1fr !important;
+  }
+  /* List view: enable horizontal scroll so columns don't squish */
+  .o_list_view {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Status bar: wrap labels */
+  .o_form_view .o_statusbar_status {
+    flex-wrap: wrap;
+  }
+  .o_form_view .o_statusbar_status > .o_arrow_button {
+    min-width: auto;
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  /* Smart buttons in header: shrink + wrap */
+  .o_form_view .o-form-buttonbox {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .o_form_view .o-form-buttonbox .oe_stat_button {
+    min-width: 90px;
+    flex: 1 1 auto;
+  }
+  /* Notebook tabs: enable horizontal scroll */
+  .o_form_view .o_notebook .o_notebook_headers {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  /* Top action bar: wrap */
+  .o_form_view .o_cp_action_menus,
+  .o_form_view .o_control_panel {
+    flex-wrap: wrap;
+  }
+  /* Customer complaint description: reduce min height on small */
+  .gv-complaint-notes textarea {
+    min-height: 160px !important;
+  }
+  /* Receipt template top-10 / top-customer alerts: stack content */
+  .alert.gv-outstanding-alert {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Tighter padding for tiny screens */
+  .o_form_view .o_form_sheet {
+    padding: 8px !important;
+  }
+  /* Hide breadcrumbs ancestors on tiny screens (Odoo shows them in dropdown) */
+  .o_breadcrumb .breadcrumb-item:not(.active):not(:last-child) {
+    display: none;
+  }
+  /* Search panel: full-screen overlay */
+  .o_search_panel {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh;
+    overflow-y: auto;
+  }
+}

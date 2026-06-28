@@ -1676,3 +1676,99 @@
   margin-top: 4px;
   background: #f0ecf7;
 }
+
+/* === Mobile responsive: phones and small tablets === */
+@media (max-width: 768px) {
+  .o_goldverse_dashboard {
+    padding: 8px 6px 14px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-greet-row,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-hero,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-brief-row,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-top10-row,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g2,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g3,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g4,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g5,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g6,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g7030,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-g6040 {
+    grid-template-columns: 1fr !important;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-htile-value,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-ptile-value {
+    font-size: 18px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-kcell-value {
+    font-size: 16px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-card {
+    padding: 10px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-band {
+    flex-wrap: wrap;
+    font-size: 11px;
+  }
+  .o_goldverse_dashboard .goldverse-command-toolbar.o_goldverse_filter_bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .o_goldverse_dashboard .goldverse-command-filters,
+  .o_goldverse_dashboard .goldverse-command-actions,
+  .o_goldverse_dashboard .goldverse-command-custom-dates {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .o_goldverse_dashboard .goldverse-command-actions .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gv-top10-table {
+    font-size: 11px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gv-top10-table thead th {
+    font-size: 9.5px;
+    padding: 6px 6px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gv-top10-table tbody td {
+    padding: 6px 6px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-name {
+    max-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .o_goldverse_dashboard {
+    padding: 6px 4px 12px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles {
+    grid-template-columns: 1fr;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-htile,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-ptile,
+  .o_goldverse_dashboard .gvcc-shell .gvcc-kcell {
+    padding: 10px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-htile-value {
+    font-size: 17px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-card-title {
+    font-size: 11px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gvcc-band-title {
+    font-size: 11px;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gv-top10-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-name {
+    max-width: 130px;
+  }
+}
