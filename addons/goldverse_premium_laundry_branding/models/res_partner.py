@@ -20,6 +20,39 @@ class ResPartner(models.Model):
         compute="_compute_goldverse_partner_is_locked",
         help="True when this is a saved customer partner and the current user is not a Laundry Admin.",
     )
+    goldverse_is_blocked = fields.Boolean(
+        string="Customer Blocked",
+        default=False,
+        tracking=True,
+        copy=False,
+        help="When true, no new laundry orders can be booked for this customer. Only Laundry Admins can toggle this flag.",
+    )
+    goldverse_blocked_at = fields.Datetime(string="Blocked On", readonly=True, copy=False)
+    goldverse_blocked_by = fields.Many2one("res.users", string="Blocked By", readonly=True, copy=False)
+    goldverse_block_reason = fields.Char(string="Block Reason", copy=False)
+
+    def action_goldverse_block_customer(self):
+        if not self._goldverse_partner_is_admin():
+            raise UserError(_("Only a Laundry Admin can block a customer."))
+        for partner in self:
+            partner.sudo().write({
+                "goldverse_is_blocked": True,
+                "goldverse_blocked_at": fields.Datetime.now(),
+                "goldverse_blocked_by": self.env.user.id,
+            })
+            partner.message_post(body=_("Customer blocked by %s. No new laundry orders can be created.") % self.env.user.name)
+
+    def action_goldverse_unblock_customer(self):
+        if not self._goldverse_partner_is_admin():
+            raise UserError(_("Only a Laundry Admin can unblock a customer."))
+        for partner in self:
+            partner.sudo().write({
+                "goldverse_is_blocked": False,
+                "goldverse_blocked_at": False,
+                "goldverse_blocked_by": False,
+                "goldverse_block_reason": False,
+            })
+            partner.message_post(body=_("Customer unblocked by %s.") % self.env.user.name)
 
     @api.depends("customer_rank")
     def _compute_goldverse_partner_is_locked(self):

@@ -26,12 +26,45 @@
                 <field name="mobile"/>
             </xpath>
             <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_goldverse_block_customer"
+                            type="object"
+                            string="Block Customer"
+                            class="btn-danger"
+                            groups="aimaze_laundry_management.group_laundry_admin,base.group_system"
+                            invisible="goldverse_is_blocked or customer_rank == 0"
+                            confirm="Block this customer? They will not be able to place new laundry orders until unblocked."/>
+                    <button name="action_goldverse_unblock_customer"
+                            type="object"
+                            string="Unblock Customer"
+                            class="btn-success"
+                            groups="aimaze_laundry_management.group_laundry_admin,base.group_system"
+                            invisible="not goldverse_is_blocked"
+                            confirm="Unblock this customer? They will be able to place new laundry orders again."/>
+                </header>
                 <field name="goldverse_partner_is_locked" invisible="1"/>
+                <field name="goldverse_is_blocked" invisible="1"/>
                 <div class="alert alert-info mb-0"
                      role="alert"
-                     invisible="not goldverse_partner_is_locked">
+                     invisible="not goldverse_partner_is_locked or goldverse_is_blocked">
                     <i class="fa fa-lock"/> This customer record is locked. Only a <strong>Laundry Admin</strong> can edit, archive, or delete it. You can still create new customers and view this one's history.
                 </div>
+                <div class="alert alert-danger mb-0"
+                     role="alert"
+                     invisible="not goldverse_is_blocked">
+                    <i class="fa fa-ban"/> <strong>This customer is BLOCKED.</strong> No new laundry orders can be created.
+                    <span class="ms-2 text-muted">
+                        Blocked on <field name="goldverse_blocked_at" readonly="1" nolabel="1" class="oe_inline"/>
+                        by <field name="goldverse_blocked_by" readonly="1" nolabel="1" class="oe_inline"/>.
+                    </span>
+                </div>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <group string="Block Status" invisible="not goldverse_is_blocked">
+                    <field name="goldverse_block_reason" placeholder="Reason for blocking (optional)"
+                           groups="aimaze_laundry_management.group_laundry_admin,base.group_system"
+                           readonly="not goldverse_is_blocked"/>
+                </group>
             </xpath>
         </field>
     </record>

@@ -762,6 +762,16 @@ class LaundryOrder(models.Model):
                 order.with_context(goldverse_skip_required_validation=True).write({"barcode": order.name})
         return True
 
+    @api.model
+    def _goldverse_check_partner_blocked(self, partner_id):
+        if not partner_id:
+            return
+        partner = self.env["res.partner"].sudo().browse(int(partner_id))
+        if partner.exists() and partner.goldverse_is_blocked:
+            raise UserError(_(
+                "Customer '%s' is BLOCKED and cannot place new laundry orders. Ask a Laundry Admin to unblock the customer first."
+            ) % (partner.display_name or partner.name or ""))
+
     @api.model_create_multi
     def create(self, vals_list):
         for index, vals in enumerate(vals_list):
@@ -774,6 +784,7 @@ class LaundryOrder(models.Model):
                 if employee:
                     vals["responsible_id"] = employee.id
             self._goldverse_validate_required_order_values(vals)
+            self._goldverse_check_partner_blocked(vals.get("partner_id"))
             if vals.get("name", "New") == "New":
                 vals["name"] = GOLDVERSE_DRAFT_ORDER_MARKER
                 vals["barcode"] = False
