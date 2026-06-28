@@ -335,9 +335,13 @@ class LaundryOrder(models.Model):
         for order in self.filtered(lambda item: item.invoice_id and item.invoice_id.state == "posted"):
             residual = max(order.invoice_id.amount_residual or 0.0, 0.0)
             paid_from_invoice = max((order.amount_total or 0.0) - residual, 0.0)
-            order.paid_amount = max(order.paid_amount or 0.0, paid_from_invoice)
-            order.balance_amount = residual
-            if order.invoice_id.payment_state == "paid" or residual <= 0.01:
+            order_paid_total = order.advance_paid or 0.0
+            unallocated_advance = max(order_paid_total - paid_from_invoice, 0.0)
+            effective_paid = paid_from_invoice + unallocated_advance
+            order.paid_amount = max(order.paid_amount or 0.0, effective_paid)
+            displayed_balance = max(residual - unallocated_advance, 0.0)
+            order.balance_amount = displayed_balance
+            if order.invoice_id.payment_state == "paid" or displayed_balance <= 0.01:
                 order.payment_status = "paid"
             elif order.paid_amount > 0:
                 order.payment_status = "partial"
