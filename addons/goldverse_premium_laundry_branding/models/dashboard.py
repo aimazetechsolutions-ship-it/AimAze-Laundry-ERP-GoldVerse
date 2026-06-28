@@ -916,6 +916,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     "outstanding": receivable_by_partner[partner],
                 }
             )
+        top_outstanding_rows = []
+        for partner, outstanding in sorted(receivable_by_partner.items(), key=lambda item: item[1], reverse=True)[:10]:
+            if outstanding <= 0:
+                continue
+            top_outstanding_rows.append(
+                {
+                    "name": partner.display_name,
+                    "orders": invoice_count_by_partner.get(partner, 0),
+                    "revenue": revenue_by_partner.get(partner, 0.0),
+                    "outstanding": outstanding,
+                }
+            )
         active_customers = len(revenue_by_partner)
         first_invoice_domain = [
             ("company_id", "=", self.company_id.id),
@@ -935,6 +947,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
         revenue_total = sum(revenue_by_partner.values())
         return {
             "top_rows": top_rows,
+            "top_outstanding_rows": top_outstanding_rows,
             "active": active_customers,
             "new": new_customers,
             "repeat": repeat_customers,
@@ -1034,35 +1047,36 @@ class LaundryExecutiveDashboard(models.TransientModel):
             )
         return "".join(rendered)
 
-    def _gv_top10_customers_table(self, rows):
+    def _gv_top10_customers_table(self, rows, mode="revenue"):
         slice_ = (rows or [])[:10]
         if not slice_:
             return self._gv_empty_state()
-        total_revenue = sum((row.get("revenue") or 0.0) for row in slice_) or 1.0
+        amount_key = "outstanding" if mode == "outstanding" else "revenue"
+        amount_label = "Outstanding" if mode == "outstanding" else "Revenue"
+        total_amount = sum((row.get(amount_key) or 0.0) for row in slice_) or 1.0
         body_rows = []
         for idx, row in enumerate(slice_, start=1):
-            revenue = row.get("revenue") or 0.0
-            outstanding = row.get("outstanding") or 0.0
+            amount = row.get(amount_key) or 0.0
             orders = row.get("orders") or 0
-            share = (revenue / total_revenue) * 100.0
-            out_cls = "gv-top10-out gv-top10-out-due" if outstanding > 0 else "gv-top10-out"
+            share = (amount / total_amount) * 100.0
+            amount_cls = "gv-top10-num"
+            if mode == "outstanding" and amount > 0:
+                amount_cls = "gv-top10-num gv-top10-out-due"
             body_rows.append(
                 '<tr>'
                 '<td class="gv-top10-rank">%d</td>'
                 '<td class="gv-top10-name">%s</td>'
                 '<td class="gv-top10-num">%s</td>'
-                '<td class="gv-top10-num">%s</td>'
-                '<td class="gv-top10-share">%.1f%%</td>'
                 '<td class="%s">%s</td>'
+                '<td class="gv-top10-share">%.1f%%</td>'
                 '</tr>'
                 % (
                     idx,
                     escape(row.get("name") or ""),
                     escape(self._gv_number(orders)),
-                    escape(self._gv_money(revenue)),
+                    amount_cls,
+                    escape(self._gv_money(amount)),
                     share,
-                    out_cls,
-                    escape(self._gv_money(outstanding)),
                 )
             )
         return (
@@ -1071,11 +1085,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
             '<th class="gv-top10-rank">#</th>'
             '<th class="gv-top10-name">Customer</th>'
             '<th class="gv-top10-num">Orders</th>'
-            '<th class="gv-top10-num">Revenue</th>'
+            '<th class="gv-top10-num">%s</th>'
             '<th class="gv-top10-share">Share</th>'
-            '<th class="gv-top10-num">Outstanding</th>'
             '</tr></thead><tbody>%s</tbody></table></div>'
-        ) % "".join(body_rows)
+        ) % (escape(amount_label), "".join(body_rows))
 
     def _gv_line_chart(self, rows, series):
         if not rows or not any(any(row.get(key) for key, _label, _color in series) for row in rows):
@@ -1797,10 +1810,17 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top sub-categories"))}</p>{dashboard._gv_bar_chart(data["top_subcategories"], "Revenue")}</div>
                     </div>
 
-                    {dashboard._gvcc_band("fa-trophy", _("Top 10 customers & intelligence"), _("by revenue · period quality"))}
-                    <div class="gvcc-grid gvcc-g6040">
-                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_active_customers")}>{dashboard._gv_top10_customers_table(data["customers"]["top_rows"])}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer intelligence"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{customer_cells}</div></div>
+                    {dashboard._gvcc_band("fa-trophy", _("Top 10 customers & intelligence"), _("by revenue · by outstanding"))}
+                    <div class="gvcc-grid gvcc-g4 gvcc-mini">{customer_cells}</div>
+                    <div class="gvcc-grid gvcc-g2 gvcc-top10-row">
+                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_active_customers")}>
+                            <p class="gvcc-card-title">{escape(_("Top 10 customers by sales"))}</p>
+                            {dashboard._gv_top10_customers_table(data["customers"]["top_rows"], mode="revenue")}
+                        </div>
+                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_receivables")}>
+                            <p class="gvcc-card-title">{escape(_("Top 10 customers by outstanding balance"))}</p>
+                            {dashboard._gv_top10_customers_table(data["customers"]["top_outstanding_rows"], mode="outstanding")}
+                        </div>
                     </div>
 
                     {dashboard._gvcc_band("fa-credit-card", _("Receivables, collections & advances"), _("working capital"))}

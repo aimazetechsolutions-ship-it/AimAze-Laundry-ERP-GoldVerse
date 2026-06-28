@@ -1413,6 +1413,7 @@
 }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g7030 { grid-template-columns: 7fr 3fr; }
@@ -1470,6 +1471,7 @@
   white-space: nowrap;
 }
 .o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-out-due { color: #8b1e1e; font-weight: 600; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-top10-row .gv-top10-table .gv-top10-name { max-width: 220px; }
 .o_goldverse_dashboard .gvcc-shell .gvcc-card {
   background: #fff;
   border: 1px solid #e2e6ee;
