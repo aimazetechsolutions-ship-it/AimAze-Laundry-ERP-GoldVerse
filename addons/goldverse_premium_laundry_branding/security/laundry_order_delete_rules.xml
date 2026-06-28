@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_laundry_order_delete_state_guard" model="ir.rule">
+        <field name="name">Laundry Order: delete only draft/cancelled (non-admin)</field>
+        <field name="model_id" ref="aimaze_laundry_management.model_aimaze_laundry_order"/>
+        <field name="domain_force">[('state', 'in', ('draft', 'cancelled'))]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="groups" eval="[(4, ref('base.group_user')), (4, ref('aimaze_laundry_management.group_customer_care_executive'))]"/>
+    </record>
+</odoo>

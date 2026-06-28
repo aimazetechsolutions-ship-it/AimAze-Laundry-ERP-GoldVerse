@@ -227,6 +227,13 @@ class LaundryOrder(models.Model):
             order.goldverse_partner_outstanding_balance = sum(unpaid.mapped("amount_residual"))
             order.goldverse_partner_outstanding_count = len(unpaid)
 
+    def unlink(self):
+        if self and "aimaze.laundry.barcode.scan" in self.env.registry:
+            self.env["aimaze.laundry.barcode.scan"].sudo().search(
+                [("order_id", "in", self.ids)]
+            ).unlink()
+        return super().unlink()
+
     def action_goldverse_open_partner_outstanding(self):
         self.ensure_one()
         partner = self.partner_id.commercial_partner_id or self.partner_id

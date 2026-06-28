@@ -16,6 +16,7 @@
     "data": [
         "security/customer_care_security.xml",
         "security/ir.model.access.csv",
+        "security/laundry_order_delete_rules.xml",
         "data/admin_access.xml",
         "data/pakistan_defaults.xml",
         "data/customer_type_defaults.xml",
