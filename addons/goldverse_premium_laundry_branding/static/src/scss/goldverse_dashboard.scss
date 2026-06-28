@@ -1417,6 +1417,59 @@
 .o_goldverse_dashboard .gvcc-shell .gvcc-g6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g7030 { grid-template-columns: 7fr 3fr; }
 .o_goldverse_dashboard .gvcc-shell .gvcc-g6040 { grid-template-columns: 6fr 4fr; }
+.o_goldverse_dashboard .gvcc-shell .gvcc-g1 { grid-template-columns: 1fr; }
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table-wrap { overflow-x: auto; }
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table thead th {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #5b6376;
+  text-transform: uppercase;
+  background: #f6f7fb;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e6ee;
+  text-align: left;
+  white-space: nowrap;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eef1f5;
+  color: #11172a;
+  vertical-align: middle;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tbody tr:last-child td { border-bottom: none; }
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table tbody tr:hover td { background: #fafbff; }
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-rank {
+  width: 36px;
+  font-weight: 700;
+  color: #7d68ad;
+  text-align: center;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-name {
+  font-weight: 600;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-share {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #5b6376;
+  white-space: nowrap;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-top10-table .gv-top10-out-due { color: #8b1e1e; font-weight: 600; }
 .o_goldverse_dashboard .gvcc-shell .gvcc-card {
   background: #fff;
   border: 1px solid #e2e6ee;

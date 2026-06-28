@@ -981,13 +981,14 @@ class LaundryExecutiveDashboard(models.TransientModel):
             )
         return "".join(rendered)
 
-    def _gv_customer_revenue_chart(self, rows):
+    def _gv_customer_revenue_chart(self, rows, limit=5):
         if not rows:
             return self._gv_empty_state()
-        total = sum((row.get("revenue") or 0.0) for row in rows[:5]) or 1.0
-        max_value = max((row.get("revenue") or 0.0) for row in rows[:5]) or 1.0
+        slice_ = rows[:limit]
+        total = sum((row.get("revenue") or 0.0) for row in slice_) or 1.0
+        max_value = max((row.get("revenue") or 0.0) for row in slice_) or 1.0
         rendered = []
-        for row in rows[:5]:
+        for row in slice_:
             revenue = row.get("revenue") or 0.0
             width = max(4.0, (revenue / max_value) * 100.0)
             share = (revenue / total) * 100.0
@@ -1008,6 +1009,49 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 )
             )
         return "".join(rendered)
+
+    def _gv_top10_customers_table(self, rows):
+        slice_ = (rows or [])[:10]
+        if not slice_:
+            return self._gv_empty_state()
+        total_revenue = sum((row.get("revenue") or 0.0) for row in slice_) or 1.0
+        body_rows = []
+        for idx, row in enumerate(slice_, start=1):
+            revenue = row.get("revenue") or 0.0
+            outstanding = row.get("outstanding") or 0.0
+            orders = row.get("orders") or 0
+            share = (revenue / total_revenue) * 100.0
+            out_cls = "gv-top10-out gv-top10-out-due" if outstanding > 0 else "gv-top10-out"
+            body_rows.append(
+                '<tr>'
+                '<td class="gv-top10-rank">%d</td>'
+                '<td class="gv-top10-name">%s</td>'
+                '<td class="gv-top10-num">%s</td>'
+                '<td class="gv-top10-num">%s</td>'
+                '<td class="gv-top10-share">%.1f%%</td>'
+                '<td class="%s">%s</td>'
+                '</tr>'
+                % (
+                    idx,
+                    escape(row.get("name") or ""),
+                    escape(self._gv_number(orders)),
+                    escape(self._gv_money(revenue)),
+                    share,
+                    out_cls,
+                    escape(self._gv_money(outstanding)),
+                )
+            )
+        return (
+            '<div class="gv-top10-table-wrap"><table class="gv-top10-table">'
+            '<thead><tr>'
+            '<th class="gv-top10-rank">#</th>'
+            '<th class="gv-top10-name">Customer</th>'
+            '<th class="gv-top10-num">Orders</th>'
+            '<th class="gv-top10-num">Revenue</th>'
+            '<th class="gv-top10-share">Share</th>'
+            '<th class="gv-top10-num">Outstanding</th>'
+            '</tr></thead><tbody>%s</tbody></table></div>'
+        ) % "".join(body_rows)
 
     def _gv_line_chart(self, rows, series):
         if not rows or not any(any(row.get(key) for key, _label, _color in series) for row in rows):
@@ -1734,6 +1778,11 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     <div class="gvcc-grid gvcc-g6040">
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top customers by revenue"))}</p>{dashboard._gv_customer_revenue_chart(data["customers"]["top_rows"])}</div>
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer intelligence"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{customer_cells}</div></div>
+                    </div>
+
+                    {dashboard._gvcc_band("fa-trophy", _("Top 10 customers"), _("by revenue"))}
+                    <div class="gvcc-grid gvcc-g1">
+                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_active_customers")}>{dashboard._gv_top10_customers_table(data["customers"]["top_rows"])}</div>
                     </div>
 
                     {dashboard._gvcc_band("fa-credit-card", _("Receivables, collections & advances"), _("working capital"))}
