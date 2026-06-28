@@ -1875,7 +1875,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     {dashboard._gvcc_band("fa-credit-card", _("Receivables, collections & advances"), _("working capital"))}
                     <div class="gvcc-grid gvcc-g3">
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Receivable aging"))}</p>{dashboard._gv_donut_chart(list(data["receivable_aging"].items()))}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Collections"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{collection_cells}</div></div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Collections"))}</p><div class="gvcc-grid gvcc-g1 gvcc-mini gvcc-collections-list">{collection_cells}</div></div>
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer advances"))}</p><div class="gvcc-grid gvcc-g3 gvcc-mini">{advance_cells}</div></div>
                     </div>
 

@@ -1650,3 +1650,29 @@
     gap: 8px;
   }
 }
+
+/* Collections card: list-wise compact rows with label left, value right */
+.o_goldverse_dashboard .gvcc-shell .gvcc-collections-list .gvcc-kcell {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  padding: 8px 12px;
+  gap: 12px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-collections-list .gvcc-kcell .gvcc-kcell-label {
+  margin: 0;
+  text-align: left;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-collections-list .gvcc-kcell .gvcc-kcell-value {
+  margin: 0;
+  text-align: right;
+  font-size: 16px;
+}
+.o_goldverse_dashboard .gvcc-shell .gvcc-collections-list .gvcc-kcell:last-child {
+  border-top: 2px solid #c8bce1;
+  margin-top: 4px;
+  background: #f0ecf7;
+}
