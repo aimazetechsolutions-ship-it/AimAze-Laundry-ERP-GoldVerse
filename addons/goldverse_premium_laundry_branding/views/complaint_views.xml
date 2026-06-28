@@ -26,9 +26,9 @@
                             <field name="responsible_id"/>
                         </group>
                     </group>
-                    <group string="Description">
-                        <field name="notes" nolabel="1" placeholder="What happened? Customer's exact words, items affected, expected resolution..."/>
-                    </group>
+                    <separator string="Description"/>
+                    <field name="notes" nolabel="1" widget="text" class="gv-complaint-notes"
+                           placeholder="What happened? Customer's exact words, items affected, expected resolution..."/>
                     <group string="Resolution" invisible="state not in ('compensation','approved','closed')">
                         <group>
                             <field name="compensation_amount"/>
