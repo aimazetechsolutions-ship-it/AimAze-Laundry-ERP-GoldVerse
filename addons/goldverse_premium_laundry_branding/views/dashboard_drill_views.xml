@@ -24,4 +24,28 @@
             </list>
         </field>
     </record>
+
+    <record id="view_invoice_tree_goldverse_laundry_order" model="ir.ui.view">
+        <field name="name">account.move.tree.goldverse.laundry.order</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="aimaze_laundry_order_id" string="Laundry Order" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_move_tree_goldverse_laundry_order" model="ir.ui.view">
+        <field name="name">account.move.tree.entries.goldverse.laundry.order</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="aimaze_laundry_order_id" string="Laundry Order" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

@@ -8,6 +8,32 @@ _logger = logging.getLogger(__name__)
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    aimaze_laundry_order_id = fields.Many2one(
+        "aimaze.laundry.order",
+        string="Laundry Order",
+        compute="_compute_aimaze_laundry_order_id",
+        search="_search_aimaze_laundry_order_id",
+        store=False,
+    )
+
+    def _compute_aimaze_laundry_order_id(self):
+        Order = self.env["aimaze.laundry.order"].sudo()
+        move_ids = [m.id for m in self if m.id]
+        orders = Order.search([("invoice_id", "in", move_ids)]) if move_ids else Order.browse()
+        mapping = {o.invoice_id.id: o for o in orders}
+        for move in self:
+            move.aimaze_laundry_order_id = mapping.get(move.id, False)
+
+    def _search_aimaze_laundry_order_id(self, operator, value):
+        Order = self.env["aimaze.laundry.order"].sudo()
+        if operator in ("=", "!=", "in", "not in") and (value is False or value is None):
+            orders = Order.search([("invoice_id", "!=", False)])
+            invoice_ids = orders.mapped("invoice_id").ids
+            return [("id", "not in" if operator in ("=", "in") else "in", invoice_ids)]
+        orders = Order.search([("id", operator, value)] if operator not in ("ilike", "like", "=", "!=") or isinstance(value, (int, list, tuple)) else [("name", operator, value)])
+        invoice_ids = orders.mapped("invoice_id").ids
+        return [("id", "in", invoice_ids)]
+
     def _post(self, soft=True):
         posted = super()._post(soft=soft)
         try:
