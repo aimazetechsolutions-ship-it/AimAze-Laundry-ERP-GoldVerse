@@ -1370,6 +1370,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
         revenue_trend = self._gv_trend(revenue, previous_revenue)
         order_count = len(orders) or len(invoices)
         previous_order_count = len(previous_orders) or len(previous_invoices)
+        total_qty = sum(orders.mapped("line_ids.quantity")) if orders else 0.0
         total_expenses = self._gv_total_expense_value(date_from, date_to)
         previous_total_expenses = self._gv_total_expense_value(previous_from, previous_to)
         top_expenses = self._gv_top_expense_total(date_from, date_to)
@@ -1385,6 +1386,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "profit": profit,
             "previous_profit": previous_profit,
             "orders": order_count,
+            "total_qty": total_qty,
             "previous_orders": previous_order_count,
             "average_order_value": (revenue / order_count) if order_count else 0.0,
             "previous_aov": (previous_revenue / previous_order_count) if previous_order_count else 0.0,
@@ -1696,6 +1698,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 dashboard._gvcc_pulse_tile(
                     dashboard._gv_number(data["orders"]), "ORDERS", "mint",
                     _("period total"),
+                ),
+                dashboard._gvcc_pulse_tile(
+                    dashboard._gv_number(data["total_qty"]), "QTY", "purple",
+                    _("garments / items"),
                 ),
                 dashboard._gvcc_pulse_tile(
                     dashboard._gv_number(data["complaints_pending"]), "COMPLAINTS", "peach",
