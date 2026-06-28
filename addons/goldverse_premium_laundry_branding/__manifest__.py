@@ -39,6 +39,7 @@
         "views/account_move_line_views.xml",
         "views/account_product_views.xml",
         "views/laundry_receipt_views.xml",
+        "views/complaint_views.xml",
         "views/report_export_templates.xml",
         "views/dashboard_views.xml",
         "data/dashboard_defaults.xml",

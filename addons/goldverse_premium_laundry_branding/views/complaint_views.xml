@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_laundry_complaint_form_goldverse" model="ir.ui.view">
+        <field name="name">aimaze.laundry.complaint.form.goldverse</field>
+        <field name="model">aimaze.laundry.complaint</field>
+        <field name="arch" type="xml">
+            <form string="Customer Complaint">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="new,review,approved,compensation,closed" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1" placeholder="New"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Customer &amp; Order">
+                            <field name="partner_id" required="1" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}"/>
+                            <field name="order_id" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}" domain="[('partner_id', '=', partner_id)]"/>
+                            <field name="branch_id" readonly="1"/>
+                        </group>
+                        <group string="Complaint">
+                            <field name="complaint_type" required="1"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="responsible_id"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="notes" nolabel="1" placeholder="What happened? Customer's exact words, items affected, expected resolution..."/>
+                    </group>
+                    <group string="Resolution" invisible="state not in ('compensation','approved','closed')">
+                        <group>
+                            <field name="compensation_amount"/>
+                            <field name="refund_amount"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Attachment">
+                        <field name="attachment" filename="name" nolabel="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_laundry_complaint_list_goldverse" model="ir.ui.view">
+        <field name="name">aimaze.laundry.complaint.list.goldverse</field>
+        <field name="model">aimaze.laundry.complaint</field>
+        <field name="arch" type="xml">
+            <list string="Customer Complaints" decoration-warning="state in ('new','review')" decoration-success="state == 'closed'" decoration-danger="state == 'rejected'" decoration-info="priority == 'urgent'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="order_id" optional="show"/>
+                <field name="complaint_type"/>
+                <field name="priority" widget="priority"/>
+                <field name="responsible_id" optional="show"/>
+                <field name="branch_id" optional="hide"/>
+                <field name="compensation_amount" optional="hide"/>
+                <field name="refund_amount" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-warning="state in ('new','review')" decoration-info="state == 'compensation'" decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+</odoo>
