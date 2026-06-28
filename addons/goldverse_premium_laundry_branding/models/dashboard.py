@@ -1774,15 +1774,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top sub-categories"))}</p>{dashboard._gv_bar_chart(data["top_subcategories"], "Revenue")}</div>
                     </div>
 
-                    {dashboard._gvcc_band("fa-users", _("Customer & working capital"), _("period quality"))}
+                    {dashboard._gvcc_band("fa-trophy", _("Top 10 customers & intelligence"), _("by revenue · period quality"))}
                     <div class="gvcc-grid gvcc-g6040">
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top customers by revenue"))}</p>{dashboard._gv_customer_revenue_chart(data["customers"]["top_rows"])}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer intelligence"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{customer_cells}</div></div>
-                    </div>
-
-                    {dashboard._gvcc_band("fa-trophy", _("Top 10 customers"), _("by revenue"))}
-                    <div class="gvcc-grid gvcc-g1">
                         <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_active_customers")}>{dashboard._gv_top10_customers_table(data["customers"]["top_rows"])}</div>
+                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer intelligence"))}</p><div class="gvcc-grid gvcc-g2 gvcc-mini">{customer_cells}</div></div>
                     </div>
 
                     {dashboard._gvcc_band("fa-credit-card", _("Receivables, collections & advances"), _("working capital"))}
