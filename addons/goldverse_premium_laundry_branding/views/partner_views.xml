@@ -25,6 +25,14 @@
             <xpath expr="//field[@name='phone']" position="after">
                 <field name="mobile"/>
             </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="goldverse_partner_is_locked" invisible="1"/>
+                <div class="alert alert-info mb-0"
+                     role="alert"
+                     invisible="not goldverse_partner_is_locked">
+                    <i class="fa fa-lock"/> This customer record is locked. Only a <strong>Laundry Admin</strong> can edit, archive, or delete it. You can still create new customers and view this one's history.
+                </div>
+            </xpath>
         </field>
     </record>
 </odoo>

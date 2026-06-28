@@ -1,14 +1,57 @@
 import re
 
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
+
+
+GOLDVERSE_PARTNER_ADMIN_GROUPS = (
+    "aimaze_laundry_management.group_laundry_admin",
+    "base.group_system",
+)
 
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
     _goldverse_b2b_laundry_types = {"b2b", "corporate", "hotel", "salon", "gym", "restaurant"}
+
+    goldverse_partner_is_locked = fields.Boolean(
+        compute="_compute_goldverse_partner_is_locked",
+        help="True when this is a saved customer partner and the current user is not a Laundry Admin.",
+    )
+
+    @api.depends("customer_rank")
+    def _compute_goldverse_partner_is_locked(self):
+        is_admin = self._goldverse_partner_is_admin()
+        for partner in self:
+            rank = partner.customer_rank or 0
+            is_saved = bool(partner.id) and not isinstance(partner.id, models.NewId)
+            partner.goldverse_partner_is_locked = (not is_admin) and is_saved and rank > 0
+
+    @api.model
+    def _goldverse_partner_is_admin(self):
+        user = self.env.user
+        if user._is_admin() or user._is_superuser():
+            return True
+        return any(user.has_group(xmlid) for xmlid in GOLDVERSE_PARTNER_ADMIN_GROUPS)
+
+    def _goldverse_partner_block_edit(self, action_label):
+        if self._goldverse_partner_is_admin():
+            return
+        for partner in self:
+            if (partner.customer_rank or 0) > 0 and partner.id:
+                raise UserError(_(
+                    "Customer '%s' is locked. Only a Laundry Admin can %s an existing customer."
+                ) % (partner.display_name or partner.name or "", action_label))
+
+    def unlink(self):
+        self._goldverse_partner_block_edit(_("delete"))
+        return super().unlink()
+
+    def toggle_active(self):
+        self._goldverse_partner_block_edit(_("archive / unarchive"))
+        return super().toggle_active()
 
     mobile = fields.Char(string="Mobile")
     goldverse_customer_category = fields.Selection(
@@ -233,6 +276,15 @@ class ResPartner(models.Model):
 
     def write(self, vals):
         vals = dict(vals)
+        if not self._goldverse_partner_is_admin():
+            internal_only_keys = {"goldverse_partner_is_locked"}
+            substantive_vals = {k: v for k, v in vals.items() if k not in internal_only_keys}
+            if substantive_vals:
+                for partner in self:
+                    if (partner.customer_rank or 0) > 0 and partner.id:
+                        raise UserError(_(
+                            "Customer '%s' is locked. Only a Laundry Admin can edit, archive, or delete an existing customer."
+                        ) % (partner.display_name or partner.name or ""))
         self._goldverse_prepare_mobile_vals(vals)
         self._goldverse_prepare_customer_category_vals(vals)
         result = super().write(vals)
