@@ -1694,15 +1694,31 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 ),
             ])
 
+            orders_qty_palette = dashboard.GVCC_PALETTE.get("mint", dashboard.GVCC_PALETTE["blue"])
+            orders_qty_tile = (
+                '<div class="gvcc-ptile gvcc-ptile-split" style="background:%(bg)s;color:%(ink)s">'
+                '<div class="gvcc-ptile-split-col">'
+                '<p class="gvcc-ptile-value">%(orders)s</p>'
+                '<p class="gvcc-ptile-label">ORDERS</p>'
+                '<p class="gvcc-ptile-sub">%(orders_sub)s</p>'
+                '</div>'
+                '<div class="gvcc-ptile-split-sep"></div>'
+                '<div class="gvcc-ptile-split-col">'
+                '<p class="gvcc-ptile-value">%(qty)s</p>'
+                '<p class="gvcc-ptile-label">QTY</p>'
+                '<p class="gvcc-ptile-sub">%(qty_sub)s</p>'
+                '</div>'
+                '</div>'
+            ) % {
+                "bg": orders_qty_palette["bg"],
+                "ink": orders_qty_palette["ink"],
+                "orders": escape(dashboard._gv_number(data["orders"])),
+                "orders_sub": escape(_("period total")),
+                "qty": escape(dashboard._gv_number(data["total_qty"])),
+                "qty_sub": escape(_("garments / items")),
+            }
             pulse_tiles = "".join([
-                dashboard._gvcc_pulse_tile(
-                    dashboard._gv_number(data["orders"]), "ORDERS", "mint",
-                    _("period total"),
-                ),
-                dashboard._gvcc_pulse_tile(
-                    dashboard._gv_number(data["total_qty"]), "QTY", "purple",
-                    _("garments / items"),
-                ),
+                orders_qty_tile,
                 dashboard._gvcc_pulse_tile(
                     dashboard._gv_number(data["complaints_pending"]), "COMPLAINTS", "peach",
                     _("action needed") if data["complaints_pending"] else _("all clear"),
