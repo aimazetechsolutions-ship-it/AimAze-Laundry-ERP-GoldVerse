@@ -3152,3 +3152,37 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(125,104,173,0.18);
 }
+
+/* Customer profile lock — block typing, hide Save controls, when current user is non-admin and partner is saved */
+.gv-customer-locked-form .o_form_sheet input:not([readonly]),
+.gv-customer-locked-form .o_form_sheet textarea:not([readonly]),
+.gv-customer-locked-form .o_form_sheet select,
+.gv-customer-locked-form .o_form_sheet .o_field_widget .o_input,
+.gv-customer-locked-form .o_form_sheet .o_field_widget input,
+.gv-customer-locked-form .o_form_sheet .o_field_widget textarea,
+.gv-customer-locked-form .o_form_sheet .o_field_widget select,
+.gv-customer-locked-form .o_form_sheet .o_field_widget .o_field_many2one,
+.gv-customer-locked-form .o_form_sheet .o_field_widget .o_field_many2many_tags,
+.gv-customer-locked-form .o_form_sheet .o_field_widget .o_field_x2many {
+  pointer-events: none !important;
+  background-color: #f4f5f8 !important;
+  color: #4b5060 !important;
+  cursor: not-allowed !important;
+}
+.gv-customer-locked-form .o_form_sheet .btn,
+.gv-customer-locked-form .o_form_sheet .o_field_widget .o_input_dropdown,
+.gv-customer-locked-form .o_form_sheet .o_field_widget .o_external_button,
+.gv-customer-locked-form .o_form_sheet .o_field_many2many_tags .o_delete {
+  pointer-events: none !important;
+  opacity: 0.4 !important;
+}
+.gv-customer-locked-form .o_form_status_indicator,
+.gv-customer-locked-form .o_form_button_save,
+.gv-customer-locked-form .o_form_button_create,
+.gv-customer-locked-form button[name="action_unarchive"],
+.gv-customer-locked-form button[name="action_archive"] {
+  display: none !important;
+}
+.gv-customer-locked-form .o_form_button_cancel {
+  display: inline-block !important;
+}
