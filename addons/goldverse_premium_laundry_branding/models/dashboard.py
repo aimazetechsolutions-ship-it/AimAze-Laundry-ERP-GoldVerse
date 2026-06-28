@@ -1477,14 +1477,13 @@ class LaundryExecutiveDashboard(models.TransientModel):
             data = dashboard._gv_command_data()
             sales_total = data["revenue"] or 0.0
             collections = data["collections"]
-            remaining_sales = sales_total
-            cash_sales = min(collections.get("Cash Collection", 0.0), remaining_sales)
-            remaining_sales -= cash_sales
-            bank_sales = min(collections.get("Bank Collection", 0.0), remaining_sales)
-            remaining_sales -= bank_sales
-            ibft_sales = min(collections.get("IBFT Collection", 0.0), remaining_sales)
-            remaining_sales -= ibft_sales
-            credit_sales = max(remaining_sales, 0.0)
+            cash_sales = collections.get("Cash Collection", 0.0)
+            bank_sales = collections.get("Bank Collection", 0.0)
+            ibft_sales = collections.get("IBFT Collection", 0.0)
+            period_invoices = dashboard._gv_posted_invoices(data["date_from"], data["date_to"])
+            credit_sales = sum(
+                period_invoices.filtered(lambda inv: inv.move_type == "out_invoice").mapped("amount_residual")
+            )
             sales_share = lambda amount: ((amount or 0.0) / sales_total * 100.0) if sales_total else 0.0
             range_label = dashboard.date_range_label or "%s - %s" % (data["date_from"], data["date_to"])
             current_dt = fields.Datetime.context_timestamp(dashboard, fields.Datetime.now()) or datetime.now()
