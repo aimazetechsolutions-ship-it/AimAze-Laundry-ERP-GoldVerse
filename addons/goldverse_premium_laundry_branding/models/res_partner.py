@@ -26,7 +26,7 @@ class ResPartner(models.Model):
         is_admin = self._goldverse_partner_is_admin()
         for partner in self:
             rank = partner.customer_rank or 0
-            is_saved = bool(partner.id) and not isinstance(partner.id, models.NewId)
+            is_saved = isinstance(partner.id, int) and partner.id > 0
             partner.goldverse_partner_is_locked = (not is_admin) and is_saved and rank > 0
 
     @api.model
@@ -40,7 +40,8 @@ class ResPartner(models.Model):
         if self._goldverse_partner_is_admin():
             return
         for partner in self:
-            if (partner.customer_rank or 0) > 0 and partner.id:
+            is_saved = isinstance(partner.id, int) and partner.id > 0
+            if (partner.customer_rank or 0) > 0 and is_saved:
                 raise UserError(_(
                     "Customer '%s' is locked. Only a Laundry Admin can %s an existing customer."
                 ) % (partner.display_name or partner.name or "", action_label))
@@ -281,7 +282,8 @@ class ResPartner(models.Model):
             substantive_vals = {k: v for k, v in vals.items() if k not in internal_only_keys}
             if substantive_vals:
                 for partner in self:
-                    if (partner.customer_rank or 0) > 0 and partner.id:
+                    is_saved = isinstance(partner.id, int) and partner.id > 0
+                    if (partner.customer_rank or 0) > 0 and is_saved:
                         raise UserError(_(
                             "Customer '%s' is locked. Only a Laundry Admin can edit, archive, or delete an existing customer."
                         ) % (partner.display_name or partner.name or ""))
