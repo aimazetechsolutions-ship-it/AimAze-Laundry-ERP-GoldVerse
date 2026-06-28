@@ -777,13 +777,18 @@ class LaundryOrder(models.Model):
         partner = self.mobile_partner_id or self.partner_id
         if not partner or not partner.goldverse_is_blocked:
             return
+        blocked_name = partner.display_name or partner.name or ""
         reason = partner.goldverse_block_reason and (" Reason: %s." % partner.goldverse_block_reason) or ""
+        self.mobile_partner_id = False
+        self.partner_id = False
+        self.mobile = False
+        self.email = False
         return {
             "warning": {
                 "title": _("Customer Blocked"),
                 "message": _(
                     "Customer '%s' is BLOCKED and cannot place new laundry orders.%s\n\nPick a different customer, or ask a Laundry Admin to unblock this customer first."
-                ) % (partner.display_name or partner.name or "", reason),
+                ) % (blocked_name, reason),
             }
         }
 
