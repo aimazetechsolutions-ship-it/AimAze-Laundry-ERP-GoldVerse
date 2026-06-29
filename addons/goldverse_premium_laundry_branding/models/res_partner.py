@@ -350,9 +350,18 @@ class ResPartner(models.Model):
                 for partner in self:
                     is_saved = isinstance(partner.id, int) and partner.id > 0
                     if (partner.customer_rank or 0) > 0 and is_saved:
+                        import logging
+                        _gv_logger = logging.getLogger(__name__)
+                        _gv_logger.warning(
+                            "GoldVerse partner-lock blocked write on %s (id=%s). vals keys=%s, locked keys=%s",
+                            partner.display_name or partner.name or "?",
+                            partner.id,
+                            sorted(vals.keys()),
+                            sorted(locked_vals.keys()),
+                        )
                         raise UserError(_(
-                            "Customer '%s' is locked. Only a Laundry Admin can edit, archive, or delete an existing customer."
-                        ) % (partner.display_name or partner.name or ""))
+                            "Customer '%s' is locked. Only a Laundry Admin can edit, archive, or delete an existing customer.\n(Blocked fields: %s)"
+                        ) % (partner.display_name or partner.name or "", ", ".join(sorted(locked_vals.keys()))))
         self._goldverse_prepare_mobile_vals(vals)
         self._goldverse_prepare_customer_category_vals(vals)
         result = super().write(vals)
