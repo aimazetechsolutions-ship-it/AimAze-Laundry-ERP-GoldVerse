@@ -20,7 +20,7 @@
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('base.group_system'),
-            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
             ref('base.group_user')
         ])]"/>
     </record>
@@ -31,7 +31,7 @@
         <field name="action" ref="action_goldverse_open_executive_dashboard"/>
         <field name="sequence">0</field>
         <field name="group_ids" eval="[(6, 0, [
-            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
             ref('base.group_user')
         ])]"/>
     </record>
@@ -48,7 +48,7 @@
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('base.group_system'),
-            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('goldverse_premium_laundry_branding.group_customer_care_executive'),
             ref('base.group_user')
         ])]"/>
     </record>
