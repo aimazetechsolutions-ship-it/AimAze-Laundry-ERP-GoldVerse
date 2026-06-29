@@ -12,14 +12,18 @@
         <field name="sequence">1</field>
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('base.group_system')
+            ref('base.group_system'),
+            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('base.group_user')
         ])]"/>
     </record>
 
     <record id="aimaze_laundry_management.menu_laundry_dashboard" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('base.group_system')
+            ref('base.group_system'),
+            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('base.group_user')
         ])]"/>
     </record>
 
@@ -34,7 +38,9 @@
         <field name="action" eval="False"/>
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('base.group_system')
+            ref('base.group_system'),
+            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('base.group_user')
         ])]"/>
     </record>
 
@@ -47,7 +53,8 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//div[hasclass('aimaze-dashboard-shell')]" position="replace">
-                <div class="goldverse-command-view o_goldverse_dashboard">
+                <field name="goldverse_is_executive_view" invisible="1"/>
+                <div class="goldverse-command-view o_goldverse_dashboard gv-exec-view">
                     <div class="goldverse-command-toolbar o_goldverse_filter_bar gvcc-toolbar-row">
                         <div class="gvcc-toolbar-brand">
                             <field name="goldverse_header_html" widget="html" nolabel="1" readonly="1"/>
@@ -61,7 +68,7 @@
                         </div>
                         <div class="goldverse-command-actions">
                             <button type="object" name="action_goldverse_refresh_dashboard" class="btn btn-primary" icon="fa-refresh" string="Refresh"/>
-                            <button type="object" name="action_goldverse_export_pdf_placeholder" class="btn btn-secondary" icon="fa-file-pdf-o" string="Export PDF"/>
+                            <button type="object" name="action_goldverse_export_pdf_placeholder" class="btn btn-secondary" icon="fa-file-pdf-o" string="Export PDF" invisible="not goldverse_is_executive_view"/>
                         </div>
                     </div>
                     <field name="goldverse_command_center_html" widget="html" nolabel="1" readonly="1"/>

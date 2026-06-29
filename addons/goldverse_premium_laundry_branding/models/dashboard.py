@@ -38,6 +38,22 @@ class LaundryExecutiveDashboard(models.TransientModel):
         sanitize=False,
     )
     goldverse_company_warning = fields.Char(compute="_compute_goldverse_command_center_html")
+    goldverse_is_executive_view = fields.Boolean(
+        compute="_compute_goldverse_is_executive_view",
+        help="True when the current user is a Laundry Admin / System user; controls visibility of sensitive cards (Net Profit, Opportunities, Avg Spend, Export, etc.)",
+    )
+
+    @api.depends_context("uid")
+    def _compute_goldverse_is_executive_view(self):
+        user = self.env.user
+        is_exec = (
+            user._is_admin()
+            or user._is_superuser()
+            or user.has_group("aimaze_laundry_management.group_laundry_admin")
+            or user.has_group("base.group_system")
+        )
+        for record in self:
+            record.goldverse_is_executive_view = is_exec
     gv_total_sales = fields.Monetary(string="Total Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_cash_sales = fields.Monetary(string="Cash Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
     gv_bank_sales = fields.Monetary(string="Bank Sales", compute="_compute_goldverse_dashboard_cards", currency_field="currency_id")
@@ -1544,6 +1560,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             if dashboard.company_id != company:
                 dashboard.company_id = company
             dashboard.goldverse_company_warning = warning
+            is_exec = dashboard.goldverse_is_executive_view
             data = dashboard._gv_command_data()
             sales_total = data["revenue"] or 0.0
             collections = data["collections"]
@@ -1656,7 +1673,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 )
             )
 
-            hero_tiles = "".join([
+            hero_tiles_list = [
                 dashboard._gvcc_hero_tile(
                     "ACTIVE CUSTOMERS",
                     dashboard._gv_number(data["customers"]["active"]),
@@ -1674,13 +1691,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     _("AOV %s") % dashboard._gv_money(data["average_order_value"]),
                     card_key="gv_total_orders",
                 ),
-                dashboard._gvcc_hero_tile(
-                    "NET PROFIT",
-                    dashboard._gv_money(net_profit),
-                    "peach", "fa-line-chart",
-                    _("%s vs prior") % dashboard._gv_percent(np_trend),
-                    card_key="gv_net_profit",
-                ),
+            ]
+            if is_exec:
+                hero_tiles_list.append(
+                    dashboard._gvcc_hero_tile(
+                        "NET PROFIT",
+                        dashboard._gv_money(net_profit),
+                        "peach", "fa-line-chart",
+                        _("%s vs prior") % dashboard._gv_percent(np_trend),
+                        card_key="gv_net_profit",
+                    )
+                )
+            hero_tiles_list.extend([
                 dashboard._gvcc_hero_tile(
                     "RECEIVABLES",
                     dashboard._gv_money(data["receivables"]),
@@ -1695,6 +1717,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     _("%s complaints open") % dashboard._gv_number(data["complaints_pending"]),
                 ),
             ])
+            hero_tiles = "".join(hero_tiles_list)
 
             items_qty_palette = dashboard.GVCC_PALETTE.get("purple", dashboard.GVCC_PALETTE["blue"])
             items_qty_tile = (
@@ -1719,12 +1742,15 @@ class LaundryExecutiveDashboard(models.TransientModel):
                 "qty": escape(dashboard._gv_number(data["total_qty"])),
                 "qty_sub": escape(_("garments / items")),
             }
-            pulse_tiles = "".join([
+            pulse_list = [
                 dashboard._gvcc_pulse_tile(
                     dashboard._gv_number(data["orders"]), "ORDERS", "mint",
                     _("period total"),
                 ),
-                items_qty_tile,
+            ]
+            if is_exec:
+                pulse_list.append(items_qty_tile)
+            pulse_list.extend([
                 dashboard._gvcc_pulse_tile(
                     dashboard._gv_number(data["complaints_pending"]), "COMPLAINTS", "peach",
                     _("action needed") if data["complaints_pending"] else _("all clear"),
@@ -1738,6 +1764,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     priority_label,
                 ),
             ])
+            pulse_tiles = "".join(pulse_list)
 
             sales_tiles = "".join([
                 dashboard._gvcc_kcell("TOTAL SALES", dashboard._gv_money(sales_total), "blue",
@@ -1793,12 +1820,16 @@ class LaundryExecutiveDashboard(models.TransientModel):
                                            margin_delta, margin_cls, card_key="gv_net_profit"),
             ])
 
-            customer_cells = "".join([
+            customer_cells_list = [
                 dashboard._gvcc_kcell("NEW", dashboard._gv_number(data["customers"]["new"]), "mint"),
                 dashboard._gvcc_kcell("REPEAT", dashboard._gv_number(data["customers"]["repeat"]), "blue"),
                 dashboard._gvcc_kcell("RETENTION", "%.1f%%" % (data["customers"]["retention"] or 0.0), "purple"),
-                dashboard._gvcc_kcell("AVG SPEND", dashboard._gv_money(data["customers"]["avg_spend"]), "peach"),
-            ])
+            ]
+            if is_exec:
+                customer_cells_list.append(
+                    dashboard._gvcc_kcell("AVG SPEND", dashboard._gv_money(data["customers"]["avg_spend"]), "peach")
+                )
+            customer_cells = "".join(customer_cells_list)
 
             collection_buckets = [
                 ("CASH", "Cash Collection", "mint", "gv_cash_sales"),
@@ -1861,9 +1892,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
                             <div class="gvcc-pulse-tiles">{pulse_tiles}</div>
                         </div>
                     </div>
-                    <div class="gvcc-brief-row">
+                    <div class="gvcc-brief-row {'' if is_exec else 'gvcc-brief-row-cashier'}">
                         <div class="gvcc-brief-col gvcc-brief-risk"><h4><i class="fa fa-warning" aria-hidden="true"></i>{escape(_("Risks"))}</h4><ul>{risks_html}</ul></div>
-                        <div class="gvcc-brief-col gvcc-brief-opp"><h4><i class="fa fa-lightbulb-o" aria-hidden="true"></i>{escape(_("Opportunities"))}</h4><ul>{opps_html}</ul></div>
+                        {'<div class="gvcc-brief-col gvcc-brief-opp"><h4><i class="fa fa-lightbulb-o" aria-hidden="true"></i>' + escape(_("Opportunities")) + '</h4><ul>' + opps_html + '</ul></div>' if is_exec else ''}
                         <div class="gvcc-brief-col gvcc-brief-focus"><h4><i class="fa fa-flag-checkered" aria-hidden="true"></i>{escape(_("Focus"))}</h4><ul>{focus_html}</ul></div>
                     </div>
                     <div class="gvcc-hero">{hero_tiles}</div>

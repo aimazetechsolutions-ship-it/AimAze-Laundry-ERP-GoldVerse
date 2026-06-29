@@ -62,6 +62,7 @@
             "goldverse_premium_laundry_branding/static/src/js/goldverse_dashboard_cards.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_laundry_list_columns.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_partner_lock.js",
+            "goldverse_premium_laundry_branding/static/src/js/goldverse_dashboard_role.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_report_date_filters.js",
             "goldverse_premium_laundry_branding/static/src/js/goldverse_pwa_install_prompt.js",
             "goldverse_premium_laundry_branding/static/src/xml/goldverse_account_report_drilldown.xml",

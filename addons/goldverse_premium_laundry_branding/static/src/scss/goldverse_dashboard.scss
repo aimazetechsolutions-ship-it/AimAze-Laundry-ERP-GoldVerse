@@ -1810,3 +1810,14 @@
     max-width: 130px;
   }
 }
+
+/* Cashier mode: hide ITD (4th) and Custom (5th) selection-badge pills */
+body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-filters .o_field_selection_badge .o_selection_badge:nth-child(4),
+body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-filters .o_field_selection_badge .o_selection_badge:nth-child(5),
+body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-filters .aimaze-segmented-field .o_selection_badge:nth-child(4),
+body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-filters .aimaze-segmented-field .o_selection_badge:nth-child(5) {
+  display: none !important;
+}
+body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-custom-dates {
+  display: none !important;
+}
