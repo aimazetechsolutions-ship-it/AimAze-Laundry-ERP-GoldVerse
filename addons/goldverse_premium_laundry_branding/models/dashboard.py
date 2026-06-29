@@ -224,9 +224,16 @@ class LaundryExecutiveDashboard(models.TransientModel):
             dashboard.date_to = today
         except Exception:
             pass
+        is_exec = (
+            self.env.user._is_admin()
+            or self.env.user._is_superuser()
+            or self.env.user.has_group("aimaze_laundry_management.group_laundry_admin")
+            or self.env.user.has_group("base.group_system")
+        )
+        action_name = _("Executive Dashboard") if is_exec else _("Customer Care Dashboard")
         return {
             "type": "ir.actions.act_window",
-            "name": _("Executive Dashboard"),
+            "name": action_name,
             "res_model": "aimaze.laundry.executive.dashboard",
             "view_mode": "form",
             "res_id": dashboard.id,
@@ -1533,16 +1540,20 @@ class LaundryExecutiveDashboard(models.TransientModel):
             branch_label = dashboard.branch_id.display_name or _("All Branches")
             user_name = dashboard.env.user.name or _("Administrator")
             range_label = dashboard.date_range_label or ""
+            title = "Executive Command Center" if dashboard.goldverse_is_executive_view else "Customer Care Center"
+            icon = "fa-trophy" if dashboard.goldverse_is_executive_view else "fa-headphones"
             dashboard.goldverse_header_html = (
                 '<div class="gvcc-toolbar-inline">'
-                '<div class="gvcc-h-avatar"><i class="fa fa-trophy" aria-hidden="true"></i></div>'
+                '<div class="gvcc-h-avatar"><i class="fa %(icon)s" aria-hidden="true"></i></div>'
                 '<div class="gvcc-h-text">'
-                '<p class="gvcc-h-title">Executive Command Center</p>'
+                '<p class="gvcc-h-title">%(title)s</p>'
                 '<p class="gvcc-h-sub">%(user)s · %(company)s · %(branch)s</p>'
                 '</div>'
                 '<span class="gvcc-live"><span class="gvcc-live-dot"></span>Live · %(range)s</span>'
                 '</div>'
             ) % {
+                "icon": icon,
+                "title": escape(title),
                 "user": escape(user_name),
                 "company": escape(company.name or "GoldVerse"),
                 "branch": escape(branch_label),
