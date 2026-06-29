@@ -345,23 +345,26 @@ class ResPartner(models.Model):
     def write(self, vals):
         vals = dict(vals)
         if not self._goldverse_partner_is_admin():
-            locked_vals = {k: v for k, v in vals.items() if k in GOLDVERSE_PARTNER_LOCKED_FIELDS}
-            if locked_vals:
+            locked_keys = [k for k in vals.keys() if k in GOLDVERSE_PARTNER_LOCKED_FIELDS]
+            if locked_keys:
                 for partner in self:
                     is_saved = isinstance(partner.id, int) and partner.id > 0
-                    if (partner.customer_rank or 0) > 0 and is_saved:
-                        import logging
-                        _gv_logger = logging.getLogger(__name__)
-                        _gv_logger.warning(
-                            "GoldVerse partner-lock blocked write on %s (id=%s). vals keys=%s, locked keys=%s",
-                            partner.display_name or partner.name or "?",
-                            partner.id,
-                            sorted(vals.keys()),
-                            sorted(locked_vals.keys()),
-                        )
+                    if not (partner.customer_rank or 0) > 0 or not is_saved:
+                        continue
+                    changed_keys = []
+                    for key in locked_keys:
+                        new_val = vals.get(key)
+                        current = partner[key]
+                        if hasattr(current, "id"):
+                            current = current.id
+                        if hasattr(current, "ids"):
+                            current = list(current.ids)
+                        if new_val != current and not (new_val in (False, None, "") and current in (False, None, "")):
+                            changed_keys.append(key)
+                    if changed_keys:
                         raise UserError(_(
                             "Customer '%s' is locked. Only a Laundry Admin can edit, archive, or delete an existing customer.\n(Blocked fields: %s)"
-                        ) % (partner.display_name or partner.name or "", ", ".join(sorted(locked_vals.keys()))))
+                        ) % (partner.display_name or partner.name or "", ", ".join(sorted(changed_keys))))
         self._goldverse_prepare_mobile_vals(vals)
         self._goldverse_prepare_customer_category_vals(vals)
         result = super().write(vals)
