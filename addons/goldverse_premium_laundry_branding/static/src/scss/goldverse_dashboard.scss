@@ -1821,3 +1821,12 @@ body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-filters .aim
 body.gv-dashboard-cashier .o_goldverse_dashboard .goldverse-command-custom-dates {
   display: none !important;
 }
+
+/* Cashier dashboard: pulse-tiles back to 4 cols (no Service Items+QTY tile) */
+body.gv-dashboard-cashier .o_goldverse_dashboard .gvcc-shell .gvcc-pulse-tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+/* Cashier dashboard: hero tile row 4 cols (no Net Profit) */
+body.gv-dashboard-cashier .o_goldverse_dashboard .gvcc-shell .gvcc-hero {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
