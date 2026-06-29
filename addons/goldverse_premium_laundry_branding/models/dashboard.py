@@ -218,20 +218,22 @@ class LaundryExecutiveDashboard(models.TransientModel):
             or self.env.user.has_group("base.group_system")
         )
         action_name = _("Executive Dashboard") if is_exec else _("Customer Care Dashboard")
+        default_period = "itd" if is_exec else "today"
         dashboard = self.create(
             {
                 "name": action_name,
                 "company_id": company.id,
-                "period_filter": "itd",
+                "period_filter": default_period,
                 "date_from": today,
                 "date_to": today,
             }
         )
-        try:
-            dashboard.date_from = dashboard._goldverse_inception_date()
-            dashboard.date_to = today
-        except Exception:
-            pass
+        if is_exec:
+            try:
+                dashboard.date_from = dashboard._goldverse_inception_date()
+                dashboard.date_to = today
+            except Exception:
+                pass
         return {
             "type": "ir.actions.act_window",
             "name": action_name,
