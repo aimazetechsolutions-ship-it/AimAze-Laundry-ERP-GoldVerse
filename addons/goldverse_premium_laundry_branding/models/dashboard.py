@@ -1920,13 +1920,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
                     {(dashboard._gvcc_band("fa-th-large", _("Business mix"), _("top 5")) + '<div class="gvcc-grid gvcc-g3"><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Top services")) + '</p>' + dashboard._gv_bar_chart(data["top_services"], "Revenue") + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Top categories")) + '</p>' + dashboard._gv_bar_chart(data["top_categories"], "Revenue") + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Top sub-categories")) + '</p>' + dashboard._gv_bar_chart(data["top_subcategories"], "Revenue") + '</div></div>') if is_exec else ''}
 
-                    {dashboard._gvcc_band("fa-trophy", _("Top 10 customers & intelligence"), _("by revenue · by outstanding"))}
-                    <div class="gvcc-grid gvcc-g4 gvcc-mini">{customer_cells}</div>
-                    <div class="gvcc-grid gvcc-g2 gvcc-top10-row">
-                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_active_customers")}>
-                            <p class="gvcc-card-title">{escape(_("Top 10 customers by sales"))}</p>
-                            {dashboard._gv_top10_customers_table(data["customers"]["top_rows"], mode="revenue")}
-                        </div>
+                    {dashboard._gvcc_band("fa-trophy", _("Customer intelligence & top outstanding") if not is_exec else _("Top 10 customers & intelligence"), _("by outstanding") if not is_exec else _("by revenue · by outstanding"))}
+                    <div class="gvcc-grid {'gvcc-g3' if not is_exec else 'gvcc-g4'} gvcc-mini">{customer_cells}</div>
+                    <div class="gvcc-grid {'gvcc-g1' if not is_exec else 'gvcc-g2'} gvcc-top10-row">
+                        {('<div class="gvcc-card gv-clickable-card" ' + dashboard._gv_click_attrs("gv_active_customers") + '><p class="gvcc-card-title">' + escape(_("Top 10 customers by sales")) + '</p>' + dashboard._gv_top10_customers_table(data["customers"]["top_rows"], mode="revenue") + '</div>') if is_exec else ''}
                         <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_receivables")}>
                             <p class="gvcc-card-title">{escape(_("Top 10 customers by outstanding balance"))}</p>
                             {dashboard._gv_top10_customers_table(data["customers"]["top_outstanding_rows"], mode="outstanding")}
