@@ -211,8 +211,16 @@ class LaundryExecutiveDashboard(models.TransientModel):
         company = self._goldverse_find_company()
         today = fields.Date.context_today(self)
         dashboard_menu_id = self._goldverse_default_menu_id(model="aimaze.laundry.executive.dashboard")
+        is_exec = (
+            self.env.user._is_admin()
+            or self.env.user._is_superuser()
+            or self.env.user.has_group("aimaze_laundry_management.group_laundry_admin")
+            or self.env.user.has_group("base.group_system")
+        )
+        action_name = _("Executive Dashboard") if is_exec else _("Customer Care Dashboard")
         dashboard = self.create(
             {
+                "name": action_name,
                 "company_id": company.id,
                 "period_filter": "itd",
                 "date_from": today,
@@ -224,13 +232,6 @@ class LaundryExecutiveDashboard(models.TransientModel):
             dashboard.date_to = today
         except Exception:
             pass
-        is_exec = (
-            self.env.user._is_admin()
-            or self.env.user._is_superuser()
-            or self.env.user.has_group("aimaze_laundry_management.group_laundry_admin")
-            or self.env.user.has_group("base.group_system")
-        )
-        action_name = _("Executive Dashboard") if is_exec else _("Customer Care Dashboard")
         return {
             "type": "ir.actions.act_window",
             "name": action_name,
