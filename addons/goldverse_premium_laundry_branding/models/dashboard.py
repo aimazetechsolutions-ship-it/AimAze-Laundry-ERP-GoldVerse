@@ -1918,12 +1918,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
                     {(dashboard._gvcc_band("fa-line-chart", _("Revenue intelligence"), _("monthly")) + '<div class="gvcc-grid gvcc-g7030"><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Monthly Revenue vs Gross Profit")) + '</p>' + dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#5a85f0"), ("gross_profit", "Gross Profit", "#67c4a8")]) + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Sales mix")) + '</p>' + dashboard._gv_donut_chart(data["service_composition"][:6]) + '</div></div>') if is_exec else ''}
 
-                    {dashboard._gvcc_band("fa-th-large", _("Business mix"), _("top 5"))}
-                    <div class="gvcc-grid gvcc-g3">
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top services"))}</p>{dashboard._gv_bar_chart(data["top_services"], "Revenue")}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top categories"))}</p>{dashboard._gv_bar_chart(data["top_categories"], "Revenue")}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Top sub-categories"))}</p>{dashboard._gv_bar_chart(data["top_subcategories"], "Revenue")}</div>
-                    </div>
+                    {(dashboard._gvcc_band("fa-th-large", _("Business mix"), _("top 5")) + '<div class="gvcc-grid gvcc-g3"><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Top services")) + '</p>' + dashboard._gv_bar_chart(data["top_services"], "Revenue") + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Top categories")) + '</p>' + dashboard._gv_bar_chart(data["top_categories"], "Revenue") + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Top sub-categories")) + '</p>' + dashboard._gv_bar_chart(data["top_subcategories"], "Revenue") + '</div></div>') if is_exec else ''}
 
                     {dashboard._gvcc_band("fa-trophy", _("Top 10 customers & intelligence"), _("by revenue · by outstanding"))}
                     <div class="gvcc-grid gvcc-g4 gvcc-mini">{customer_cells}</div>
