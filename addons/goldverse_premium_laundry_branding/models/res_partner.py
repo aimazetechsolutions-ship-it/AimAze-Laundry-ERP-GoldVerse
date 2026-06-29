@@ -11,6 +11,40 @@ GOLDVERSE_PARTNER_ADMIN_GROUPS = (
 )
 
 
+GOLDVERSE_PARTNER_LOCKED_FIELDS = frozenset({
+    "name",
+    "display_name",
+    "street",
+    "street2",
+    "city",
+    "zip",
+    "state_id",
+    "country_id",
+    "email",
+    "phone",
+    "mobile",
+    "vat",
+    "comment",
+    "function",
+    "title",
+    "active",
+    "image_1920",
+    "image_1024",
+    "image_512",
+    "image_256",
+    "image_128",
+    "company_type",
+    "is_company",
+    "parent_id",
+    "lang",
+    "tz",
+    "goldverse_customer_category",
+    "laundry_customer_type",
+    "goldverse_is_blocked",
+    "goldverse_block_reason",
+})
+
+
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
@@ -311,9 +345,8 @@ class ResPartner(models.Model):
     def write(self, vals):
         vals = dict(vals)
         if not self._goldverse_partner_is_admin():
-            internal_only_keys = {"goldverse_partner_is_locked"}
-            substantive_vals = {k: v for k, v in vals.items() if k not in internal_only_keys}
-            if substantive_vals:
+            locked_vals = {k: v for k, v in vals.items() if k in GOLDVERSE_PARTNER_LOCKED_FIELDS}
+            if locked_vals:
                 for partner in self:
                     is_saved = isinstance(partner.id, int) and partner.id > 0
                     if (partner.customer_rank or 0) > 0 and is_saved:
