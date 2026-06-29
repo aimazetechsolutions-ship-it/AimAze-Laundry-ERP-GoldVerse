@@ -55,6 +55,7 @@ class LaundryPaymentWizard(models.TransientModel):
     _inherit = "aimaze.laundry.payment.wizard"
 
     goldverse_deliver_after_payment = fields.Boolean(default=lambda self: self.env.context.get("default_goldverse_deliver_after_payment"))
+    payment_date = fields.Date(default=False)
 
     def _goldverse_manual_inbound_method(self):
         return self.env["account.payment.method"].search([("code", "=", "manual"), ("payment_type", "=", "inbound")], limit=1)
@@ -91,14 +92,12 @@ class LaundryPaymentWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         values = super().default_get(fields_list)
-        if "payment_method_id" in fields_list:
-            method = self._goldverse_default_payment_method()
-            if method:
-                values["payment_method_id"] = method.id
-        if "journal_id" in fields_list:
-            journal = self._goldverse_default_payment_journal()
-            if journal:
-                values["journal_id"] = journal.id
+        # User requested: amount, payment method, and payment date should start blank
+        # so the cashier explicitly enters each. Journal auto-fills from the payment method.
+        values.pop("amount", None)
+        values.pop("payment_method_id", None)
+        values.pop("payment_date", None)
+        values.pop("journal_id", None)
         return values
 
     @api.onchange("payment_method_id")
@@ -108,6 +107,11 @@ class LaundryPaymentWizard(models.TransientModel):
                 wizard.journal_id = wizard.payment_method_id.journal_id
 
     def action_register_payment(self):
+        for wizard in self:
+            if not wizard.payment_date:
+                wizard.payment_date = fields.Date.context_today(wizard)
+            if not wizard.journal_id and wizard.payment_method_id and wizard.payment_method_id.journal_id:
+                wizard.journal_id = wizard.payment_method_id.journal_id
         deliver_after_payment = any(self.mapped("goldverse_deliver_after_payment"))
         orders = self.mapped("order_id")
         previous_states = {order.id: order.state for order in orders}
