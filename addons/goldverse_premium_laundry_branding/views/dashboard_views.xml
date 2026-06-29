@@ -12,9 +12,7 @@
         <field name="sequence">1</field>
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
-            ref('base.group_system'),
-            ref('aimaze_laundry_management.group_customer_care_executive'),
-            ref('base.group_user')
+            ref('base.group_system')
         ])]"/>
     </record>
 
@@ -22,6 +20,17 @@
         <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_laundry_admin'),
             ref('base.group_system'),
+            ref('aimaze_laundry_management.group_customer_care_executive'),
+            ref('base.group_user')
+        ])]"/>
+    </record>
+
+    <record id="menu_goldverse_customer_care_dashboard" model="ir.ui.menu">
+        <field name="name">Customer Care Dashboard</field>
+        <field name="parent_id" ref="aimaze_laundry_management.menu_laundry_dashboard"/>
+        <field name="action" ref="action_goldverse_open_executive_dashboard"/>
+        <field name="sequence">0</field>
+        <field name="group_ids" eval="[(6, 0, [
             ref('aimaze_laundry_management.group_customer_care_executive'),
             ref('base.group_user')
         ])]"/>
