@@ -1902,14 +1902,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     {dashboard._gvcc_band("fa-money", _("Sales command view"), range_label)}
                     <div class="gvcc-grid gvcc-g5">{sales_tiles}</div>
 
-                    {dashboard._gvcc_band("fa-bar-chart", _("Executive KPI summary"), _("vs prior period"))}
-                    <div class="gvcc-grid gvcc-g3">{perf_cells}</div>
+                    {(dashboard._gvcc_band("fa-bar-chart", _("Executive KPI summary"), _("vs prior period")) + '<div class="gvcc-grid gvcc-g3">' + perf_cells + '</div>') if is_exec else ''}
 
-                    {dashboard._gvcc_band("fa-line-chart", _("Revenue intelligence"), _("monthly"))}
-                    <div class="gvcc-grid gvcc-g7030">
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Monthly Revenue vs Gross Profit"))}</p>{dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#5a85f0"), ("gross_profit", "Gross Profit", "#67c4a8")])}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Sales mix"))}</p>{dashboard._gv_donut_chart(data["service_composition"][:6])}</div>
-                    </div>
+                    {(dashboard._gvcc_band("fa-line-chart", _("Revenue intelligence"), _("monthly")) + '<div class="gvcc-grid gvcc-g7030"><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Monthly Revenue vs Gross Profit")) + '</p>' + dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#5a85f0"), ("gross_profit", "Gross Profit", "#67c4a8")]) + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Sales mix")) + '</p>' + dashboard._gv_donut_chart(data["service_composition"][:6]) + '</div></div>') if is_exec else ''}
 
                     {dashboard._gvcc_band("fa-th-large", _("Business mix"), _("top 5"))}
                     <div class="gvcc-grid gvcc-g3">
@@ -1938,18 +1933,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
                         <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Customer advances"))}</p><div class="gvcc-grid gvcc-g3 gvcc-mini">{advance_cells}</div></div>
                     </div>
 
-                    {dashboard._gvcc_band("fa-pie-chart", _("Profitability & control"), _("monthly trend"))}
-                    <div class="gvcc-grid gvcc-g3">
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Revenue vs cost breakdown"))}</p>{dashboard._gv_donut_chart(data["cost_breakdown"], center_value=data["revenue"])}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Gross profit % trend"))}</p>{dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#67c4a8")])}</div>
-                        <div class="gvcc-card"><p class="gvcc-card-title">{escape(_("Net profit % trend"))}</p>{dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#9e7bc4")])}</div>
-                    </div>
+                    {(dashboard._gvcc_band("fa-pie-chart", _("Profitability & control"), _("monthly trend")) + '<div class="gvcc-grid gvcc-g3"><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Revenue vs cost breakdown")) + '</p>' + dashboard._gv_donut_chart(data["cost_breakdown"], center_value=data["revenue"]) + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Gross profit % trend")) + '</p>' + dashboard._gv_line_chart(data["monthly"], [("gp_percent", "Gross Profit %", "#67c4a8")]) + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Net profit % trend")) + '</p>' + dashboard._gv_line_chart(data["monthly"], [("np_percent", "Net Profit %", "#9e7bc4")]) + '</div></div>') if is_exec else ''}
 
-                    {dashboard._gvcc_band("fa-bell", _("Expenses & executive alerts"), _("live signals"))}
-                    <div class="gvcc-grid gvcc-g6040">
-                        <div class="gvcc-card gv-clickable-card" {dashboard._gv_click_attrs("gv_top_expenses")}><p class="gvcc-card-title">{escape(_("Top 10 expenses"))}</p>{dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense", limit=10)}</div>
-                        <div class="gvcc-card gvcc-alerts-card"><p class="gvcc-card-title">{escape(_("Executive alerts"))}</p><div class="gvcc-alerts">{dashboard._gv_alerts(data)}</div></div>
-                    </div>
+                    {(dashboard._gvcc_band("fa-bell", _("Expenses & executive alerts"), _("live signals")) + '<div class="gvcc-grid gvcc-g6040"><div class="gvcc-card gv-clickable-card" ' + dashboard._gv_click_attrs("gv_top_expenses") + '><p class="gvcc-card-title">' + escape(_("Top 10 expenses")) + '</p>' + dashboard._gv_bar_chart([(row["name"], row["value"]) for row in data["top_expense_rows"]], "Expense", limit=10) + '</div><div class="gvcc-card gvcc-alerts-card"><p class="gvcc-card-title">' + escape(_("Executive alerts")) + '</p><div class="gvcc-alerts">' + dashboard._gv_alerts(data) + '</div></div></div>') if is_exec else ''}
                 </div>
             """
 
