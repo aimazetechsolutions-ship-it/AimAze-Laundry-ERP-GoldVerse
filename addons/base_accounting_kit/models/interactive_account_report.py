@@ -633,19 +633,19 @@ class InteractiveAccountReport(models.AbstractModel):
             g_account_ids = []
             account_children = []
             for a in g_accounts:
-                v = by_account.get(a.id)
-                if not v:
-                    continue
+                v = by_account.get(a.id) or {}
                 debit = v.get("debit") or 0.0
                 credit = v.get("credit") or 0.0
                 raw = v.get("balance") or 0.0
                 balance = raw * sign
-                if not any(abs(x) >= 0.005 for x in (debit, credit, balance)):
-                    continue
+                is_zero = not any(abs(x) >= 0.005 for x in (debit, credit, balance))
                 g_totals["debit"] += debit
                 g_totals["credit"] += credit
                 g_totals["balance"] += balance
                 g_account_ids.append(a.id)
+                if is_zero:
+                    # Include the account id (so drill/aggregation still works) but skip the visible child row.
+                    continue
                 display = f"{a.code or ''} {a.name or ''}".strip()
                 account_children.append({
                     "id": f"{g_key}_a{a.id}",
@@ -659,8 +659,6 @@ class InteractiveAccountReport(models.AbstractModel):
                     "parent_id": g_key,
                     "values": {"name": display, "debit": debit, "credit": credit, "balance": balance},
                 })
-            if not account_children:
-                continue
             # Add group sub-head + its accounts
             sub_head = {
                 "id": g_key,
