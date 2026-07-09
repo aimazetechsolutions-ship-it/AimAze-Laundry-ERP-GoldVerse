@@ -586,23 +586,110 @@ class InteractiveAccountReport(models.AbstractModel):
 
     @api.model
     def _profit_and_loss_statement(self, options):
-        revenue_lines, revenue, revenue_account_ids = self._account_balances(["income"], options, sign=-1)
-        cost_lines, cost, cost_account_ids = self._account_balances(["expense_direct_cost"], options, sign=1)
-        expense_lines, expenses, expense_account_ids = self._account_balances(
-            ["expense", "expense_depreciation"], options, sign=1
-        )
-        other_income_lines, other_income, other_income_account_ids = self._account_balances(
-            ["income_other"], options, sign=-1
-        )
-        gross_profit = revenue["balance"] - cost["balance"]
-        operating_income = gross_profit - expenses["balance"]
-        net_profit = operating_income + other_income["balance"]
-        gross_profit_ids = list(revenue_account_ids) + list(cost_account_ids)
-        operating_ids = gross_profit_ids + list(expense_account_ids)
-        net_profit_ids = operating_ids + list(other_income_account_ids)
+        return self._pak_style_pnl(options)
 
-        def _section_head(key, label, section_balance, account_ids):
-            head = {
+    @api.model
+    def _pnl_section_by_group(self, key, label, account_types, options, sign, code_prefix=None, code_prefix_exclude=None):
+        """Build a PAK-style section: header + foldable sub-heads (by account.group) + total.
+
+        Returns (lines, section_totals, account_ids)."""
+        Account = self.env["account.account"]
+        domain = [
+            ("company_ids", "in", [self.env.company.id]),
+            ("account_type", "in", account_types),
+        ]
+        accounts = Account.search(domain, order="code, name")
+        if code_prefix:
+            accounts = accounts.filtered(lambda a: any((a.code or "").startswith(p) for p in code_prefix))
+        if code_prefix_exclude:
+            accounts = accounts.filtered(lambda a: not any((a.code or "").startswith(p) for p in code_prefix_exclude))
+        if not accounts:
+            return [], {"debit": 0.0, "credit": 0.0, "balance": 0.0}, []
+
+        rows = self.env["account.move.line"]._read_group(
+            domain=self._move_line_domain(options, account_ids=accounts.ids, date_from=True),
+            groupby=["account_id"],
+            aggregates=["debit:sum", "credit:sum", "balance:sum"],
+        )
+        by_account = {a.id: {"debit": d, "credit": c, "balance": b} for a, d, c, b in rows}
+
+        # Group accounts by their account.group_id
+        groups_map = {}
+        for a in accounts:
+            g = a.group_id
+            key_gid = g.id if g else 0
+            groups_map.setdefault(key_gid, {"group": g, "accounts": []})["accounts"].append(a)
+
+        section_totals = {"debit": 0.0, "credit": 0.0, "balance": 0.0}
+        section_account_ids = []
+        sub_lines = []
+
+        for gid, entry in sorted(groups_map.items(), key=lambda x: (x[1]["group"].code_prefix_start or "") if x[1]["group"] else ""):
+            g = entry["group"]
+            g_name = g.name if g else _("Uncategorised")
+            g_key = f"{key}_g{gid}"
+            g_accounts = entry["accounts"]
+            g_totals = {"debit": 0.0, "credit": 0.0, "balance": 0.0}
+            g_account_ids = []
+            account_children = []
+            for a in g_accounts:
+                v = by_account.get(a.id)
+                if not v:
+                    continue
+                debit = v.get("debit") or 0.0
+                credit = v.get("credit") or 0.0
+                raw = v.get("balance") or 0.0
+                balance = raw * sign
+                if not any(abs(x) >= 0.005 for x in (debit, credit, balance)):
+                    continue
+                g_totals["debit"] += debit
+                g_totals["credit"] += credit
+                g_totals["balance"] += balance
+                g_account_ids.append(a.id)
+                display = f"{a.code or ''} {a.name or ''}".strip()
+                account_children.append({
+                    "id": f"{g_key}_a{a.id}",
+                    "name": display,
+                    "level": 3,
+                    "type": "account",
+                    "account_id": a.id,
+                    "account_code": a.code or "",
+                    "line_actions": self._line_action_general_ledger(),
+                    "is_total": False,
+                    "parent_id": g_key,
+                    "values": {"name": display, "debit": debit, "credit": credit, "balance": balance},
+                })
+            if not account_children:
+                continue
+            # Add group sub-head + its accounts
+            sub_head = {
+                "id": g_key,
+                "name": g_name,
+                "level": 2,
+                "type": "section",
+                "is_total": False,
+                "is_subgroup": True,
+                "unfoldable": True,
+                "default_unfolded": False,
+                "parent_id": key,
+                "account_ids": list(g_account_ids),
+                "line_actions": self._line_action_general_ledger(),
+                "values": {"name": g_name, "debit": g_totals["debit"], "credit": g_totals["credit"], "balance": g_totals["balance"]},
+            }
+            sub_lines.append(sub_head)
+            sub_lines.extend(account_children)
+            section_totals["debit"] += g_totals["debit"]
+            section_totals["credit"] += g_totals["credit"]
+            section_totals["balance"] += g_totals["balance"]
+            section_account_ids.extend(g_account_ids)
+
+        return sub_lines, section_totals, section_account_ids
+
+    def _pak_style_pnl(self, options):
+        lines = []
+
+        def _section_head(key, label, balance, account_ids):
+            row = {
                 "id": key,
                 "name": label,
                 "level": 1,
@@ -611,14 +698,14 @@ class InteractiveAccountReport(models.AbstractModel):
                 "is_section_header": True,
                 "unfoldable": True,
                 "default_unfolded": True,
-                "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": section_balance},
+                "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": balance},
             }
             if account_ids:
-                head["account_ids"] = list(account_ids)
-                head["line_actions"] = self._line_action_general_ledger()
-            return head
+                row["account_ids"] = list(account_ids)
+                row["line_actions"] = self._line_action_general_ledger()
+            return row
 
-        def _section_subtotal(key, label, amount, account_ids):
+        def _subtotal(key, label, amount, account_ids, parent=None):
             row = {
                 "id": key,
                 "name": label,
@@ -628,51 +715,83 @@ class InteractiveAccountReport(models.AbstractModel):
                 "is_subtotal": True,
                 "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": amount},
             }
+            if parent:
+                row["parent_id"] = parent
             if account_ids:
                 row["account_ids"] = list(account_ids)
                 row["line_actions"] = self._line_action_general_ledger()
             return row
 
-        def _reparent(children, parent_key):
-            for child in children:
-                child["parent_id"] = parent_key
-                child["level"] = max(child.get("level", 2), 2)
+        # ---------- REVENUE (income) ----------
+        rev_sub, rev_totals, rev_ids = self._pnl_section_by_group(
+            "revenue", "REVENUE", ["income", "income_other"], options, sign=-1
+        )
+        lines.append(_section_head("revenue", _("REVENUE"), rev_totals["balance"], rev_ids))
+        lines += rev_sub
+        lines.append(_subtotal("revenue_total", _("Total Revenue"), rev_totals["balance"], rev_ids, parent="revenue"))
 
-        lines = []
-
-        # ---------- REVENUE ----------
-        _reparent(revenue_lines, "revenue")
-        lines.append(_section_head("revenue", _("REVENUE"), revenue["balance"], revenue_account_ids))
-        lines += revenue_lines
-        lines.append(_section_subtotal("revenue_total", _("Total Revenue"), revenue["balance"], revenue_account_ids))
-
-        # ---------- DIRECT COSTS ----------
-        _reparent(cost_lines, "direct_costs")
-        lines.append(_section_head("direct_costs", _("DIRECT COSTS"), cost["balance"], cost_account_ids))
-        lines += cost_lines
-        lines.append(_section_subtotal("direct_costs_total", _("Total Direct Costs"), cost["balance"], cost_account_ids))
+        # ---------- DIRECT COSTS (expense_direct_cost) ----------
+        dc_sub, dc_totals, dc_ids = self._pnl_section_by_group(
+            "direct_costs", "DIRECT COSTS", ["expense_direct_cost"], options, sign=1
+        )
+        lines.append(_section_head("direct_costs", _("DIRECT COSTS"), dc_totals["balance"], dc_ids))
+        lines += dc_sub
+        lines.append(_subtotal("direct_costs_total", _("Total Direct Costs"), dc_totals["balance"], dc_ids, parent="direct_costs"))
 
         # ---------- GROSS OPERATING PROFIT ----------
-        lines.append(self._total_line("gross_operating_profit", _("GROSS OPERATING PROFIT"), gross_profit, account_ids=gross_profit_ids))
+        gop = rev_totals["balance"] - dc_totals["balance"]
+        gop_ids = rev_ids + dc_ids
+        lines.append(self._total_line("gross_operating_profit", _("GROSS OPERATING PROFIT"), gop, account_ids=gop_ids))
 
-        # ---------- OPERATING EXPENSES ----------
-        _reparent(expense_lines, "operating_expenses")
-        lines.append(_section_head("operating_expenses", _("OPERATING EXPENSES"), expenses["balance"], expense_account_ids))
-        lines += expense_lines
-        lines.append(_section_subtotal("operating_expenses_total", _("Total Operating Expenses"), expenses["balance"], expense_account_ids))
+        # ---------- OPERATING EXPENSES (expense except finance/tax code prefixes) ----------
+        opex_sub, opex_totals, opex_ids = self._pnl_section_by_group(
+            "operating_expenses", "OPERATING EXPENSES", ["expense", "expense_depreciation"], options, sign=1,
+            code_prefix_exclude=["721", "728", "73"],
+        )
+        lines.append(_section_head("operating_expenses", _("OPERATING EXPENSES"), opex_totals["balance"], opex_ids))
+        lines += opex_sub
+        lines.append(_subtotal("operating_expenses_total", _("Total Operating Expenses"), opex_totals["balance"], opex_ids, parent="operating_expenses"))
 
-        # ---------- OPERATING INCOME / (LOSS) (EBITDA proxy) ----------
-        lines.append(self._total_line("operating_income", _("OPERATING INCOME / (LOSS)"), operating_income, account_ids=operating_ids))
+        # ---------- EBITDA ----------
+        ebitda = gop - opex_totals["balance"]
+        ebitda_ids = gop_ids + opex_ids
+        lines.append(self._total_line("ebitda", _("EBITDA"), ebitda, account_ids=ebitda_ids))
 
-        # ---------- OTHER INCOME ----------
-        if other_income_lines or abs(other_income["balance"]) >= 0.005:
-            _reparent(other_income_lines, "other_income")
-            lines.append(_section_head("other_income", _("OTHER INCOME"), other_income["balance"], other_income_account_ids))
-            lines += other_income_lines
-            lines.append(_section_subtotal("other_income_total", _("Total Other Income"), other_income["balance"], other_income_account_ids))
+        # ---------- FINANCIAL CHARGES (bank charges + interest — prefixes 721, 728) ----------
+        fc_sub, fc_totals, fc_ids = self._pnl_section_by_group(
+            "financial_charges", "FINANCIAL CHARGES", ["expense"], options, sign=1,
+            code_prefix=["721", "728"],
+        )
+        if fc_sub:
+            lines.append(_section_head("financial_charges", _("FINANCIAL CHARGES"), fc_totals["balance"], fc_ids))
+            lines += fc_sub
+            lines.append(_subtotal("financial_charges_total", _("Total Financial Charges"), fc_totals["balance"], fc_ids, parent="financial_charges"))
+        else:
+            lines.append(_section_head("financial_charges", _("FINANCIAL CHARGES"), 0.0, []))
+            lines.append(_subtotal("financial_charges_total", _("Total Financial Charges"), 0.0, [], parent="financial_charges"))
+
+        # ---------- PROFIT BEFORE TAX ----------
+        pbt = ebitda - fc_totals["balance"]
+        pbt_ids = ebitda_ids + fc_ids
+        lines.append(self._total_line("profit_before_tax", _("PROFIT BEFORE TAX"), pbt, account_ids=pbt_ids))
+
+        # ---------- TAXATION (prefix 73) ----------
+        tax_sub, tax_totals, tax_ids = self._pnl_section_by_group(
+            "taxation", "TAXATION", ["expense"], options, sign=1,
+            code_prefix=["73"],
+        )
+        if tax_sub:
+            lines.append(_section_head("taxation", _("TAXATION"), tax_totals["balance"], tax_ids))
+            lines += tax_sub
+            lines.append(_subtotal("taxation_total", _("Total Taxation"), tax_totals["balance"], tax_ids, parent="taxation"))
+        else:
+            lines.append(_section_head("taxation", _("TAXATION"), 0.0, []))
+            lines.append(_subtotal("taxation_total", _("Total Taxation"), 0.0, [], parent="taxation"))
 
         # ---------- NET PROFIT / (LOSS) ----------
-        lines.append(self._total_line("net_profit", _("NET PROFIT / (LOSS)"), net_profit, grand=True, account_ids=net_profit_ids))
+        net_profit = pbt - tax_totals["balance"]
+        net_ids = pbt_ids + tax_ids
+        lines.append(self._total_line("net_profit", _("NET PROFIT / (LOSS)"), net_profit, grand=True, account_ids=net_ids))
         return self._statement_columns(options), lines
 
     @api.model
