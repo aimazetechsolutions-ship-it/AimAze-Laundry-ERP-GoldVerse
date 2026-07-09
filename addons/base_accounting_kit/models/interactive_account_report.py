@@ -638,14 +638,10 @@ class InteractiveAccountReport(models.AbstractModel):
                 credit = v.get("credit") or 0.0
                 raw = v.get("balance") or 0.0
                 balance = raw * sign
-                is_zero = not any(abs(x) >= 0.005 for x in (debit, credit, balance))
                 g_totals["debit"] += debit
                 g_totals["credit"] += credit
                 g_totals["balance"] += balance
                 g_account_ids.append(a.id)
-                if is_zero:
-                    # Include the account id (so drill/aggregation still works) but skip the visible child row.
-                    continue
                 display = f"{a.code or ''} {a.name or ''}".strip()
                 account_children.append({
                     "id": f"{g_key}_a{a.id}",
