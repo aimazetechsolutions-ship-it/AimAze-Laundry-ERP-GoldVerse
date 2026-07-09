@@ -70,10 +70,64 @@
                             <span><t t-esc="agedPeriodLengthLabel"/></span>
                         </button>
 
-                        <button t-if="showComparisonFilter" type="button" t-attf-class="btn btn-light o_account_filter_btn {{ options.enable_filter ? 'active' : '' }}" t-on-click="() => this.toggleComparison()">
-                            <i class="fa fa-percent"/>
-                            <span>Comparison</span>
-                        </button>
+                        <div t-if="showComparisonFilter" class="o_account_filter_dropdown o_account_comparison_dropdown">
+                            <button type="button" t-attf-class="btn btn-light o_account_filter_btn {{ hasComparison ? 'active' : '' }}" t-on-click="() => this.toggleComparisonMenu()">
+                                <i class="fa fa-percent"/>
+                                <span t-if="hasComparison">Comparison: <t t-esc="comparisonLabel"/></span>
+                                <span t-else="">Comparison</span>
+                                <i class="fa fa-caret-down"/>
+                            </button>
+                            <div t-if="state.comparisonMenuOpen" class="o_account_comparison_menu">
+                                <button type="button" t-attf-class="o_account_comparison_option {{ comparisonMode === 'none' ? 'active' : '' }}" t-on-click="() => this.selectComparison('none')">
+                                    <i class="fa fa-check o_account_comparison_tick" t-att-style="comparisonMode === 'none' ? '' : 'visibility:hidden'"/>
+                                    <span>No Comparison</span>
+                                </button>
+                                <div class="o_account_comparison_row">
+                                    <button type="button" t-attf-class="o_account_comparison_option {{ comparisonMode === 'previous_period' ? 'active' : '' }}" t-on-click="() => this.selectComparison('previous_period')">
+                                        <i class="fa fa-check o_account_comparison_tick" t-att-style="comparisonMode === 'previous_period' ? '' : 'visibility:hidden'"/>
+                                        <span>Previous Period</span>
+                                    </button>
+                                    <div t-if="comparisonMode === 'previous_period'" class="o_account_comparison_stepper">
+                                        <input type="number" min="1" max="36" class="form-control" t-att-value="comparisonCount" t-on-change="(ev) => this.setComparisonCount(ev.target.value)"/>
+                                        <span>Periods</span>
+                                    </div>
+                                </div>
+                                <div class="o_account_comparison_row">
+                                    <button type="button" t-attf-class="o_account_comparison_option {{ comparisonMode === 'same_last_year' ? 'active' : '' }}" t-on-click="() => this.selectComparison('same_last_year')">
+                                        <i class="fa fa-check o_account_comparison_tick" t-att-style="comparisonMode === 'same_last_year' ? '' : 'visibility:hidden'"/>
+                                        <span>Same Period Last Year</span>
+                                    </button>
+                                    <div t-if="comparisonMode === 'same_last_year'" class="o_account_comparison_stepper">
+                                        <input type="number" min="1" max="36" class="form-control" t-att-value="comparisonCount" t-on-change="(ev) => this.setComparisonCount(ev.target.value)"/>
+                                        <span>Years</span>
+                                    </div>
+                                </div>
+                                <div class="o_account_comparison_row">
+                                    <button type="button" t-attf-class="o_account_comparison_option {{ comparisonMode === 'custom' ? 'active' : '' }}" t-on-click="() => this.selectComparison('custom')">
+                                        <i class="fa fa-check o_account_comparison_tick" t-att-style="comparisonMode === 'custom' ? '' : 'visibility:hidden'"/>
+                                        <span><t t-esc="comparisonCustomLabel"/></span>
+                                    </button>
+                                    <div t-if="comparisonMode === 'custom'" class="o_account_comparison_stepper o_account_comparison_custom_dates">
+                                        <t t-if="isBalanceSheetReport">
+                                            <input type="date" class="form-control" t-att-value="state.pendingCmpTo" t-on-change="(ev) => this.setPendingCmpSpecific(ev.target.value)"/>
+                                        </t>
+                                        <t t-else="">
+                                            <input type="date" class="form-control" t-att-value="state.pendingCmpFrom" t-on-change="(ev) => this.setPendingCmpFrom(ev.target.value)"/>
+                                            <span>to</span>
+                                            <input type="date" class="form-control" t-att-value="state.pendingCmpTo" t-on-change="(ev) => this.setPendingCmpTo(ev.target.value)"/>
+                                        </t>
+                                        <button type="button" class="o_account_custom_date_apply" t-on-click="() => this.applyComparisonCustom()">Apply</button>
+                                    </div>
+                                </div>
+                                <div t-if="isComparableStatement and comparisonMode !== 'none'" class="o_account_comparison_order">
+                                    <span>Period order</span>
+                                    <select class="form-select" t-on-change="(ev) => this.setPeriodOrder(ev.target.value)">
+                                        <option value="descending" t-att-selected="periodOrder === 'descending'">Descending</option>
+                                        <option value="ascending" t-att-selected="periodOrder === 'ascending'">Ascending</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
                         <div t-if="!isAgedPartnerReport" class="o_account_filter_dropdown">
                             <button type="button" class="btn btn-light o_account_filter_btn" t-on-click="() => this.toggleJournalMenu()">
@@ -248,7 +302,7 @@
                             </table>
                         </t>
                     </section>
-                    <section t-else="" t-attf-class="o_account_report_sheet {{ isStatementReport ? 'o_account_statement_sheet' : '' }} {{ isGeneralLedgerReport ? 'o_account_general_ledger_sheet' : '' }}">
+                    <section t-else="" t-attf-class="o_account_report_sheet {{ isStatementReport ? 'o_account_statement_sheet' : '' }} {{ isStatementReport and hasComparison ? 'o_account_has_comparison' : '' }} {{ isGeneralLedgerReport ? 'o_account_general_ledger_sheet' : '' }}">
                         <div t-if="state.loading" class="o_account_report_loading">Loading report...</div>
                         <t t-else="">
                             <div t-if="showStatementHeader" class="o_account_statement_header">

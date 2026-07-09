@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import calendar
 from datetime import date, timedelta
 
 from dateutil.relativedelta import relativedelta
@@ -71,9 +72,31 @@ class InteractiveAccountReport(models.AbstractModel):
             result_selection = fixed_result_selection
         journal_ids = [int(journal_id) for journal_id in options.get("journal_ids", []) if journal_id]
         account_ids = [int(account_id) for account_id in options.get("account_ids", []) if account_id]
+        comparison = options.get("comparison")
+        if comparison not in ("none", "previous_period", "same_last_year", "custom"):
+            comparison = "none"
+        # Comparison only applies to Balance Sheet / P&L in GoldVerse — Trial Balance
+        # here uses a fixed column layout that does not accept period columns yet.
+        if report_key not in ("balance_sheet", "profit_and_loss"):
+            comparison = "none"
+        try:
+            comparison_count = int(options.get("comparison_count") or 1)
+        except (TypeError, ValueError):
+            comparison_count = 1
+        comparison_count = max(1, min(comparison_count, 36))
+        cmp_from_str = options.get("comparison_date_from") or ""
+        cmp_to_str = options.get("comparison_date_to") or ""
+        comparison_label = self._comparison_button_label(comparison, comparison_count, cmp_from_str, cmp_to_str)
+        period_order = options.get("period_order") if options.get("period_order") in ("descending", "ascending") else "descending"
         return {
             "date_from": options.get("date_from") or fields.Date.to_string(default_from),
             "date_to": options.get("date_to") or fields.Date.to_string(default_to),
+            "comparison": comparison,
+            "comparison_count": comparison_count,
+            "comparison_date_from": cmp_from_str,
+            "comparison_date_to": cmp_to_str,
+            "comparison_label": comparison_label,
+            "period_order": period_order,
             "target_move": target_move,
             "debit_credit": bool(options.get("debit_credit")),
             "enable_filter": bool(options.get("enable_filter")),
@@ -92,6 +115,184 @@ class InteractiveAccountReport(models.AbstractModel):
             "anchor_date": options.get("anchor_date") or fields.Date.to_string(default_to),
             "currency_label": self.env.company.currency_id.name or self.env.company.currency_id.symbol,
         }
+
+    # ------------------------------------------------------------------
+    # Comparison-period helpers (ported from AimAze accounting kit)
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _format_period_label(self, p_from, p_to):
+        """A clean calendar month collapses to "Jun 2026"; otherwise show the range."""
+        month_end = (p_from + relativedelta(months=1)) - timedelta(days=1)
+        if p_from.day == 1 and p_to == month_end:
+            return p_from.strftime("%b %Y")
+        if p_from == date(p_from.year, 1, 1) and p_to == date(p_from.year, 12, 31):
+            return p_from.strftime("%Y")
+        if p_from.year == p_to.year:
+            return f"{p_from.strftime('%d %b')} – {p_to.strftime('%d %b %Y')}"
+        return f"{p_from.strftime('%d %b %Y')} – {p_to.strftime('%d %b %Y')}"
+
+    @api.model
+    def _comparison_button_label(self, comparison, count, cmp_from_str, cmp_to_str):
+        """Text shown on the Comparison toolbar button."""
+        if comparison == "none":
+            return ""
+        if comparison == "previous_period":
+            return _("%s Previous Period", count) if count == 1 else _("%s Previous Periods", count)
+        if comparison == "same_last_year":
+            return _("%s Previous Year", count) if count == 1 else _("%s Previous Years", count)
+        if cmp_from_str and cmp_to_str:
+            return self._format_period_label(
+                fields.Date.from_string(cmp_from_str), fields.Date.from_string(cmp_to_str)
+            )
+        return _("Custom")
+
+    @api.model
+    def _period_kind(self, d_from, d_to):
+        """Classify a date range as 'year' / 'quarter' / 'month' / 'custom'."""
+        if d_from == date(d_from.year, 1, 1) and d_to == date(d_from.year, 12, 31):
+            return "year"
+        q_start_month = ((d_from.month - 1) // 3) * 3 + 1
+        if d_from.day == 1 and d_from.month == q_start_month:
+            q_end_month = q_start_month + 2
+            if d_to == date(d_from.year, q_end_month, calendar.monthrange(d_from.year, q_end_month)[1]):
+                return "quarter"
+        if d_from.day == 1 and d_to == (d_from + relativedelta(day=31)):
+            return "month"
+        return "custom"
+
+    @api.model
+    def _shift_calendar_period(self, d_from, kind, units):
+        """Return (from, to) for the calendar period `units` steps before d_from."""
+        if kind == "year":
+            nf = d_from - relativedelta(years=units)
+            return nf, nf + relativedelta(month=12, day=31)
+        if kind == "quarter":
+            nf = d_from - relativedelta(months=3 * units)
+            return nf, nf + relativedelta(months=2, day=31)
+        nf = d_from - relativedelta(months=units)
+        return nf, nf + relativedelta(day=31)
+
+    @api.model
+    def _comparison_periods(self, options):
+        """Ordered list of periods to render (oldest first, current period last).
+
+        Each entry is ``{key, label, date_from, date_to, is_current}``. With no
+        comparison only the current period is returned.
+        """
+        d_from = fields.Date.from_string(options["date_from"])
+        d_to = fields.Date.from_string(options["date_to"])
+        kind = self._period_kind(d_from, d_to)
+        current = {
+            "key": "p0",
+            "label": self._format_period_label(d_from, d_to),
+            "date_from": d_from,
+            "date_to": d_to,
+            "is_current": True,
+        }
+        comparison = options.get("comparison") or "none"
+        count = int(options.get("comparison_count") or 1)
+        comparisons = []
+        if comparison == "previous_period":
+            if kind in ("year", "quarter", "month"):
+                for i in range(1, count + 1):
+                    comparisons.append(self._shift_calendar_period(d_from, kind, i))
+            elif d_from.day == 1 and d_from.year == d_to.year and d_from.month == d_to.month:
+                # Month-to-date: keep the same day-span in each prior month.
+                for i in range(1, count + 1):
+                    p_from = d_from - relativedelta(months=i)
+                    p_to = p_from + relativedelta(day=d_to.day)
+                    comparisons.append((p_from, p_to))
+            else:
+                span = d_to - d_from
+                cur_from = d_from
+                for i in range(1, count + 1):
+                    p_to = cur_from - timedelta(days=1)
+                    p_from = p_to - span
+                    comparisons.append((p_from, p_to))
+                    cur_from = p_from
+        elif comparison == "same_last_year":
+            for i in range(1, count + 1):
+                comparisons.append((d_from - relativedelta(years=i), d_to - relativedelta(years=i)))
+        elif comparison == "custom":
+            raw_from = options.get("comparison_date_from")
+            raw_to = options.get("comparison_date_to")
+            if raw_from and raw_to:
+                c_from = fields.Date.from_string(raw_from)
+                c_to = fields.Date.from_string(raw_to)
+                if c_to < c_from:
+                    c_from, c_to = c_to, c_from
+                comparisons.append((c_from, c_to))
+        periods = []
+        for idx, (p_from, p_to) in enumerate(comparisons, start=1):
+            periods.append({
+                "key": f"c{idx}",
+                "label": self._format_period_label(p_from, p_to),
+                "date_from": p_from,
+                "date_to": p_to,
+                "is_current": False,
+            })
+        periods.sort(key=lambda p: p["date_from"])
+        periods.append(current)
+        return periods
+
+    @api.model
+    def _statement_periods(self, report_key, options):
+        """Ordered comparison periods for a Balance Sheet / P&L statement."""
+        periods = self._comparison_periods(options)
+        if report_key == "balance_sheet":
+            for period in periods:
+                period["label"] = _("As of %s") % period["date_to"].strftime("%m/%d/%Y")
+        reverse = (options.get("period_order") or "descending") == "descending"
+        return sorted(periods, key=lambda p: p["date_from"], reverse=reverse)
+
+    @api.model
+    def _statement_with_comparison(self, report_key, options, builder):
+        """Build a statement, then append one balance column per comparison period."""
+        columns, lines = builder(options)
+        if (options.get("comparison") or "none") == "none":
+            return columns, lines
+        periods = self._statement_periods(report_key, options)
+        comparison_periods = [p for p in periods if not p.get("is_current")]
+        if not comparison_periods:
+            return columns, lines
+        new_columns = [c for c in columns if c["key"] == "name"]
+        for period in periods:
+            key = "balance" if period.get("is_current") else f"cmp_{period['key']}"
+            new_columns.append({"key": key, "label": period["label"], "type": "number"})
+        for period in periods:
+            if period.get("is_current"):
+                continue
+            p_options = dict(options)
+            p_options["comparison"] = "none"
+            p_options["date_from"] = fields.Date.to_string(period["date_from"])
+            p_options["date_to"] = fields.Date.to_string(period["date_to"])
+            _cols, p_lines = builder(p_options)
+            by_id = {line["id"]: line["values"].get("balance", 0.0) for line in p_lines}
+            key = f"cmp_{period['key']}"
+            for line in lines:
+                line["values"][key] = by_id.get(line["id"], 0.0)
+        # A single comparison period also gets a growth % column.
+        if len(comparison_periods) == 1:
+            cmp_key = f"cmp_{comparison_periods[0]['key']}"
+            for line in lines:
+                current = line["values"].get("balance", 0.0)
+                previous = line["values"].get(cmp_key, 0.0)
+                line["values"]["cmp_pct"] = (
+                    (current - previous) / abs(previous) * 100.0 if abs(previous) >= 0.005 else None
+                )
+            new_columns.append({"key": "cmp_pct", "label": _("%"), "type": "percent"})
+        # 2+ comparison periods: append a Total column summing every shown period.
+        if len(comparison_periods) >= 2:
+            period_value_keys = [
+                "balance" if p.get("is_current") else f"cmp_{p['key']}" for p in periods
+            ]
+            for line in lines:
+                line["values"]["period_total"] = sum(
+                    (line["values"].get(k) or 0.0) for k in period_value_keys
+                )
+            new_columns.append({"key": "period_total", "label": _("Total"), "type": "number"})
+        return new_columns, lines
 
     @api.model
     def _selected_journal_ids(self, options):
@@ -164,9 +365,9 @@ class InteractiveAccountReport(models.AbstractModel):
     @api.model
     def _financial_report(self, report_key, options):
         if report_key == "profit_and_loss":
-            return self._profit_and_loss_statement(options)
+            return self._statement_with_comparison(report_key, options, self._profit_and_loss_statement)
         if report_key == "balance_sheet":
-            return self._balance_sheet_statement(options)
+            return self._statement_with_comparison(report_key, options, self._balance_sheet_statement)
         if report_key == "cash_flow":
             return self._cash_flow_statement(options)
         _wizard, _data, report_lines = self._financial_wizard_data(report_key, options)

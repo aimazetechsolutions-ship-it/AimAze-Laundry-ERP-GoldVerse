@@ -977,6 +977,155 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     .o_account_report_number.is_zero {
         color: #ccd2dc;
     }
+
+    /* ------------------------------------------------------------------
+     * Comparison dropdown (ported from AimAze accounting kit)
+     * ------------------------------------------------------------------ */
+
+    .o_account_pct_cell {
+        font-variant-numeric: tabular-nums;
+    }
+
+    .o_account_comparison_dropdown {
+        position: relative;
+    }
+
+    .o_account_comparison_menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 40;
+        min-width: 360px;
+        padding: 6px;
+        background: #ffffff;
+        border: 1px solid rgba(123, 104, 166, 0.18);
+        border-radius: 10px;
+        box-shadow: 0 22px 46px rgba(30, 41, 59, 0.16);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_account_comparison_row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .o_account_comparison_row .o_account_comparison_option {
+        flex: 1 1 auto;
+    }
+
+    .o_account_comparison_tick {
+        margin-right: 7px;
+        color: #7660a8;
+        font-size: 12px;
+    }
+
+    .o_account_comparison_stepper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 0 0 auto;
+        padding-right: 4px;
+        color: #475467;
+    }
+
+    .o_account_comparison_stepper .form-control {
+        width: 62px;
+        min-height: 30px;
+        padding: 4px 6px;
+        border: 1px solid rgba(123, 104, 166, 0.2);
+        border-radius: 6px;
+        text-align: center;
+    }
+
+    .o_account_comparison_custom_dates {
+        flex: 1 0 100%;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 6px;
+        margin-top: 4px;
+        padding: 2px 2px 4px;
+    }
+
+    .o_account_comparison_custom_dates .form-control {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+
+    .o_account_comparison_custom_dates > span {
+        flex: 0 0 auto;
+        color: #64748b;
+    }
+
+    .o_account_comparison_custom_dates .o_account_custom_date_apply {
+        flex: 0 0 auto;
+        min-height: 30px;
+        padding: 4px 14px;
+        border: 0;
+        border-radius: 6px;
+        background: #7660a8;
+        color: #ffffff;
+        box-shadow: 0 8px 16px rgba(118, 96, 168, 0.2);
+        cursor: pointer;
+    }
+
+    .o_account_comparison_order {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 6px;
+        padding: 6px 9px;
+        border-top: 1px solid rgba(123, 104, 166, 0.12);
+    }
+
+    .o_account_comparison_order .form-select {
+        width: 140px;
+        min-height: 30px;
+        padding: 4px 8px;
+        border: 1px solid rgba(123, 104, 166, 0.2);
+        border-radius: 6px;
+    }
+
+    .o_account_comparison_option {
+        display: flex;
+        align-items: center;
+        min-height: 31px;
+        border: 0;
+        border-radius: 6px;
+        padding: 6px 9px;
+        background: transparent;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .o_account_comparison_option:hover {
+        background: rgba(122, 97, 166, 0.08);
+    }
+
+    .o_account_comparison_option.active {
+        color: #5b4bb7;
+        font-weight: 700;
+    }
+
+    /* With comparison columns the statement grows to its natural width and
+     * scrolls horizontally inside the sheet instead of squashing the columns. */
+    .o_account_statement_sheet.o_account_has_comparison {
+        width: fit-content;
+        min-width: 800px;
+        max-width: calc(100vw - 45px);
+        overflow-x: auto;
+    }
+    .o_account_statement_sheet.o_account_has_comparison .o_account_report_table {
+        width: max-content;
+        min-width: 100%;
+        table-layout: auto;
+    }
 }
 
 @media (max-width: 1100px) {

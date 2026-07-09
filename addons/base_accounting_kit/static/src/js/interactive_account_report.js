@@ -4,7 +4,7 @@ import { download } from "@web/core/network/download";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Layout } from "@web/search/layout";
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, useExternalListener, useState } from "@odoo/owl";
 
 const dateString = (date) => [
     date.getFullYear(),
@@ -145,15 +145,33 @@ class InteractiveAccountReport extends Component {
             loading: true,
             dateMenuOpen: false,
             journalMenuOpen: false,
+            comparisonMenuOpen: false,
             openLineMenuId: null,
             searchTerm: contextOptions.account_search || "",
             report: null,
             unfoldedLineIds: [],
             pendingDateFrom: initialOptions.date_from,
             pendingDateTo: initialOptions.date_to,
+            pendingCmpFrom: initialOptions.comparison_date_from || "",
+            pendingCmpTo: initialOptions.comparison_date_to || "",
             options: initialOptions,
         });
         onWillStart(() => this.loadReport());
+        // Close any open filter dropdown / line menu when clicking outside it.
+        useExternalListener(window, "click", (ev) => this._onOutsideClick(ev));
+    }
+
+    _onOutsideClick(ev) {
+        const target = ev.target;
+        const closest = target && target.closest ? (sel) => target.closest(sel) : () => null;
+        if (!closest(".o_account_filter_dropdown") && !closest(".o_account_custom_date_popover")) {
+            this.state.comparisonMenuOpen = false;
+            this.state.dateMenuOpen = false;
+            this.state.journalMenuOpen = false;
+        }
+        if (!closest(".o_account_line_action_wrap")) {
+            this.state.openLineMenuId = null;
+        }
     }
 
     get periodOptions() {
@@ -229,7 +247,43 @@ class InteractiveAccountReport extends Component {
     }
 
     get showComparisonFilter() {
-        return this.isStatementReport || this.isTrialBalanceReport;
+        // Only Balance Sheet + P&L can render comparison columns today. Trial
+        // Balance keeps its fixed-column layout and Cash Flow shows a single
+        // period, so the comparison dropdown stays hidden there.
+        return this.isComparableStatement;
+    }
+
+    get isComparableStatement() {
+        return ["balance_sheet", "profit_and_loss"].includes(this.reportKey);
+    }
+
+    get isBalanceSheetReport() {
+        return this.reportKey === "balance_sheet";
+    }
+
+    get comparisonMode() {
+        return this.options.comparison || "none";
+    }
+
+    get comparisonCount() {
+        return Number(this.options.comparison_count || 1);
+    }
+
+    get hasComparison() {
+        return this.showComparisonFilter && this.comparisonMode !== "none";
+    }
+
+    get comparisonLabel() {
+        return this.options.comparison_label || "Comparison";
+    }
+
+    get comparisonCustomLabel() {
+        // Balance Sheet compares a point in time; statements compare a range.
+        return this.isBalanceSheetReport ? "Specific Date" : "Custom Dates";
+    }
+
+    get periodOrder() {
+        return this.options.period_order || "descending";
     }
 
     get isStatementReport() {
@@ -237,7 +291,9 @@ class InteractiveAccountReport extends Component {
     }
 
     get showStatementHeader() {
-        return this.isStatementReport && !this.options.debit_credit;
+        // Hide the single-period sticky header once comparison columns are shown,
+        // otherwise it lies about the range the numbers cover.
+        return this.isStatementReport && !this.options.debit_credit && !this.hasComparison;
     }
 
     get showDisplayAccount() {
@@ -315,6 +371,7 @@ class InteractiveAccountReport extends Component {
         }
         this.state.dateMenuOpen = !this.state.dateMenuOpen;
         this.state.journalMenuOpen = false;
+        this.state.comparisonMenuOpen = false;
         this.state.openLineMenuId = null;
     }
 
@@ -336,6 +393,7 @@ class InteractiveAccountReport extends Component {
     toggleJournalMenu() {
         this.state.journalMenuOpen = !this.state.journalMenuOpen;
         this.state.dateMenuOpen = false;
+        this.state.comparisonMenuOpen = false;
         this.state.openLineMenuId = null;
     }
 
@@ -475,6 +533,74 @@ class InteractiveAccountReport extends Component {
         return this.updateOptions({ enable_filter: !this.options.enable_filter });
     }
 
+    toggleComparisonMenu() {
+        this.state.comparisonMenuOpen = !this.state.comparisonMenuOpen;
+        this.state.dateMenuOpen = false;
+        this.state.journalMenuOpen = false;
+        this.state.openLineMenuId = null;
+    }
+
+    selectComparison(mode) {
+        if (mode === "none") {
+            this.state.comparisonMenuOpen = false;
+            return this.updateOptions({
+                comparison: "none",
+                comparison_date_from: "",
+                comparison_date_to: "",
+            });
+        }
+        if (mode === "custom") {
+            // keep the menu open so the date inputs stay visible
+            this.state.pendingCmpFrom = this.options.comparison_date_from || "";
+            this.state.pendingCmpTo = this.options.comparison_date_to || "";
+            return this.updateOptions({ comparison: "custom" });
+        }
+        // previous_period / same_last_year: keep menu open for the count stepper
+        const count = this.comparisonMode === mode ? this.comparisonCount : 1;
+        return this.updateOptions({
+            comparison: mode,
+            comparison_count: count,
+            comparison_date_from: "",
+            comparison_date_to: "",
+        });
+    }
+
+    setComparisonCount(value) {
+        let count = parseInt(value, 10);
+        if (!Number.isFinite(count) || count < 1) {
+            count = 1;
+        }
+        count = Math.min(count, 36);
+        return this.updateOptions({ comparison_count: count });
+    }
+
+    setPeriodOrder(value) {
+        return this.updateOptions({ period_order: value === "ascending" ? "ascending" : "descending" });
+    }
+
+    setPendingCmpFrom(value) {
+        this.state.pendingCmpFrom = value || "";
+    }
+
+    setPendingCmpTo(value) {
+        this.state.pendingCmpTo = value || "";
+    }
+
+    setPendingCmpSpecific(value) {
+        // Balance Sheet "Specific Date": one as-of date drives both ends.
+        this.state.pendingCmpFrom = value || "";
+        this.state.pendingCmpTo = value || "";
+    }
+
+    applyComparisonCustom() {
+        this.state.comparisonMenuOpen = false;
+        return this.updateOptions({
+            comparison: "custom",
+            comparison_date_from: this.state.pendingCmpFrom,
+            comparison_date_to: this.state.pendingCmpTo,
+        });
+    }
+
     setSearchTerm(value) {
         this.state.searchTerm = value || "";
     }
@@ -576,6 +702,14 @@ class InteractiveAccountReport extends Component {
 
     formatCell(line, column) {
         const value = (line.values || {})[column.key];
+        if (column.type === "percent") {
+            if (value === null || value === undefined || value === "") {
+                return "—";
+            }
+            const pct = Number(value);
+            const sign = pct > 0 ? "+" : "";
+            return `${sign}${pct.toFixed(1)}%`;
+        }
         if (column.type === "number") {
             const amount = this.formatAmount(value);
             return this.isAgedPartnerReport || this.isGeneralLedgerReport ? `${amount} ${this.report.currency_label}` : amount;
@@ -695,10 +829,12 @@ class InteractiveAccountReport extends Component {
     }
 
     cellClass(column, line) {
-        const amount = Number((line.values || {})[column.key] || 0);
-        const negative = column.type === "number" && amount < 0;
+        const raw = (line.values || {})[column.key];
+        const numeric = column.type === "number" || column.type === "percent";
+        const amount = Number(raw || 0);
+        const negative = numeric && raw !== null && raw !== "" && amount < 0;
         const zero = column.type === "number" && Math.abs(amount) < 0.005;
-        return `${column.type === "number" ? "o_account_report_number" : ""} ${negative ? "is_negative" : ""} ${zero ? "is_zero" : ""}`;
+        return `${numeric ? "o_account_report_number" : ""} ${column.type === "percent" ? "o_account_pct_cell" : ""} ${negative ? "is_negative" : ""} ${zero ? "is_zero" : ""}`;
     }
 
     nameCellStyle(line) {
