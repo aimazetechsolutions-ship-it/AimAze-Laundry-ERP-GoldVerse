@@ -1194,3 +1194,35 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
 .o_account_interactive_report .o_account_statement_sheet .o_account_report_table .is_total td.o_account_report_number {
     font-weight: 800;
 }
+
+/* === PAK IAS-style section headers on P&L (grey banded rows) === */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.line_type_section {
+    background: #eef1f5 !important;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.line_type_section td {
+    background: #eef1f5 !important;
+    font-weight: 700;
+    color: #2c364a;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+/* "Total X" subtotal rows inside each section — bold, light-grey band, purple text */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_total {
+    background: #f5f6fa;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_total td {
+    background: #f5f6fa;
+    font-weight: 700;
+}
+/* Grand-total row (NET PROFIT / (LOSS)) — plum band, uppercase */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total {
+    background: #efeaf7 !important;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total td {
+    background: #efeaf7 !important;
+    color: #4a2978 !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-top: 2px solid #c8bce1;
+    border-bottom: 2px solid #c8bce1;
+}

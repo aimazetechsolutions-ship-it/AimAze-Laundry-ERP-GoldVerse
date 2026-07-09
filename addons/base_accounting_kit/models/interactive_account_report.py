@@ -597,63 +597,82 @@ class InteractiveAccountReport(models.AbstractModel):
         gross_profit = revenue["balance"] - cost["balance"]
         operating_income = gross_profit - expenses["balance"]
         net_profit = operating_income + other_income["balance"]
-        lines = []
-        revenue_section = self._section_line("revenue", _("Revenue"), revenue, revenue_lines, options, ["income"], account_ids=revenue_account_ids)
-        cost_section = self._section_line(
-            "cost_of_revenue",
-            _("Less Cost of Revenue"),
-            cost,
-            cost_lines,
-            options,
-            ["expense_direct_cost"],
-            account_ids=cost_account_ids,
-        )
-        expense_section = self._section_line(
-            "operating_expenses",
-            _("Less Operating Expenses"),
-            expenses,
-            expense_lines,
-            options,
-            ["expense", "expense_depreciation"],
-            account_ids=expense_account_ids,
-        )
-        other_income_section = self._section_line(
-            "other_income",
-            _("Plus Other Income"),
-            other_income,
-            other_income_lines,
-            options,
-            ["income_other"],
-            account_ids=other_income_account_ids,
-        )
         gross_profit_ids = list(revenue_account_ids) + list(cost_account_ids)
         operating_ids = gross_profit_ids + list(expense_account_ids)
         net_profit_ids = operating_ids + list(other_income_account_ids)
-        lines += [revenue_section] + revenue_lines
-        lines += [cost_section] + cost_lines
-        lines.append(self._total_line("gross_profit", _("Gross Profit"), gross_profit, account_ids=gross_profit_ids))
-        lines += [expense_section] + expense_lines
-        lines.append(self._total_line("operating_income", _("Operating Income (or Loss)"), operating_income, account_ids=operating_ids))
-        lines += [other_income_section] + other_income_lines
-        lines.append(self._statement_note_line("other_expenses", _("Less Other Expenses"), 0.0, level=1))
-        lines.append(self._total_line("net_profit", _("Net Profit"), net_profit, account_ids=net_profit_ids))
-        lines.append(
-            self._statement_note_line(
-                "allocations_withdrawals",
-                _("Less Allocations and Plus Withdrawals"),
-                0.0,
-                level=1,
-            )
-        )
-        lines.append(
-            self._total_line(
-                "net_profit_after_allocations",
-                _("Net Profit Left After Allocations and Withdrawals"),
-                net_profit,
-                grand=True,
-                account_ids=net_profit_ids,
-            )
-        )
+
+        def _section_head(key, label, section_balance, account_ids):
+            head = {
+                "id": key,
+                "name": label,
+                "level": 1,
+                "type": "section",
+                "is_total": False,
+                "is_section_header": True,
+                "unfoldable": True,
+                "default_unfolded": True,
+                "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": section_balance},
+            }
+            if account_ids:
+                head["account_ids"] = list(account_ids)
+                head["line_actions"] = self._line_action_general_ledger()
+            return head
+
+        def _section_subtotal(key, label, amount, account_ids):
+            row = {
+                "id": key,
+                "name": label,
+                "level": 2,
+                "type": "total",
+                "is_total": True,
+                "is_subtotal": True,
+                "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": amount},
+            }
+            if account_ids:
+                row["account_ids"] = list(account_ids)
+                row["line_actions"] = self._line_action_general_ledger()
+            return row
+
+        def _reparent(children, parent_key):
+            for child in children:
+                child["parent_id"] = parent_key
+                child["level"] = max(child.get("level", 2), 2)
+
+        lines = []
+
+        # ---------- REVENUE ----------
+        _reparent(revenue_lines, "revenue")
+        lines.append(_section_head("revenue", _("REVENUE"), revenue["balance"], revenue_account_ids))
+        lines += revenue_lines
+        lines.append(_section_subtotal("revenue_total", _("Total Revenue"), revenue["balance"], revenue_account_ids))
+
+        # ---------- DIRECT COSTS ----------
+        _reparent(cost_lines, "direct_costs")
+        lines.append(_section_head("direct_costs", _("DIRECT COSTS"), cost["balance"], cost_account_ids))
+        lines += cost_lines
+        lines.append(_section_subtotal("direct_costs_total", _("Total Direct Costs"), cost["balance"], cost_account_ids))
+
+        # ---------- GROSS OPERATING PROFIT ----------
+        lines.append(self._total_line("gross_operating_profit", _("GROSS OPERATING PROFIT"), gross_profit, account_ids=gross_profit_ids))
+
+        # ---------- OPERATING EXPENSES ----------
+        _reparent(expense_lines, "operating_expenses")
+        lines.append(_section_head("operating_expenses", _("OPERATING EXPENSES"), expenses["balance"], expense_account_ids))
+        lines += expense_lines
+        lines.append(_section_subtotal("operating_expenses_total", _("Total Operating Expenses"), expenses["balance"], expense_account_ids))
+
+        # ---------- OPERATING INCOME / (LOSS) (EBITDA proxy) ----------
+        lines.append(self._total_line("operating_income", _("OPERATING INCOME / (LOSS)"), operating_income, account_ids=operating_ids))
+
+        # ---------- OTHER INCOME ----------
+        if other_income_lines or abs(other_income["balance"]) >= 0.005:
+            _reparent(other_income_lines, "other_income")
+            lines.append(_section_head("other_income", _("OTHER INCOME"), other_income["balance"], other_income_account_ids))
+            lines += other_income_lines
+            lines.append(_section_subtotal("other_income_total", _("Total Other Income"), other_income["balance"], other_income_account_ids))
+
+        # ---------- NET PROFIT / (LOSS) ----------
+        lines.append(self._total_line("net_profit", _("NET PROFIT / (LOSS)"), net_profit, grand=True, account_ids=net_profit_ids))
         return self._statement_columns(options), lines
 
     @api.model
