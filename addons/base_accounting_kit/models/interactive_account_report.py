@@ -589,10 +589,11 @@ class InteractiveAccountReport(models.AbstractModel):
         return self._pak_style_pnl(options)
 
     @api.model
-    def _pnl_section_by_group(self, key, label, account_types, options, sign, code_prefix=None, code_prefix_exclude=None):
+    def _pnl_section_by_group(self, key, label, account_types, options, sign, code_prefix=None, code_prefix_exclude=None, date_from=True):
         """Build a PAK-style section: header + foldable sub-heads (by account.group) + total.
 
-        Returns (lines, section_totals, account_ids)."""
+        Returns (lines, section_totals, account_ids).
+        ``date_from``: True → P&L-style period range; False → Balance-Sheet-style as-of."""
         Account = self.env["account.account"]
         domain = [
             ("company_ids", "in", [self.env.company.id]),
@@ -607,7 +608,7 @@ class InteractiveAccountReport(models.AbstractModel):
             return [], {"debit": 0.0, "credit": 0.0, "balance": 0.0}, []
 
         rows = self.env["account.move.line"]._read_group(
-            domain=self._move_line_domain(options, account_ids=accounts.ids, date_from=True),
+            domain=self._move_line_domain(options, account_ids=accounts.ids, date_from=date_from),
             groupby=["account_id"],
             aggregates=["debit:sum", "credit:sum", "balance:sum"],
         )
@@ -931,69 +932,120 @@ class InteractiveAccountReport(models.AbstractModel):
 
     @api.model
     def _balance_sheet_statement(self, options):
-        asset_specs = [
-            ("cash", _("Bank and Cash"), ["asset_cash"]),
-            ("receivables", _("Receivables"), ["asset_receivable"]),
-            ("current_assets", _("Current Assets"), ["asset_current", "asset_prepayments"]),
-            ("fixed_assets", _("Fixed and Non-current Assets"), ["asset_fixed", "asset_non_current"]),
-        ]
-        liability_specs = [
-            ("payables", _("Payables"), ["liability_payable"]),
-            ("current_liabilities", _("Current Liabilities"), ["liability_current", "liability_credit_card"]),
-            ("non_current_liabilities", _("Non-current Liabilities"), ["liability_non_current"]),
-        ]
-        equity_specs = [
-            ("equity", _("Equity"), ["equity", "equity_unaffected"]),
-        ]
+        return self._pak_style_balance_sheet(options)
+
+    def _pak_style_balance_sheet(self, options):
         lines = []
-        total_assets = 0.0
-        for key, label, account_types in asset_specs:
-            account_lines, totals, _account_ids = self._account_balances(account_types, options, sign=1, date_from=False)
-            section = self._section_line(key, label, totals, account_lines, options, account_types)
-            total_assets += totals["balance"]
-            lines += [section] + account_lines
-        lines.append(self._total_line("total_assets", _("Total Assets"), total_assets, grand=True))
 
-        total_liabilities = 0.0
-        for key, label, account_types in liability_specs:
-            account_lines, totals, _account_ids = self._account_balances(account_types, options, sign=-1, date_from=False)
-            section = self._section_line(key, label, totals, account_lines, options, account_types)
-            total_liabilities += totals["balance"]
-            lines += [section] + account_lines
-        lines.append(self._total_line("total_liabilities", _("Total Liabilities"), total_liabilities, grand=True))
-
-        total_equity = 0.0
-        for key, label, account_types in equity_specs:
-            account_lines, totals, _account_ids = self._account_balances(account_types, options, sign=-1, date_from=False)
-            section = self._section_line(key, label, totals, account_lines, options, account_types)
-            total_equity += totals["balance"]
-            lines += [section] + account_lines
-        net_profit = self._profit_and_loss_totals(options)["net_profit"]
-        lines.append(
-            {
-                "id": "current_year_earnings",
-                "name": _("Current Year Earnings"),
-                "level": 2,
-                "type": "account",
+        def _section_head(key, label, balance, account_ids):
+            row = {
+                "id": key,
+                "name": label,
+                "level": 1,
+                "type": "section",
                 "is_total": False,
-                "values": {
-                    "name": _("Current Year Earnings"),
-                    "debit": 0.0,
-                    "credit": 0.0,
-                    "balance": net_profit,
-                },
+                "is_section_header": True,
+                "unfoldable": True,
+                "default_unfolded": True,
+                "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": balance},
             }
+            if account_ids:
+                row["account_ids"] = list(account_ids)
+                row["line_actions"] = self._line_action_general_ledger()
+            return row
+
+        def _subtotal(key, label, amount, account_ids, parent=None):
+            row = {
+                "id": key,
+                "name": label,
+                "level": 2,
+                "type": "total",
+                "is_total": True,
+                "is_subtotal": True,
+                "values": {"name": label, "debit": 0.0, "credit": 0.0, "balance": amount},
+            }
+            if parent:
+                row["parent_id"] = parent
+            if account_ids:
+                row["account_ids"] = list(account_ids)
+                row["line_actions"] = self._line_action_general_ledger()
+            return row
+
+        # ---------- NON-CURRENT ASSETS ----------
+        nca_sub, nca_totals, nca_ids = self._pnl_section_by_group(
+            "nca", "NON-CURRENT ASSETS",
+            ["asset_fixed", "asset_non_current"], options, sign=1, date_from=False,
         )
-        total_equity += net_profit
-        lines.append(self._total_line("total_equity", _("Total Equity"), total_equity, grand=True))
-        lines.append(
-            self._total_line(
-                "total_liabilities_equity",
-                _("Total Liabilities and Equity"),
-                total_liabilities + total_equity,
-                grand=True,
-            )
+        lines.append(_section_head("nca", _("NON-CURRENT ASSETS"), nca_totals["balance"], nca_ids))
+        lines += nca_sub
+        lines.append(_subtotal("nca_total", _("Total Non-Current Assets"), nca_totals["balance"], nca_ids, parent="nca"))
+
+        # ---------- CURRENT ASSETS ----------
+        ca_sub, ca_totals, ca_ids = self._pnl_section_by_group(
+            "ca", "CURRENT ASSETS",
+            ["asset_cash", "asset_receivable", "asset_current", "asset_prepayments"], options, sign=1, date_from=False,
         )
+        lines.append(_section_head("ca", _("CURRENT ASSETS"), ca_totals["balance"], ca_ids))
+        lines += ca_sub
+        lines.append(_subtotal("ca_total", _("Total Current Assets"), ca_totals["balance"], ca_ids, parent="ca"))
+
+        # ---------- TOTAL ASSETS ----------
+        total_assets = nca_totals["balance"] + ca_totals["balance"]
+        total_asset_ids = nca_ids + ca_ids
+        lines.append(self._total_line("total_assets", _("TOTAL ASSETS"), total_assets, grand=True, account_ids=total_asset_ids))
+
+        # ---------- SHARE CAPITAL AND RESERVES ----------
+        eq_sub, eq_totals, eq_ids = self._pnl_section_by_group(
+            "equity", "SHARE CAPITAL AND RESERVES",
+            ["equity", "equity_unaffected"], options, sign=-1, date_from=False,
+        )
+        lines.append(_section_head("equity", _("SHARE CAPITAL AND RESERVES"), eq_totals["balance"], eq_ids))
+        lines += eq_sub
+        # Current Year Earnings (net profit from P&L)
+        net_profit = self._profit_and_loss_totals(options)["net_profit"]
+        lines.append({
+            "id": "current_year_earnings",
+            "name": _("Current Year Earnings"),
+            "level": 2,
+            "type": "account",
+            "is_total": False,
+            "parent_id": "equity",
+            "values": {"name": _("Current Year Earnings"), "debit": 0.0, "credit": 0.0, "balance": net_profit},
+        })
+        equity_total_with_earnings = eq_totals["balance"] + net_profit
+        lines.append(_subtotal("equity_total", _("Total Share Capital and Reserves"), equity_total_with_earnings, eq_ids, parent="equity"))
+
+        # ---------- NON-CURRENT LIABILITIES ----------
+        ncl_sub, ncl_totals, ncl_ids = self._pnl_section_by_group(
+            "ncl", "NON-CURRENT LIABILITIES",
+            ["liability_non_current"], options, sign=-1, date_from=False,
+        )
+        lines.append(_section_head("ncl", _("NON-CURRENT LIABILITIES"), ncl_totals["balance"], ncl_ids))
+        lines += ncl_sub
+        lines.append(_subtotal("ncl_total", _("Total Non-Current Liabilities"), ncl_totals["balance"], ncl_ids, parent="ncl"))
+
+        # ---------- CURRENT LIABILITIES ----------
+        cl_sub, cl_totals, cl_ids = self._pnl_section_by_group(
+            "cl", "CURRENT LIABILITIES",
+            ["liability_payable", "liability_current", "liability_credit_card"], options, sign=-1, date_from=False,
+        )
+        lines.append(_section_head("cl", _("CURRENT LIABILITIES"), cl_totals["balance"], cl_ids))
+        lines += cl_sub
+        lines.append(_subtotal("cl_total", _("Total Current Liabilities"), cl_totals["balance"], cl_ids, parent="cl"))
+
+        # ---------- TOTAL LIABILITIES AND EQUITY ----------
+        total_liabilities = ncl_totals["balance"] + cl_totals["balance"]
+        total_liab_ids = ncl_ids + cl_ids
+        lines.append(self._total_line("total_liabilities", _("TOTAL LIABILITIES"), total_liabilities, grand=True, account_ids=total_liab_ids))
+        total_le = equity_total_with_earnings + total_liabilities
+        lines.append(self._total_line(
+            "total_liabilities_equity",
+            _("TOTAL LIABILITIES AND EQUITY"),
+            total_le,
+            grand=True,
+            account_ids=eq_ids + total_liab_ids,
+        ))
+
         return self._statement_columns(options), lines
 
     @api.model
