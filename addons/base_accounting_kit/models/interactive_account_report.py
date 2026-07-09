@@ -737,10 +737,10 @@ class InteractiveAccountReport(models.AbstractModel):
         gop_ids = rev_ids + dc_ids
         lines.append(self._total_line("gross_operating_profit", _("GROSS OPERATING PROFIT"), gop, account_ids=gop_ids))
 
-        # ---------- OPERATING EXPENSES (expense except finance/tax code prefixes) ----------
+        # ---------- OPERATING EXPENSES (expense except financial-charges/tax code prefixes) ----------
         opex_sub, opex_totals, opex_ids = self._pnl_section_by_group(
             "operating_expenses", "OPERATING EXPENSES", ["expense", "expense_depreciation"], options, sign=1,
-            code_prefix_exclude=["721", "728", "73"],
+            code_prefix_exclude=["727", "73"],
         )
         lines.append(_section_head("operating_expenses", _("OPERATING EXPENSES"), opex_totals["balance"], opex_ids))
         lines += opex_sub
@@ -751,10 +751,10 @@ class InteractiveAccountReport(models.AbstractModel):
         ebitda_ids = gop_ids + opex_ids
         lines.append(self._total_line("ebitda", _("EBITDA"), ebitda, account_ids=ebitda_ids))
 
-        # ---------- FINANCIAL CHARGES (bank charges + interest — prefixes 721, 728) ----------
+        # ---------- FINANCIAL CHARGES (bank + credit-card + payment charges — prefix 727) ----------
         fc_sub, fc_totals, fc_ids = self._pnl_section_by_group(
             "financial_charges", "FINANCIAL CHARGES", ["expense"], options, sign=1,
-            code_prefix=["721", "728"],
+            code_prefix=["727"],
         )
         if fc_sub:
             lines.append(_section_head("financial_charges", _("FINANCIAL CHARGES"), fc_totals["balance"], fc_ids))
