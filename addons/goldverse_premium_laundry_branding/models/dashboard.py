@@ -606,19 +606,18 @@ class LaundryExecutiveDashboard(models.TransientModel):
             ("date", "<=", date_to),
             ("account_id.account_type", "in", ("expense", "expense_depreciation", "expense_direct_cost")),
         ]
-        grouped = MoveLine.read_group(base_domain, ["balance:sum"], ["account_id"], orderby="balance desc", limit=10)
+        grouped = MoveLine._read_group(
+            base_domain, groupby=["account_id"], aggregates=["balance:sum"], order="balance:sum desc", limit=10,
+        )
         rows = []
-        for group in grouped:
-            account = group.get("account_id")
+        for account, balance_sum in grouped:
             if not account:
                 continue
-            rows.append(
-                {
-                    "account_id": account[0],
-                    "name": account[1],
-                    "value": group.get("balance_sum", 0.0),
-                }
-            )
+            rows.append({
+                "account_id": account.id,
+                "name": account.display_name,
+                "value": balance_sum or 0.0,
+            })
         return rows
 
     def action_goldverse_refresh_dashboard(self):
@@ -1400,9 +1399,10 @@ class LaundryExecutiveDashboard(models.TransientModel):
         total_service_items = len(orders.mapped("line_ids")) if orders else 0
         total_expenses = self._gv_total_expense_value(date_from, date_to)
         previous_total_expenses = self._gv_total_expense_value(previous_from, previous_to)
-        top_expenses = self._gv_top_expense_total(date_from, date_to)
-        previous_top_expenses = self._gv_top_expense_total(previous_from, previous_to)
         top_expense_rows = self._gv_top_expense_rows(date_from, date_to)
+        top_expenses = sum((row.get("value") or 0.0) for row in top_expense_rows)
+        previous_top_expense_rows = self._gv_top_expense_rows(previous_from, previous_to)
+        previous_top_expenses = sum((row.get("value") or 0.0) for row in previous_top_expense_rows)
         return {
             "date_from": date_from,
             "date_to": date_to,
