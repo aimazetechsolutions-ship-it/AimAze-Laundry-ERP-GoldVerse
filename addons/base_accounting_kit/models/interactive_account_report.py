@@ -746,11 +746,6 @@ class InteractiveAccountReport(models.AbstractModel):
         lines += opex_sub
         lines.append(_subtotal("operating_expenses_total", _("Total Operating Expenses"), opex_totals["balance"], opex_ids, parent="operating_expenses"))
 
-        # ---------- EBITDA ----------
-        ebitda = gop - opex_totals["balance"]
-        ebitda_ids = gop_ids + opex_ids
-        lines.append(self._total_line("ebitda", _("EBITDA"), ebitda, account_ids=ebitda_ids))
-
         # ---------- FINANCIAL CHARGES (bank + credit-card + payment charges — prefix 727) ----------
         fc_sub, fc_totals, fc_ids = self._pnl_section_by_group(
             "financial_charges", "FINANCIAL CHARGES", ["expense"], options, sign=1,
@@ -765,8 +760,8 @@ class InteractiveAccountReport(models.AbstractModel):
             lines.append(_subtotal("financial_charges_total", _("Total Financial Charges"), 0.0, [], parent="financial_charges"))
 
         # ---------- PROFIT BEFORE TAX ----------
-        pbt = ebitda - fc_totals["balance"]
-        pbt_ids = ebitda_ids + fc_ids
+        pbt = gop - opex_totals["balance"] - fc_totals["balance"]
+        pbt_ids = gop_ids + opex_ids + fc_ids
         lines.append(self._total_line("profit_before_tax", _("PROFIT BEFORE TAX"), pbt, account_ids=pbt_ids))
 
         # ---------- TAXATION (prefix 73) ----------
