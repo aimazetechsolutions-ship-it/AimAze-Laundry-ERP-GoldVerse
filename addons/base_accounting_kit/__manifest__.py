@@ -117,6 +117,9 @@
             'base_accounting_kit/static/src/xml/bank_reconcile_widget.xml',
             'base_accounting_kit/static/src/xml/interactive_account_report.xml',
             'base_accounting_kit/static/src/scss/interactive_account_report.scss',
+            # IAS-style statement header (Company + STATEMENT OF... + AS AT / FOR THE PERIOD ENDED)
+            # Ported from AimAze Hospitality PAK aimaze_accounting_kit.
+            'base_accounting_kit/static/src/js/goldverse_statement_header.js',
         ]
     },
     'license': 'LGPL-3',
