@@ -1235,9 +1235,21 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
 }
 .o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total td {
     background: #efeaf7 !important;
-    color: #4a2978 !important;
     font-weight: 800;
     text-transform: uppercase;
     border-top: 2px solid #c8bce1;
     border-bottom: 2px solid #c8bce1;
+}
+/* Grand-total NAME cell stays plum; NUMBER cells use sign-based green/red. */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total td:not(.o_account_report_number) {
+    color: #4a2978;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total td.o_account_report_number {
+    color: #0c5945;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total td.o_account_report_number.is_negative {
+    color: #8b1e1e;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_line.is_grand_total td.o_account_report_number.is_zero {
+    color: #a7adba;
 }
