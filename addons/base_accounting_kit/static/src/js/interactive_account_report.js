@@ -745,7 +745,8 @@ class InteractiveAccountReport extends Component {
     }
 
     hasLineActions(line) {
-        return Boolean((line.line_actions || []).length || line.account_id || line.move_id);
+        const hasIds = (line.account_ids || []).length > 0;
+        return Boolean((line.line_actions || []).length || line.account_id || hasIds || line.move_id);
     }
 
     lineActions(line) {
@@ -779,8 +780,12 @@ class InteractiveAccountReport extends Component {
             ev.stopPropagation();
         }
         this.closeLineMenu();
-        if (actionKey === "general_ledger" && line.account_id) {
-            const accountLabel = line.account_code || String(line.name || "").split(" ")[0] || "";
+        if (actionKey === "general_ledger" && (line.account_id || (line.account_ids || []).length)) {
+            const isAggregate = !line.account_id && (line.account_ids || []).length > 0;
+            const drillAccountIds = isAggregate ? [...line.account_ids] : [line.account_id];
+            const accountLabel = isAggregate
+                ? (line.name || "").trim()
+                : (line.account_code || String(line.name || "").split(" ")[0] || "");
             await this.action.doAction({
                 type: "ir.actions.client",
                 tag: "base_accounting_kit.interactive_account_report",
@@ -789,7 +794,7 @@ class InteractiveAccountReport extends Component {
                     report_key: "general_ledger",
                     default_options: {
                         ...this.state.options,
-                        account_ids: [line.account_id],
+                        account_ids: drillAccountIds,
                         account_search: accountLabel,
                         display_account: "all",
                     },

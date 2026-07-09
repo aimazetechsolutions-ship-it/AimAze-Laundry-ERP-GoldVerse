@@ -497,11 +497,14 @@ class InteractiveAccountReport(models.AbstractModel):
         return account_lines, totals, accounts.ids
 
     @api.model
-    def _section_line(self, key, name, totals, children, options, account_types, sign=1):
+    def _section_line(self, key, name, totals, children, options, account_types, sign=1, account_ids=None):
         for child in children:
             child["id"] = f"{key}_{child['id']}"
             child["parent_id"] = key
-        return {
+        ids = list(account_ids or [])
+        if not ids and children:
+            ids = [c["account_id"] for c in children if c.get("account_id")]
+        line = {
             "id": key,
             "name": name,
             "level": 1,
@@ -516,10 +519,14 @@ class InteractiveAccountReport(models.AbstractModel):
                 "balance": totals["balance"] * sign,
             },
         }
+        if ids:
+            line["account_ids"] = ids
+            line["line_actions"] = self._line_action_general_ledger()
+        return line
 
     @api.model
-    def _total_line(self, key, name, amount, debit=0.0, credit=0.0, level=1, grand=False):
-        return {
+    def _total_line(self, key, name, amount, debit=0.0, credit=0.0, level=1, grand=False, account_ids=None):
+        line = {
             "id": key,
             "name": name,
             "level": level,
@@ -533,6 +540,10 @@ class InteractiveAccountReport(models.AbstractModel):
                 "balance": amount,
             },
         }
+        if account_ids:
+            line["account_ids"] = list(account_ids)
+            line["line_actions"] = self._line_action_general_ledger()
+        return line
 
     @api.model
     def _statement_note_line(self, key, name, amount, level=2):
@@ -575,19 +586,19 @@ class InteractiveAccountReport(models.AbstractModel):
 
     @api.model
     def _profit_and_loss_statement(self, options):
-        revenue_lines, revenue, _revenue_account_ids = self._account_balances(["income"], options, sign=-1)
-        cost_lines, cost, _cost_account_ids = self._account_balances(["expense_direct_cost"], options, sign=1)
-        expense_lines, expenses, _expense_account_ids = self._account_balances(
+        revenue_lines, revenue, revenue_account_ids = self._account_balances(["income"], options, sign=-1)
+        cost_lines, cost, cost_account_ids = self._account_balances(["expense_direct_cost"], options, sign=1)
+        expense_lines, expenses, expense_account_ids = self._account_balances(
             ["expense", "expense_depreciation"], options, sign=1
         )
-        other_income_lines, other_income, _other_income_account_ids = self._account_balances(
+        other_income_lines, other_income, other_income_account_ids = self._account_balances(
             ["income_other"], options, sign=-1
         )
         gross_profit = revenue["balance"] - cost["balance"]
         operating_income = gross_profit - expenses["balance"]
         net_profit = operating_income + other_income["balance"]
         lines = []
-        revenue_section = self._section_line("revenue", _("Revenue"), revenue, revenue_lines, options, ["income"])
+        revenue_section = self._section_line("revenue", _("Revenue"), revenue, revenue_lines, options, ["income"], account_ids=revenue_account_ids)
         cost_section = self._section_line(
             "cost_of_revenue",
             _("Less Cost of Revenue"),
@@ -595,6 +606,7 @@ class InteractiveAccountReport(models.AbstractModel):
             cost_lines,
             options,
             ["expense_direct_cost"],
+            account_ids=cost_account_ids,
         )
         expense_section = self._section_line(
             "operating_expenses",
@@ -603,6 +615,7 @@ class InteractiveAccountReport(models.AbstractModel):
             expense_lines,
             options,
             ["expense", "expense_depreciation"],
+            account_ids=expense_account_ids,
         )
         other_income_section = self._section_line(
             "other_income",
@@ -611,15 +624,19 @@ class InteractiveAccountReport(models.AbstractModel):
             other_income_lines,
             options,
             ["income_other"],
+            account_ids=other_income_account_ids,
         )
+        gross_profit_ids = list(revenue_account_ids) + list(cost_account_ids)
+        operating_ids = gross_profit_ids + list(expense_account_ids)
+        net_profit_ids = operating_ids + list(other_income_account_ids)
         lines += [revenue_section] + revenue_lines
         lines += [cost_section] + cost_lines
-        lines.append(self._total_line("gross_profit", _("Gross Profit"), gross_profit))
+        lines.append(self._total_line("gross_profit", _("Gross Profit"), gross_profit, account_ids=gross_profit_ids))
         lines += [expense_section] + expense_lines
-        lines.append(self._total_line("operating_income", _("Operating Income (or Loss)"), operating_income))
+        lines.append(self._total_line("operating_income", _("Operating Income (or Loss)"), operating_income, account_ids=operating_ids))
         lines += [other_income_section] + other_income_lines
         lines.append(self._statement_note_line("other_expenses", _("Less Other Expenses"), 0.0, level=1))
-        lines.append(self._total_line("net_profit", _("Net Profit"), net_profit))
+        lines.append(self._total_line("net_profit", _("Net Profit"), net_profit, account_ids=net_profit_ids))
         lines.append(
             self._statement_note_line(
                 "allocations_withdrawals",
@@ -634,6 +651,7 @@ class InteractiveAccountReport(models.AbstractModel):
                 _("Net Profit Left After Allocations and Withdrawals"),
                 net_profit,
                 grand=True,
+                account_ids=net_profit_ids,
             )
         )
         return self._statement_columns(options), lines

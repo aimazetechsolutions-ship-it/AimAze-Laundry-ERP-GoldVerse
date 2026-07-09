@@ -39,13 +39,18 @@ function getCompanyName() {
         const companies = info.user_companies || {};
         const current = companies.current_company;
         const allowed = companies.allowed_companies || {};
-        if (current && allowed[current]) {
-            return allowed[current].name;
+        if (current && typeof current === "number" && allowed[current]) {
+            return allowed[current].name || "";
         }
-        if (current && current.name) return current.name;
+        if (current && typeof current === "object" && current.name) return current.name;
     } catch (e) { /* fall through */ }
-    const navMenu = document.querySelector(".o_user_menu .dropdown-toggle");
-    if (navMenu) return navMenu.textContent.trim();
+    // Prefer the switch-company button (renders only the company name)
+    const companyBtn = document.querySelector(".o_switch_company_menu .dropdown-toggle .oe_topbar_name, .o_switch_company_menu button, .o-mail-CompanyDropdown");
+    if (companyBtn) {
+        const t = companyBtn.textContent.trim();
+        if (t) return t;
+    }
+    // Last resort: only take company name portion of the user-menu (before user name)
     return "";
 }
 
