@@ -1154,3 +1154,43 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         }
     }
 }
+
+/* === P&L / Balance Sheet / Cash Flow — shaded + centered column headers === */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table thead th {
+    background: #efeaf7 !important;
+    color: #4a2978 !important;
+    text-align: center !important;
+    font-weight: 700;
+    border-bottom: 2px solid #c8bce1;
+    letter-spacing: 0.02em;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table thead th:first-child {
+    background: #efeaf7 !important;
+    text-align: left !important;
+}
+
+/* Center-align value cells too so the columns look uniform */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table td.o_account_report_number {
+    text-align: right;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table thead th.o_account_report_number {
+    text-align: center !important;
+}
+
+/* === Sign-based coloring on P&L amount cells === */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table td.o_account_report_number {
+    color: #0c5945;
+    font-weight: 600;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table td.o_account_report_number.is_negative {
+    color: #8b1e1e;
+    font-weight: 700;
+}
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table td.o_account_report_number.is_zero {
+    color: #a7adba;
+    font-weight: 400;
+}
+/* Aggregate rows (Gross Profit / Operating Income / Net Profit) bolder */
+.o_account_interactive_report .o_account_statement_sheet .o_account_report_table .is_total td.o_account_report_number {
+    font-weight: 800;
+}
