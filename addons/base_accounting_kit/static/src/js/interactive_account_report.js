@@ -738,14 +738,23 @@ class InteractiveAccountReport extends Component {
         return (this.report.lines || []).some((line) => line.unfoldable);
     }
 
-    unfoldAll() {
-        this.state.unfoldedLineIds = (this.report.lines || [])
-            .filter((line) => line.unfoldable)
-            .map((line) => line.id);
+    get allUnfolded() {
+        const foldable = (this.report.lines || []).filter((line) => line.unfoldable);
+        if (!foldable.length) {
+            return false;
+        }
+        const unfolded = new Set(this.state.unfoldedLineIds || []);
+        return foldable.every((line) => unfolded.has(line.id));
     }
 
-    foldAll() {
-        this.state.unfoldedLineIds = [];
+    toggleFoldAll() {
+        if (this.allUnfolded) {
+            this.state.unfoldedLineIds = [];
+        } else {
+            this.state.unfoldedLineIds = (this.report.lines || [])
+                .filter((line) => line.unfoldable)
+                .map((line) => line.id);
+        }
     }
 
     async activateLine(line) {

@@ -11,13 +11,9 @@
                         </button>
                         <button type="button" class="btn btn-primary o_account_export_btn" t-on-click="() => this.printPdf()">PDF</button>
                         <button type="button" class="btn btn-light o_account_export_btn" t-on-click="() => this.exportXlsx()">XLSX</button>
-                        <button t-if="hasFoldableLines" type="button" class="btn btn-light o_account_foldall_btn" t-on-click="() => this.unfoldAll()" title="Expand all rows">
-                            <i class="fa fa-plus-square-o"/>
-                            <span>Unfold All</span>
-                        </button>
-                        <button t-if="hasFoldableLines" type="button" class="btn btn-light o_account_foldall_btn" t-on-click="() => this.foldAll()" title="Collapse all rows">
-                            <i class="fa fa-minus-square-o"/>
-                            <span>Fold All</span>
+                        <button t-if="hasFoldableLines" type="button" class="btn btn-light o_account_foldall_btn" t-on-click="() => this.toggleFoldAll()" t-att-title="allUnfolded ? 'Collapse all rows' : 'Expand all rows'">
+                            <i t-att-class="allUnfolded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o'"/>
+                            <span t-esc="allUnfolded ? 'Fold All' : 'Unfold All'"/>
                         </button>
                         <h1>
                             <t t-esc="report.title"/>

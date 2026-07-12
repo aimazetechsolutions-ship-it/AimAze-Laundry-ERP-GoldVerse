@@ -241,8 +241,9 @@ class InteractiveAccountReport(models.AbstractModel):
         """Ordered comparison periods for a Balance Sheet / P&L statement."""
         periods = self._comparison_periods(options)
         if report_key == "balance_sheet":
+            # Point-in-time balances: label each column by its as-of month + year.
             for period in periods:
-                period["label"] = _("As of %s") % period["date_to"].strftime("%m/%d/%Y")
+                period["label"] = period["date_to"].strftime("%b %Y")
         reverse = (options.get("period_order") or "descending") == "descending"
         return sorted(periods, key=lambda p: p["date_from"], reverse=reverse)
 
@@ -283,7 +284,8 @@ class InteractiveAccountReport(models.AbstractModel):
                 )
             new_columns.append({"key": "cmp_pct", "label": _("%"), "type": "percent"})
         # 2+ comparison periods: append a Total column summing every shown period.
-        if len(comparison_periods) >= 2:
+        # Skipped for the Balance Sheet — summing point-in-time balances is meaningless.
+        if len(comparison_periods) >= 2 and report_key != "balance_sheet":
             period_value_keys = [
                 "balance" if p.get("is_current") else f"cmp_{p['key']}" for p in periods
             ]
