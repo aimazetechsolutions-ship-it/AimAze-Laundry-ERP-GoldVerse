@@ -87,7 +87,7 @@ class InteractiveAccountReport(models.AbstractModel):
         cmp_from_str = options.get("comparison_date_from") or ""
         cmp_to_str = options.get("comparison_date_to") or ""
         comparison_label = self._comparison_button_label(comparison, comparison_count, cmp_from_str, cmp_to_str)
-        period_order = options.get("period_order") if options.get("period_order") in ("descending", "ascending") else "descending"
+        period_order = options.get("period_order") if options.get("period_order") in ("descending", "ascending") else "ascending"
         return {
             "date_from": options.get("date_from") or fields.Date.to_string(default_from),
             "date_to": options.get("date_to") or fields.Date.to_string(default_to),
@@ -244,7 +244,7 @@ class InteractiveAccountReport(models.AbstractModel):
             # Point-in-time balances: label each column by its as-of month + year.
             for period in periods:
                 period["label"] = period["date_to"].strftime("%b %Y")
-        reverse = (options.get("period_order") or "descending") == "descending"
+        reverse = (options.get("period_order") or "ascending") == "descending"
         return sorted(periods, key=lambda p: p["date_from"], reverse=reverse)
 
     @api.model

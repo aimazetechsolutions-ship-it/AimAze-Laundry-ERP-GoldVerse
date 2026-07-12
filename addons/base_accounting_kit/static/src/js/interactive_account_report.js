@@ -283,7 +283,7 @@ class InteractiveAccountReport extends Component {
     }
 
     get periodOrder() {
-        return this.options.period_order || "descending";
+        return this.options.period_order || "ascending";
     }
 
     get isStatementReport() {
