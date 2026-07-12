@@ -113,6 +113,7 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
     }
 
     .o_account_export_btn,
+    .o_account_foldall_btn,
     .o_account_filter_btn,
     .o_account_filter_select {
         min-height: 34px !important;
@@ -127,6 +128,15 @@ body:has(.o_account_interactive_report) .o_main_navbar .o_menu_sections .o_nav_e
         line-height: 34px !important;
         white-space: nowrap;
         box-shadow: none !important;
+    }
+
+    .o_account_foldall_btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .o_account_foldall_btn i {
+        color: #7d68ad;
     }
 
     .o_account_export_btn {

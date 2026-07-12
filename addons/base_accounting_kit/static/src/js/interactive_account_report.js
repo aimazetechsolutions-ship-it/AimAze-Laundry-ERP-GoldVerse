@@ -734,6 +734,20 @@ class InteractiveAccountReport extends Component {
         this.state.unfoldedLineIds = [...unfolded];
     }
 
+    get hasFoldableLines() {
+        return (this.report.lines || []).some((line) => line.unfoldable);
+    }
+
+    unfoldAll() {
+        this.state.unfoldedLineIds = (this.report.lines || [])
+            .filter((line) => line.unfoldable)
+            .map((line) => line.id);
+    }
+
+    foldAll() {
+        this.state.unfoldedLineIds = [];
+    }
+
     async activateLine(line) {
         if (line.unfoldable) {
             this.toggleLine(line);
