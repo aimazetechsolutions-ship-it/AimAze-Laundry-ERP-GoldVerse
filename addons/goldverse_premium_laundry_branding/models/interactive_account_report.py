@@ -158,7 +158,7 @@ class InteractiveAccountReport(models.AbstractModel):
 
         earnings_delta = total_earnings - old_earnings
         for line in lines:
-            if line.get("id") in ("total_equity", "total_liabilities_equity"):
+            if line.get("id") in ("total_equity", "equity_total", "total_liabilities_equity"):
                 values = line.get("values") or {}
                 values["balance"] = (values.get("balance") or 0.0) + earnings_delta
         return columns, lines

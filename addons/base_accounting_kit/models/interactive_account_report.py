@@ -995,9 +995,12 @@ class InteractiveAccountReport(models.AbstractModel):
         lines.append(self._total_line("total_assets", _("TOTAL ASSETS"), total_assets, grand=True, account_ids=total_asset_ids))
 
         # ---------- SHARE CAPITAL AND RESERVES ----------
+        # equity_unaffected (Undistributed Profits/Losses placeholder) is intentionally
+        # excluded: GoldVerse injects Retained Earnings + Current Year Earnings from the
+        # P&L accumulation instead, so the placeholder would otherwise double-represent it.
         eq_sub, eq_totals, eq_ids = self._pnl_section_by_group(
             "equity", "SHARE CAPITAL AND RESERVES",
-            ["equity", "equity_unaffected"], options, sign=-1, date_from=False,
+            ["equity"], options, sign=-1, date_from=False,
         )
         lines.append(_section_head("equity", _("SHARE CAPITAL AND RESERVES"), eq_totals["balance"], eq_ids))
         lines += eq_sub
