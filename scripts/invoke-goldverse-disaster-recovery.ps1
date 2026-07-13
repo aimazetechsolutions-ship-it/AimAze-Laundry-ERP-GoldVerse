@@ -137,13 +137,13 @@ function Download-LatestBackupFromVps {
 
 function Stop-LocalOdooIfRunning {
     $connections = Get-NetTCPConnection -LocalPort 8093 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
-    foreach ($pid in $connections) {
+    foreach ($procId in $connections) {
         try {
-            Write-Step "Stopping local Odoo process $pid on port 8093."
-            Stop-Process -Id $pid -Force
+            Write-Step "Stopping local Odoo process $procId on port 8093."
+            Stop-Process -Id $procId -Force
         }
         catch {
-            Write-Warning "Could not stop process ${pid}: $($_.Exception.Message)"
+            Write-Warning "Could not stop process ${procId}: $($_.Exception.Message)"
         }
     }
 }
