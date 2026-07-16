@@ -414,6 +414,23 @@ class LaundryExecutiveDashboard(models.TransientModel):
         if card == "gv_total_sales":
             date_from, date_to = self._gv_period_date_bounds()
             return self._goldverse_action(_("Total Sales"), "account.move", self._gv_invoice_domain(date_from, date_to), "list,form,pivot,graph")
+        if card in ("gv_recon_orders", "gv_recon_uninvoiced", "gv_recon_overpaid", "gv_recon_underpaid"):
+            date_from, date_to = self._gv_period_date_bounds()
+            if card == "gv_recon_orders":
+                return self._goldverse_action(
+                    _("Laundry Orders"), "aimaze.laundry.order",
+                    self._gv_order_domain(date_from, date_to), "list,form",
+                )
+            recon = self._gv_sales_reconciliation(date_from, date_to)
+            titles = {
+                "gv_recon_uninvoiced": (_("Orders Not Yet Invoiced"), "uninvoiced_ids"),
+                "gv_recon_overpaid": (_("Orders With Over-payment"), "overpaid_ids"),
+                "gv_recon_underpaid": (_("Orders With Balance Due"), "underpaid_ids"),
+            }
+            title, key = titles[card]
+            return self._goldverse_action(
+                title, "aimaze.laundry.order", [("id", "in", recon[key])], "list,form",
+            )
         if card == "gv_cash_sales":
             date_from, date_to = self._gv_period_date_bounds()
             action = self._goldverse_action(_("Cash Sales"), "account.payment", self._gv_payment_bucket_domain(date_from, date_to, "cash"), "list,form,pivot,graph")
@@ -735,6 +752,80 @@ class LaundryExecutiveDashboard(models.TransientModel):
             and line.account_id.account_type in ("income", "income_other")
         )
         return -sum(income_lines.mapped("balance"))
+
+    def _gv_income_lines(self, date_from, date_to):
+        """Posted income move lines for the period - the basis of the Total Sales tile."""
+        return self.env["account.move.line"].sudo().search(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("parent_state", "=", "posted"),
+                ("date", ">=", date_from),
+                ("date", "<=", date_to),
+                ("account_id.account_type", "in", ("income", "income_other")),
+            ]
+        )
+
+    def _gv_sales_reconciliation(self, date_from, date_to):
+        """Bridge the Laundry Orders total to the Total Sales (GL income) tile.
+
+        The two figures measure different things: orders are what was taken in at the
+        counter, Total Sales is what has been recognised in the ledger. Every row below
+        is a real reconciling item, and the bridge always foots to Total Sales exactly
+        because ``other_income`` is derived as the residual.
+        """
+        self.ensure_one()
+        orders = self.env["aimaze.laundry.order"].sudo().search(self._gv_order_domain(date_from, date_to))
+        orders_total = sum(orders.mapped("amount_total"))
+        uninvoiced = orders.filtered(
+            lambda order: not order.invoice_id or order.invoice_id.state != "posted"
+        )
+        uninvoiced_total = sum(uninvoiced.mapped("amount_total"))
+        invoiced_orders_total = orders_total - uninvoiced_total
+
+        income_lines = self._gv_income_lines(date_from, date_to)
+        total_sales = -sum(income_lines.mapped("balance"))
+        overpayment_income = -sum(
+            income_lines.filtered(
+                lambda line: line.account_id.goldverse_is_overpayment_income
+            ).mapped("balance")
+        )
+        invoice_income = -sum(
+            income_lines.filtered(
+                lambda line: line.move_id.move_type in ("out_invoice", "out_refund")
+                and not line.account_id.goldverse_is_overpayment_income
+            ).mapped("balance")
+        )
+        # Anything left is non-order income booked straight to an income account.
+        other_income = total_sales - invoice_income - overpayment_income
+        # Tax, post-invoice edits, or invoice/order date drift.
+        invoice_adjustment = invoice_income - invoiced_orders_total
+
+        # Over / under payment received against this period's orders.
+        overpaid_orders = orders.filtered(lambda order: (order.balance_amount or 0.0) < 0)
+        underpaid_orders = orders.filtered(lambda order: (order.balance_amount or 0.0) > 0)
+        overpaid_amount = abs(sum(overpaid_orders.mapped("balance_amount")))
+        underpaid_amount = sum(underpaid_orders.mapped("balance_amount"))
+
+        return {
+            "orders_total": orders_total,
+            "orders_count": len(orders),
+            "uninvoiced_total": uninvoiced_total,
+            "uninvoiced_count": len(uninvoiced),
+            "uninvoiced_ids": uninvoiced.ids,
+            "invoiced_orders_total": invoiced_orders_total,
+            "invoice_adjustment": invoice_adjustment,
+            "invoice_income": invoice_income,
+            "overpayment_income": overpayment_income,
+            "other_income": other_income,
+            "total_sales": total_sales,
+            "difference": orders_total - total_sales,
+            "overpaid_amount": overpaid_amount,
+            "overpaid_count": len(overpaid_orders),
+            "overpaid_ids": overpaid_orders.ids,
+            "underpaid_amount": underpaid_amount,
+            "underpaid_count": len(underpaid_orders),
+            "underpaid_ids": underpaid_orders.ids,
+        }
 
     def _gv_profit_values(self, date_from, date_to):
         MoveLine = self.env["account.move.line"].sudo()
@@ -1410,6 +1501,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "previous_to": previous_to,
             "revenue": revenue,
             "previous_revenue": previous_revenue,
+            "reconciliation": self._gv_sales_reconciliation(date_from, date_to),
             "profit": profit,
             "previous_profit": previous_profit,
             "orders": order_count,
@@ -1474,6 +1566,103 @@ class LaundryExecutiveDashboard(models.TransientModel):
             '<polyline fill="none" stroke="%s" stroke-width="1.6" stroke-linecap="round" '
             'stroke-linejoin="round" points="%s"/></svg>'
         ) % (color, " ".join(points))
+
+    def _gv_recon_row(self, label, amount, kind="", card_key=False, note=""):
+        """One line of the sales reconciliation bridge."""
+        negative = (amount or 0.0) < 0
+        shown = self._gv_money(abs(amount or 0.0))
+        if negative:
+            shown = "(%s)" % shown
+        note_html = ('<span class="gv-recon-note">%s</span>' % escape(note)) if note else ""
+        return (
+            '<tr class="gv-recon-row%(kind)s%(click_cls)s"%(click)s>'
+            '<td class="gv-recon-label">%(label)s%(note)s</td>'
+            '<td class="gv-recon-amount%(neg)s">%(amount)s</td></tr>'
+        ) % {
+            "kind": (" gv-recon-%s" % kind) if kind else "",
+            "click_cls": " gv-clickable-card" if card_key else "",
+            "click": self._gv_click_attrs(card_key),
+            "label": escape(label),
+            "note": note_html,
+            "neg": " gv-recon-neg" if negative else "",
+            "amount": escape(shown),
+        }
+
+    def _gv_recon_card(self, recon, range_label):
+        """Explain why the Laundry Orders total differs from the Total Sales tile."""
+        rows = [
+            self._gv_recon_row(
+                _("Laundry Orders total"), recon["orders_total"],
+                note=_("%s orders") % self._gv_number(recon["orders_count"]),
+                card_key="gv_recon_orders",
+            )
+        ]
+        if recon["uninvoiced_total"]:
+            rows.append(self._gv_recon_row(
+                _("Less: orders not yet invoiced"), -recon["uninvoiced_total"],
+                note=_("%s orders") % self._gv_number(recon["uninvoiced_count"]),
+                card_key="gv_recon_uninvoiced",
+            ))
+            rows.append(self._gv_recon_row(
+                _("Invoiced orders"), recon["invoiced_orders_total"], kind="sub",
+            ))
+        if recon["invoice_adjustment"]:
+            rows.append(self._gv_recon_row(
+                _("Invoice adjustments vs order value"), recon["invoice_adjustment"],
+                note=_("tax, edits or date differences"),
+            ))
+        if recon["overpayment_income"]:
+            rows.append(self._gv_recon_row(
+                _("Add: customer overpayment income"), recon["overpayment_income"],
+                note=_("over-payments booked to income"),
+            ))
+        if recon["other_income"]:
+            rows.append(self._gv_recon_row(
+                _("Add: other income (not from orders)"), recon["other_income"],
+                note=_("manual journal entries"),
+            ))
+        rows.append(self._gv_recon_row(
+            _("Total Sales (per dashboard)"), recon["total_sales"], kind="total",
+            card_key="gv_total_sales",
+        ))
+
+        pay_rows = ""
+        if recon["overpaid_amount"] or recon["underpaid_amount"]:
+            pay_items = []
+            if recon["overpaid_amount"]:
+                pay_items.append(self._gv_recon_row(
+                    _("Over-payment received"), recon["overpaid_amount"],
+                    note=_("%s orders paid above order value") % self._gv_number(recon["overpaid_count"]),
+                    card_key="gv_recon_overpaid",
+                ))
+            if recon["underpaid_amount"]:
+                pay_items.append(self._gv_recon_row(
+                    _("Under-payment / still to collect"), recon["underpaid_amount"],
+                    note=_("%s orders with a balance") % self._gv_number(recon["underpaid_count"]),
+                    card_key="gv_recon_underpaid",
+                ))
+            pay_rows = (
+                '<p class="gv-recon-subtitle">%s</p>'
+                '<table class="gv-recon-table">%s</table>'
+            ) % (escape(_("Payment differences on this period's orders")), "".join(pay_items))
+
+        return (
+            '<div class="gvcc-card gv-recon-card">'
+            '<p class="gvcc-card-title">%(title)s</p>'
+            '<p class="gv-recon-lead">%(lead)s</p>'
+            '<table class="gv-recon-table">%(rows)s</table>'
+            '%(pay)s</div>'
+        ) % {
+            "title": escape(_("Sales reconciliation")),
+            # The currency symbol can itself end in a dot ("Rs."), so never end the
+            # sentence with a money value or it renders a double full stop.
+            "lead": escape(
+                _("Orders are what the counter took in for %s. Total Sales is what the ledger "
+                  "recognised. Difference: %s") % (range_label, self._gv_money(recon["difference"]))
+            ),
+            "rows": "".join(rows),
+            "pay": pay_rows,
+        }
 
     def _gvcc_band(self, icon, title, meta=""):
         return (
@@ -1797,6 +1986,14 @@ class LaundryExecutiveDashboard(models.TransientModel):
                                        card_key="gv_credit_sales"),
             ])
 
+            recon = data["reconciliation"]
+            # Only surface the bridge when the two figures actually disagree, or when
+            # money has been over/under paid against the period's orders.
+            currency = dashboard.company_id.currency_id or dashboard.env.company.currency_id
+            has_gap = not currency.is_zero(recon["difference"])
+            has_pay_gap = bool(recon["overpaid_amount"] or recon["underpaid_amount"])
+            recon_card = dashboard._gv_recon_card(recon, range_label) if (has_gap or has_pay_gap) else ""
+
             def _delta(current, previous, is_money=True, lower_is_better=False):
                 trend = dashboard._gv_trend(current, previous)
                 up = trend >= 0
@@ -1915,6 +2112,7 @@ class LaundryExecutiveDashboard(models.TransientModel):
 
                     {dashboard._gvcc_band("fa-money", _("Sales command view"), range_label)}
                     <div class="gvcc-grid gvcc-g5">{sales_tiles}</div>
+                    {recon_card}
 
                     {(dashboard._gvcc_band("fa-bar-chart", _("Executive KPI summary"), _("vs prior period")) + '<div class="gvcc-grid gvcc-g3">' + perf_cells + '</div>') if is_exec else ''}
 

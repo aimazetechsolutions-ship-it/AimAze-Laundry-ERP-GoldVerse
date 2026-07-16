@@ -1544,6 +1544,65 @@
   color: #11172a;
   margin: 0 0 8px;
 }
+.o_goldverse_dashboard .gvcc-shell .gv-recon-card {
+  margin-top: 10px;
+  border-left: 3px solid #4a2978;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-lead {
+  font-size: 11px;
+  color: #5b6478;
+  margin: 0 0 8px;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #11172a;
+  margin: 12px 0 6px;
+  padding-top: 8px;
+  border-top: 1px dashed #e2e6ee;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-table td {
+  padding: 5px 4px;
+  border-bottom: 1px solid #f0f2f6;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-label {
+  color: #33394a;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-note {
+  display: block;
+  font-size: 10px;
+  color: #8b93a6;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-amount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: #11172a;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-amount.gv-recon-neg {
+  color: #c0392b;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-row.gv-clickable-card {
+  cursor: pointer;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-row.gv-clickable-card:hover {
+  background: #f6f4fb;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-sub td {
+  font-weight: 600;
+  background: #fafbfd;
+}
+.o_goldverse_dashboard .gvcc-shell .gv-recon-total td {
+  font-weight: 700;
+  color: #4a2978;
+  border-top: 2px solid #4a2978;
+  border-bottom: none;
+}
 .o_goldverse_dashboard .gvcc-shell .gvcc-kcell {
   background: #fff;
   border: 1px solid #e2e6ee;
