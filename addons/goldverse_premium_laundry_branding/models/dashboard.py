@@ -863,6 +863,165 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "np_percent": (net_profit / revenue * 100.0) if revenue else 0.0,
         }
 
+    # ------------------------------------------------------------------
+    # Profitability intelligence (deterministic expert-rules analysis)
+    # ------------------------------------------------------------------
+    # Benchmarks tuned for a premium laundry / garment-care service, where
+    # direct (production) cost is modest and operating overhead is the usual
+    # constraint on net profit. Thresholds are % of revenue.
+    GV_PROFIT_BENCH = {
+        "gp":   {"excellent": 65.0, "good": 50.0, "fair": 35.0},
+        "np":   {"excellent": 20.0, "good": 10.0, "fair": 3.0},
+        "opex": {"good": 45.0, "watch": 60.0},   # lower is better
+        "dc":   {"good": 30.0, "watch": 45.0},   # lower is better
+    }
+
+    def _gv_margin_tier(self, value, kind):
+        """Return (label, palette-key) for a margin/ratio against its benchmark."""
+        b = self.GV_PROFIT_BENCH[kind]
+        if kind in ("gp", "np"):
+            if value < 0:
+                return (_("loss-making"), "coral")
+            if value >= b["excellent"]:
+                return (_("excellent"), "mint")
+            if value >= b["good"]:
+                return (_("healthy"), "mint")
+            if value >= b["fair"]:
+                return (_("fair"), "peach")
+            return (_("weak"), "coral")
+        # opex / dc: lower is better
+        if value <= b["good"]:
+            return (_("well controlled"), "mint")
+        if value <= b["watch"]:
+            return (_("watch"), "peach")
+        return (_("high"), "coral")
+
+    def _gv_profitability_intelligence(self, data):
+        """Analyse gross/net profitability, cost structure and trend, and
+        auto-detect the primary bottleneck. Pure computation - no side effects."""
+        self.ensure_one()
+        profit = data["profit"]
+        prev = data["previous_profit"]
+        revenue = profit["revenue"] or 0.0
+        direct_cost = profit["direct_cost"] or 0.0
+        opex = profit["operating_expense"] or 0.0
+        gross_profit = profit["gross_profit"] or 0.0
+        net_profit = profit["net_profit"] or 0.0
+        gp_margin = profit["gp_percent"] or 0.0
+        np_margin = profit["np_percent"] or 0.0
+        pct = lambda part: (part / revenue * 100.0) if revenue else 0.0
+        dc_ratio = pct(direct_cost)
+        opex_ratio = pct(opex)
+
+        gp_delta = gp_margin - (prev["gp_percent"] or 0.0)
+        np_delta = np_margin - (prev["np_percent"] or 0.0)
+        rev_trend = self._gv_trend(revenue, prev["revenue"])
+        opex_trend = self._gv_trend(opex, prev["operating_expense"])
+
+        top_rows = data.get("top_expense_rows") or []
+        top_expense = top_rows[0] if top_rows else None
+        top_expense_share = pct(top_expense["value"]) if top_expense else 0.0
+
+        wins, bottlenecks = [], []
+
+        def win(text):
+            wins.append(text)
+
+        def drag(text, severity):
+            bottlenecks.append({"text": text, "severity": severity})
+
+        # --- what's working ---
+        if gp_margin >= self.GV_PROFIT_BENCH["gp"]["good"]:
+            win(_("Strong gross margin of %.1f%% - pricing comfortably covers production cost.") % gp_margin)
+        if np_margin >= self.GV_PROFIT_BENCH["np"]["good"]:
+            win(_("Healthy net margin of %.1f%% - the business converts sales into real profit.") % np_margin)
+        if gp_delta > 0.5:
+            win(_("Gross margin improved +%.1f pts versus the prior period.") % gp_delta)
+        if np_delta > 0.5:
+            win(_("Net margin improved +%.1f pts versus the prior period.") % np_delta)
+        if rev_trend > 2 and net_profit > 0:
+            win(_("Revenue grew +%.1f%% while staying profitable.") % rev_trend)
+        if revenue and opex_ratio <= self.GV_PROFIT_BENCH["opex"]["good"]:
+            win(_("Overheads are lean at %.1f%% of sales.") % opex_ratio)
+        if direct_cost and dc_ratio <= self.GV_PROFIT_BENCH["dc"]["good"]:
+            win(_("Production cost is efficient at %.1f%% of sales.") % dc_ratio)
+
+        # --- bottlenecks ---
+        if net_profit < 0:
+            drag(_("Net loss of %s - total cost exceeds revenue this period.") % self._gv_money(abs(net_profit)), "high")
+        if revenue and gp_margin < self.GV_PROFIT_BENCH["gp"]["fair"]:
+            drag(_("Thin gross margin (%.1f%%) - production cost or pricing needs review.") % gp_margin, "high")
+        if opex_ratio > self.GV_PROFIT_BENCH["opex"]["watch"]:
+            drag(_("Overheads consume %.1f%% of sales - the main drag on net profit.") % opex_ratio, "high")
+        elif opex_ratio > self.GV_PROFIT_BENCH["opex"]["good"]:
+            drag(_("Overheads at %.1f%% of sales are starting to weigh on net profit.") % opex_ratio, "med")
+        if dc_ratio > self.GV_PROFIT_BENCH["dc"]["watch"]:
+            drag(_("Direct cost is %.1f%% of sales - compressing gross margin.") % dc_ratio, "high")
+        elif direct_cost and dc_ratio > self.GV_PROFIT_BENCH["dc"]["good"]:
+            drag(_("Direct cost at %.1f%% of sales is above the efficient range.") % dc_ratio, "med")
+        if np_delta < -1.0:
+            drag(_("Net margin fell %.1f pts versus the prior period.") % abs(np_delta), "med")
+        if rev_trend < -2:
+            drag(_("Revenue down %.1f%% versus prior - fixed costs bite harder on lower sales.") % abs(rev_trend), "med")
+        if opex_trend > rev_trend + 10 and opex > 0:
+            drag(_("Overheads rising faster than revenue (+%.1f%% vs +%.1f%%) - margin squeeze.") % (opex_trend, rev_trend), "high")
+        if top_expense and top_expense_share >= 15:
+            drag(_("Largest single cost is %s at %s (%.1f%% of sales).") % (
+                top_expense["name"], self._gv_money(top_expense["value"]), top_expense_share), "med")
+
+        # --- primary bottleneck: the single biggest lever ---
+        candidates = []
+        if net_profit < 0:
+            candidates.append((999, _("Costs exceed revenue - the business is loss-making this period.")))
+        if opex_ratio > self.GV_PROFIT_BENCH["opex"]["good"]:
+            candidates.append((opex_ratio - self.GV_PROFIT_BENCH["opex"]["good"],
+                               _("Operating overheads (%.1f%% of sales) are the biggest drag below the gross-profit line.") % opex_ratio))
+        if dc_ratio > self.GV_PROFIT_BENCH["dc"]["good"]:
+            candidates.append((dc_ratio - self.GV_PROFIT_BENCH["dc"]["good"],
+                               _("Direct production cost (%.1f%% of sales) is compressing gross margin.") % dc_ratio))
+        if rev_trend < -2:
+            candidates.append((abs(rev_trend) / 2.0,
+                               _("Falling revenue is spreading fixed costs over fewer sales.")))
+        primary = max(candidates, key=lambda c: c[0])[1] if candidates else _(
+            "No structural bottleneck - gross and net profitability are both healthy.")
+
+        # --- headline verdict + score ---
+        if net_profit < 0:
+            headline, hcolor = _("Operating at a loss"), "coral"
+        elif np_margin >= self.GV_PROFIT_BENCH["np"]["excellent"] and gp_margin >= self.GV_PROFIT_BENCH["gp"]["good"]:
+            headline, hcolor = _("Strong profitability"), "mint"
+        elif np_margin >= self.GV_PROFIT_BENCH["np"]["good"]:
+            headline, hcolor = _("Healthy profitability"), "mint"
+        elif np_margin >= self.GV_PROFIT_BENCH["np"]["fair"]:
+            headline, hcolor = _("Thin but positive margins"), "peach"
+        else:
+            headline, hcolor = _("Profitability at risk"), "coral"
+
+        score = 0.0
+        score += 0.0 if net_profit < 0 else min(45.0, np_margin / self.GV_PROFIT_BENCH["np"]["excellent"] * 45.0)
+        score += min(30.0, max(0.0, gp_margin) / self.GV_PROFIT_BENCH["gp"]["excellent"] * 30.0)
+        score += 15.0 if opex_ratio <= self.GV_PROFIT_BENCH["opex"]["good"] else max(0.0, 15.0 * (75.0 - opex_ratio) / 30.0)
+        score += 10.0 if np_delta >= 0 else max(0.0, 10.0 + np_delta)
+        score = max(0.0, min(100.0, score))
+
+        diagnosis = _("Every %s of sales returns %s gross and %s net profit.") % (
+            self._gv_money(100.0), self._gv_money(round(gp_margin, 1)), self._gv_money(round(np_margin, 1)))
+
+        return {
+            "headline": headline, "headline_color": hcolor, "score": round(score),
+            "diagnosis": diagnosis, "primary_bottleneck": primary,
+            "revenue": revenue, "gross_profit": gross_profit, "net_profit": net_profit,
+            "gp_margin": gp_margin, "np_margin": np_margin,
+            "dc_ratio": dc_ratio, "opex_ratio": opex_ratio,
+            "gp_tier": self._gv_margin_tier(gp_margin, "gp"),
+            "np_tier": self._gv_margin_tier(np_margin, "np"),
+            "opex_tier": self._gv_margin_tier(opex_ratio, "opex"),
+            "gp_delta": gp_delta, "np_delta": np_delta, "rev_trend": rev_trend,
+            "wins": wins, "bottlenecks": bottlenecks,
+            "structure": {"direct_cost": dc_ratio, "opex": opex_ratio,
+                          "net": max(0.0, np_margin), "net_is_loss": net_profit < 0},
+        }
+
     def _gv_payment_domain(self, date_from, date_to):
         domain = [
             ("company_id", "=", self.company_id.id),
@@ -1710,6 +1869,84 @@ class LaundryExecutiveDashboard(models.TransientModel):
             "label": escape(label), "value": escape(value), "sub": sub_html,
         }
 
+    def _gv_profit_intel_card(self, intel, range_label):
+        """Render the AI profitability analysis card from an intelligence dict."""
+        pal = self.GVCC_PALETTE
+        hp = pal.get(intel["headline_color"], pal["blue"])
+
+        def margin_tile(label, value, tier):
+            tp = pal.get(tier[1], pal["blue"])
+            return (
+                '<div class="gv-pi-tile" style="background:%(wash)s">'
+                '<p class="gv-pi-tile-label">%(label)s</p>'
+                '<p class="gv-pi-tile-value" style="color:%(ink)s">%(value)s</p>'
+                '<span class="gv-pi-badge" style="background:%(bg)s;color:%(ink)s">%(tier)s</span></div>'
+            ) % {"wash": tp["wash"], "ink": tp["ink"], "bg": tp["bg"],
+                 "label": escape(label), "value": escape(value), "tier": escape(tier[0])}
+
+        tiles = "".join([
+            margin_tile(_("Gross margin"), "%.1f%%" % intel["gp_margin"], intel["gp_tier"]),
+            margin_tile(_("Net margin"), "%.1f%%" % intel["np_margin"], intel["np_tier"]),
+            margin_tile(_("Overhead ratio"), "%.1f%%" % intel["opex_ratio"], intel["opex_tier"]),
+        ])
+
+        # 100%-of-revenue cost structure bar
+        s = intel["structure"]
+        segs = [
+            (_("Direct cost"), s["direct_cost"], "#e58181"),
+            (_("Overheads"), s["opex"], "#f5a878"),
+            ((_("Net loss") if s["net_is_loss"] else _("Net profit")),
+             s["net"], ("#8b1e1e" if s["net_is_loss"] else "#67c4a8")),
+        ]
+        total = sum(max(0.0, v) for _l, v, _c in segs) or 1.0
+        bar_parts, legend_parts = [], []
+        for label, val, color in segs:
+            width = max(0.0, val) / total * 100.0
+            if width > 0.4:
+                bar_parts.append('<div class="gv-pi-seg" style="width:%.2f%%;background:%s" title="%s %.1f%%"></div>'
+                                 % (width, color, escape(label), val))
+            legend_parts.append(
+                '<span class="gv-pi-legend-item"><span class="gv-pi-dot" style="background:%s"></span>%s %.1f%%</span>'
+                % (color, escape(label), val))
+        structure_bar = ('<div class="gv-pi-bar">%s</div><div class="gv-pi-legend">%s</div>'
+                         % ("".join(bar_parts), "".join(legend_parts)))
+
+        wins_html = "".join(
+            '<li class="gv-pi-win"><i class="fa fa-check-circle" aria-hidden="true"></i>%s</li>' % escape(w)
+            for w in intel["wins"]) or '<li class="gv-pi-empty">%s</li>' % escape(_("No standout wins this period."))
+        sev_color = {"high": "#c0392b", "med": "#c77d0a", "low": "#888"}
+        drags_html = "".join(
+            '<li class="gv-pi-drag"><span class="gv-pi-dot" style="background:%s"></span>%s</li>'
+            % (sev_color.get(b["severity"], "#888"), escape(b["text"]))
+            for b in intel["bottlenecks"]) or '<li class="gv-pi-empty">%s</li>' % escape(_("No bottlenecks detected - profitability is clean."))
+
+        return (
+            '<div class="gvcc-card gv-pi-card">'
+            '<div class="gv-pi-verdict" style="background:%(hbg)s;border-color:%(hedge)s">'
+            '<div class="gv-pi-verdict-main">'
+            '<p class="gv-pi-headline" style="color:%(hink)s">%(headline)s</p>'
+            '<p class="gv-pi-diagnosis">%(diagnosis)s</p></div>'
+            '<div class="gv-pi-score" style="color:%(hink)s"><span class="gv-pi-score-num">%(score)s</span>'
+            '<span class="gv-pi-score-lbl">%(score_lbl)s</span></div></div>'
+            '<div class="gv-pi-tiles">%(tiles)s</div>'
+            '<p class="gv-pi-section-label">%(cost_label)s</p>%(structure)s'
+            '<div class="gv-pi-cols">'
+            '<div class="gv-pi-col"><p class="gv-pi-col-title gv-pi-col-good">%(wins_title)s</p><ul class="gv-pi-list">%(wins)s</ul></div>'
+            '<div class="gv-pi-col"><p class="gv-pi-col-title gv-pi-col-bad">%(drags_title)s</p><ul class="gv-pi-list">%(drags)s</ul></div>'
+            '</div>'
+            '<div class="gv-pi-primary"><i class="fa fa-bullseye" aria-hidden="true"></i>'
+            '<span><strong>%(primary_title)s</strong> %(primary)s</span></div></div>'
+        ) % {
+            "hbg": hp["wash"], "hedge": hp["edge"], "hink": hp["ink"],
+            "headline": escape(intel["headline"]), "diagnosis": escape(intel["diagnosis"]),
+            "score": escape(str(intel["score"])), "score_lbl": escape(_("/100 profit score")),
+            "tiles": tiles, "cost_label": escape(_("Where every 100 of sales goes")),
+            "structure": structure_bar,
+            "wins_title": escape(_("What's working")), "wins": wins_html,
+            "drags_title": escape(_("Bottlenecks")), "drags": drags_html,
+            "primary_title": escape(_("Primary bottleneck:")), "primary": escape(intel["primary_bottleneck"]),
+        }
+
     def _gvcc_perf_cell(self, label, value, color_key, monthly_rows, key, delta_text, delta_class, card_key=False):
         palette = self.GVCC_PALETTE.get(color_key, self.GVCC_PALETTE["blue"])
         return (
@@ -1994,6 +2231,9 @@ class LaundryExecutiveDashboard(models.TransientModel):
             has_pay_gap = bool(recon["overpaid_amount"] or recon["underpaid_amount"])
             recon_card = dashboard._gv_recon_card(recon, range_label) if (has_gap or has_pay_gap) else ""
 
+            profit_intel = dashboard._gv_profitability_intelligence(data)
+            profit_intel_card = dashboard._gv_profit_intel_card(profit_intel, range_label) if is_exec else ""
+
             def _delta(current, previous, is_money=True, lower_is_better=False):
                 trend = dashboard._gv_trend(current, previous)
                 up = trend >= 0
@@ -2115,6 +2355,8 @@ class LaundryExecutiveDashboard(models.TransientModel):
                     {recon_card}
 
                     {(dashboard._gvcc_band("fa-bar-chart", _("Executive KPI summary"), _("vs prior period")) + '<div class="gvcc-grid gvcc-g3">' + perf_cells + '</div>') if is_exec else ''}
+
+                    {(dashboard._gvcc_band("fa-brain", _("AI profitability analysis"), _("gross & net margin health")) + profit_intel_card) if is_exec else ''}
 
                     {(dashboard._gvcc_band("fa-line-chart", _("Revenue intelligence"), _("monthly")) + '<div class="gvcc-grid gvcc-g7030"><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Monthly Revenue vs Gross Profit")) + '</p>' + dashboard._gv_line_chart(data["monthly"], [("revenue", "Revenue", "#5a85f0"), ("gross_profit", "Gross Profit", "#67c4a8")]) + '</div><div class="gvcc-card"><p class="gvcc-card-title">' + escape(_("Sales mix")) + '</p>' + dashboard._gv_donut_chart(data["service_composition"][:6]) + '</div></div>') if is_exec else ''}
 
